@@ -1,0 +1,20 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: blackstore_postgres
+
+    environment:
+      POSTGRES_USER: blackstore
+      POSTGRES_PASSWORD: blackstore123
+      POSTGRES_DB: blackstore
+
+    ports:
+      - "5436:5432"
+
+    volumes:
+      - blackstore_pgdata:/var/lib/postgresql/data
+
+volumes:
+  blackstore_pgdata:

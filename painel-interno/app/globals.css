@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+/* ===== BLACKSTORE ADMIN THEME ===== */
+
+:root{
+  --bg: #0b0b0d;
+  --bg-2:#120f18;
+
+  --gold:#D4AF37;
+  --gold-2:#F5E6A8;
+
+  --rose:#E4A3B5;
+
+  --white:#ffffff;
+  --muted:rgba(255,255,255,.66);
+  --muted2:rgba(255,255,255,.45);
+  --line:rgba(255,255,255,.10);
+}
+
+html,body{
+  height:100%;
+  background:
+  radial-gradient(1200px 800px at 20% 10%, rgba(228,163,181,.12), transparent 55%),
+  radial-gradient(900px 700px at 80% 0%, rgba(212,175,55,.10), transparent 55%),
+  linear-gradient(180deg,var(--bg) 0%,var(--bg-2) 100%);
+  color:var(--white);
+  font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto;
+}
+
+/* glass card */
+
+.bs-glass{
+  background:rgba(0,0,0,.35);
+  backdrop-filter:blur(14px);
+  border:1px solid var(--line);
+}
+
+/* subtle hover */
+
+.bs-hover:hover{
+  box-shadow:
+  0 0 30px rgba(212,175,55,.25),
+  0 0 60px rgba(212,175,55,.10);
+}
+
+/* premium title */
+
+.bs-title{
+  background:linear-gradient(90deg,#fff 0%,var(--gold) 40%,var(--rose) 70%,#fff 100%);
+  background-size:240% 100%;
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}

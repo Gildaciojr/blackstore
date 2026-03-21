@@ -1,0 +1,198 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Admin {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  role      String
+  createdAt DateTime @default(now())
+}
+
+model Customer {
+  id        String   @id @default(uuid())
+  name      String
+  surname   String
+  email     String   @unique
+  password  String
+  phone     String?
+  createdAt DateTime @default(now())
+
+  orders    Order[]
+  cart      CartItem[]
+  addresses Address[]
+}
+
+model Category {
+  id   String @id @default(uuid())
+  name String
+  slug String @unique
+
+  products Product[]
+}
+
+model Product {
+  id          String  @id @default(uuid())
+  name        String
+  slug        String  @unique
+  description String?
+  price       Float
+  oldPrice    Float?
+  image       String
+  stock       Int
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+
+  medias           Media[]
+  weeklyBestSeller WeeklyBestSeller?
+}
+
+model CartItem {
+  id       String @id @default(uuid())
+  quantity Int
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+}
+
+model Order {
+  id String @id @default(uuid())
+
+  subtotal      Float
+  shippingPrice Float @default(0)
+  total         Float
+
+  shippingName     String?
+  shippingMethod   String?
+  shippingDeadline String?
+
+  status String
+
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+
+  addressId String?
+  address   Address? @relation(fields: [addressId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items OrderItem[]
+
+  payment Payment?
+}
+
+model OrderItem {
+  id String @id @default(uuid())
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  quantity Int
+  price    Float
+
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id])
+}
+
+model Address {
+  id String @id @default(uuid())
+
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+
+  name       String
+  street     String
+  number     String
+  complement String?
+  district   String
+  city       String
+  state      String
+  zipCode    String
+
+  createdAt DateTime @default(now())
+
+  orders Order[]
+}
+
+model Payment {
+  id String @id @default(uuid())
+
+  orderId String @unique
+  order   Order  @relation(fields: [orderId], references: [id])
+
+  method String
+  status String
+  amount Float
+
+  providerId String?
+
+  createdAt DateTime @default(now())
+}
+
+model ShippingRate {
+  id String @id @default(uuid())
+
+  name    String
+  method  String // ex: "standard", "express"
+  price   Float
+  minDays Int
+  maxDays Int
+
+  // regra simples por UF ou CEP prefix
+  state     String? // ex: "GO"
+  cepPrefix String? // ex: "74"
+
+  createdAt DateTime @default(now())
+}
+
+model Media {
+  id String @id @default(uuid())
+
+  type  String // ex: "banner", "hero", "promo"
+  title String?
+  url   String
+
+  productId String?
+  product   Product? @relation(fields: [productId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model Coupon {
+  id String @id @default(uuid())
+
+  code     String @unique
+  discount Float
+  maxUses  Int
+  used     Int    @default(0)
+
+  expiresAt DateTime
+
+  createdAt DateTime @default(now())
+}
+
+model WeeklyBestSeller {
+  id        String  @id @default(uuid())
+  position  Int
+  productId String  @unique
+  product   Product @relation(fields: [productId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([position])
+}
