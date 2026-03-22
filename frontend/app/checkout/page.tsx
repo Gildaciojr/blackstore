@@ -76,12 +76,21 @@ export default function CheckoutPage() {
   const [zip, setZip] = useState(zipCode);
   const [shippingLoading, setShippingLoading] = useState(false);
 
-  useEffect(() => {
-    const customerId = getCustomerId();
+  /**
+   * 🔒 CONTROLE ANTI DUPLO CLICK (CRÍTICO)
+   */
+  const [checkoutLock, setCheckoutLock] = useState(false);
 
-    apiFetch<Address[]>(`/address/${customerId}`)
-      .then(setAddresses)
-      .catch(() => {});
+  useEffect(() => {
+    try {
+      const customerId = getCustomerId();
+
+      apiFetch<Address[]>(`/address/${customerId}`)
+        .then(setAddresses)
+        .catch(() => {});
+    } catch (err) {
+      console.error(err);
+    }
   }, []);
 
   useEffect(() => {
@@ -122,6 +131,11 @@ export default function CheckoutPage() {
   }
 
   async function handleCheckout() {
+    /**
+     * 🔒 BLOQUEIO DUPLO CLICK
+     */
+    if (loading || checkoutLock) return;
+
     if (!items.length) {
       alert("Seu carrinho está vazio");
       return;
@@ -137,11 +151,22 @@ export default function CheckoutPage() {
       return;
     }
 
+    let customerId: string;
+
+    try {
+      customerId = getCustomerId();
+    } catch {
+      alert("Sessão inválida. Faça login novamente.");
+      return;
+    }
+
     try {
       setLoading(true);
+      setCheckoutLock(true);
 
-      const customerId = getCustomerId();
-
+      /**
+       * 🔥 CRIA PEDIDO
+       */
       const order = await apiFetch<OrderResponse>("/orders/checkout", {
         method: "POST",
         body: JSON.stringify({
@@ -155,6 +180,13 @@ export default function CheckoutPage() {
         }),
       });
 
+      if (!order?.id) {
+        throw new Error("Falha ao criar pedido");
+      }
+
+      /**
+       * 🔥 CRIA PAGAMENTO
+       */
       const paymentData = await apiFetch<PaymentResponse>("/payment", {
         method: "POST",
         body: JSON.stringify({
@@ -163,12 +195,23 @@ export default function CheckoutPage() {
         }),
       });
 
+      if (!paymentData?.orderId) {
+        throw new Error("Falha ao criar pagamento");
+      }
+
+      /**
+       * 🔥 LIMPA CARRINHO SOMENTE SE TUDO DER CERTO
+       */
       clear();
 
+      /**
+       * 🔥 REDIRECIONAMENTO SEGURO
+       */
       window.location.href = `/payment/${paymentData.orderId}`;
     } catch (err) {
       console.error(err);
       alert("Erro ao finalizar checkout");
+      setCheckoutLock(false);
     } finally {
       setLoading(false);
     }

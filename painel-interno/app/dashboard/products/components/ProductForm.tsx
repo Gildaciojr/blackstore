@@ -35,6 +35,7 @@ export default function ProductForm({
   const [stock, setStock] = useState(0);
   const [image, setImage] = useState("");
   const [categoryId, setCategoryId] = useState("");
+
   const [saving, setSaving] = useState(false);
 
   /**
@@ -122,14 +123,14 @@ export default function ProductForm({
       className="
       bs-glass
       rounded-3xl
-      p-8
+      p-6 sm:p-8
       border border-white/10
       space-y-8
       "
     >
 
       {/* HEADER */}
-      <div>
+      <div className="space-y-2">
 
         <h2 className="text-2xl font-light">
 
@@ -145,93 +146,134 @@ export default function ProductForm({
 
         </h2>
 
-        <p className="text-xs text-white/40 mt-1">
+        <p className="text-xs text-white/40">
           Preencha todas as informações do produto
         </p>
 
       </div>
 
       {/* GRID */}
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Nome do produto"
-          className="bg-white/5 border border-white/10 rounded-xl p-3 outline-none"
-        />
+        <div>
+          <label className="text-xs uppercase tracking-[0.2em] text-white/50 mb-1 block">
+            Nome
+          </label>
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Nome do produto"
+            className="input"
+          />
+        </div>
 
-        <input
-          value={slug}
-          onChange={(e) => setSlug(e.target.value)}
-          placeholder="Slug (url)"
-          className="bg-white/5 border border-white/10 rounded-xl p-3 outline-none"
-        />
+        <div>
+          <label className="text-xs uppercase tracking-[0.2em] text-white/50 mb-1 block">
+            Slug
+          </label>
+          <input
+            value={slug}
+            onChange={(e) => setSlug(e.target.value)}
+            placeholder="Slug (url)"
+            className="input"
+          />
+        </div>
 
-        <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Descrição"
-          className="bg-white/5 border border-white/10 rounded-xl p-3 outline-none md:col-span-2"
-        />
+        <div className="md:col-span-2">
+          <label className="text-xs uppercase tracking-[0.2em] text-white/50 mb-1 block">
+            Descrição
+          </label>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Descrição"
+            className="input"
+          />
+        </div>
 
-        <input
-          type="number"
-          value={price}
-          onChange={(e) => setPrice(Number(e.target.value))}
-          placeholder="Preço"
-          className="bg-white/5 border border-white/10 rounded-xl p-3 outline-none"
-        />
+        <div>
+          <label className="text-xs uppercase tracking-[0.2em] text-white/50 mb-1 block">
+            Preço
+          </label>
+          <input
+            type="number"
+            value={price}
+            onChange={(e) => setPrice(Number(e.target.value))}
+            placeholder="Preço"
+            className="input"
+          />
+        </div>
 
-        <input
-          type="number"
-          value={oldPrice ?? ""}
-          onChange={(e) => setOldPrice(Number(e.target.value))}
-          placeholder="Preço antigo"
-          className="bg-white/5 border border-white/10 rounded-xl p-3 outline-none"
-        />
+        <div>
+          <label className="text-xs uppercase tracking-[0.2em] text-white/50 mb-1 block">
+            Preço antigo
+          </label>
+          <input
+            type="number"
+            value={oldPrice ?? ""}
+            onChange={(e) => setOldPrice(Number(e.target.value))}
+            placeholder="Preço antigo"
+            className="input"
+          />
+        </div>
 
-        <input
-          type="number"
-          value={stock}
-          onChange={(e) => setStock(Number(e.target.value))}
-          placeholder="Estoque"
-          className="bg-white/5 border border-white/10 rounded-xl p-3 outline-none"
-        />
+        <div>
+          <label className="text-xs uppercase tracking-[0.2em] text-white/50 mb-1 block">
+            Estoque
+          </label>
+          <input
+            type="number"
+            value={stock}
+            onChange={(e) => setStock(Number(e.target.value))}
+            placeholder="Estoque"
+            className="input"
+          />
+        </div>
 
-        <input
-          value={image}
-          onChange={(e) => setImage(e.target.value)}
-          placeholder="URL da imagem"
-          className="bg-white/5 border border-white/10 rounded-xl p-3 outline-none"
-        />
+        <div>
+          <label className="text-xs uppercase tracking-[0.2em] text-white/50 mb-1 block">
+            Categoria
+          </label>
+          <select
+            value={categoryId}
+            onChange={(e) => setCategoryId(e.target.value)}
+            className="input"
+          >
 
-        <select
-          value={categoryId}
-          onChange={(e) => setCategoryId(e.target.value)}
-          className="bg-white/5 border border-white/10 rounded-xl p-3 outline-none"
-        >
+            <option value="">Categoria</option>
 
-          <option value="">Categoria</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
 
-          {categories.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
+          </select>
+        </div>
 
-        </select>
+        <div className="md:col-span-2">
+          <label className="text-xs uppercase tracking-[0.2em] text-white/50 mb-1 block">
+            URL da imagem
+          </label>
+          <input
+            value={image}
+            onChange={(e) => setImage(e.target.value)}
+            placeholder="https://..."
+            className="input"
+          />
+        </div>
 
       </div>
 
       {/* ACTIONS */}
-      <div className="flex gap-4">
+      <div className="flex flex-col sm:flex-row gap-4">
 
         <button
           type="submit"
           disabled={saving}
           className="
-          bg-(--gold)
+          w-full sm:w-auto
+          bg-[var(--gold)]
           text-black
           px-6
           py-3
@@ -239,7 +281,7 @@ export default function ProductForm({
           text-xs
           tracking-[0.3em]
           uppercase
-          hover:scale-105
+          hover:scale-[1.03]
           transition
           disabled:opacity-50
           disabled:cursor-not-allowed
@@ -261,6 +303,7 @@ export default function ProductForm({
             type="button"
             onClick={onCancel}
             className="
+            w-full sm:w-auto
             border border-white/20
             px-6
             py-3

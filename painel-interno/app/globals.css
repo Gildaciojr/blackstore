@@ -52,3 +52,11 @@ html,body{
   background-clip:text;
   color:transparent;
 }
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  overflow-x: hidden;
+}

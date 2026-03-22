@@ -6,48 +6,40 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-[#0b0b0d] text-white flex">
+    <div className="min-h-screen bg-[#0b0b0d] text-white overflow-x-hidden">
 
-      {/* SIDEBAR DESKTOP */}
-      <div className="hidden lg:block">
-        {/* sidebar será injetada no layout pai depois */}
-      </div>
+      {/* ambient light */}
+      <div
+        className="
+        fixed
+        w-[800px]
+        h-[800px]
+        bg-[var(--gold)]
+        opacity-[0.04]
+        blur-[220px]
+        rounded-full
+        top-[-350px]
+        left-1/2
+        -translate-x-1/2
+        pointer-events-none
+        z-0
+        "
+      />
 
-      {/* CONTEÚDO */}
-      <div className="flex-1 w-full flex flex-col">
+      <main
+        className="
+        relative
+        w-full
+        max-w-7xl
+        mx-auto
+        px-4 sm:px-6 md:px-10
+        py-6 sm:py-8 md:py-12
+        z-10
+        "
+      >
+        {children}
+      </main>
 
-        {/* ambient light */}
-        <div
-          className="
-          fixed
-          w-[800px]
-          h-[800px]
-          bg-[var(--gold)]
-          opacity-[0.04]
-          blur-[220px]
-          rounded-full
-          top-[-350px]
-          left-1/2
-          -translate-x-1/2
-          pointer-events-none
-          z-0
-          "
-        />
-
-        <main
-          className="
-          relative
-          w-full
-          max-w-7xl
-          mx-auto
-          px-4 sm:px-6 md:px-10
-          py-8 sm:py-10 md:py-14
-          z-10
-          "
-        >
-          {children}
-        </main>
-      </div>
     </div>
   );
 }

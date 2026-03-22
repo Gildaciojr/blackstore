@@ -88,10 +88,15 @@ export default function PaymentPage({ params }: Props) {
 
   const intervalRef = useRef<number | null>(null);
   const redirectedRef = useRef(false);
+  const fetchingRef = useRef(false); // 🔒 evita concorrência
 
   const loadAll = useCallback(
     async (background = false) => {
+      if (fetchingRef.current) return;
+
       try {
+        fetchingRef.current = true;
+
         if (!background) {
           setLoading(true);
         } else {
@@ -101,9 +106,13 @@ export default function PaymentPage({ params }: Props) {
         setError(null);
 
         const [paymentData, orderData] = await Promise.all([
-          apiFetch<Payment>(`/payment/${params.id}`),
-          apiFetch<Order>(`/orders/order/${params.id}`),
+          apiFetch<Payment | null>(`/payment/${params.id}`),
+          apiFetch<Order | null>(`/orders/order/${params.id}`),
         ]);
+
+        if (!paymentData || !orderData) {
+          throw new Error("Dados inválidos");
+        }
 
         setPayment(paymentData);
         setOrder(orderData);
@@ -111,6 +120,8 @@ export default function PaymentPage({ params }: Props) {
         console.error(err);
         setError("Não foi possível carregar os dados do pagamento.");
       } finally {
+        fetchingRef.current = false;
+
         if (!background) {
           setLoading(false);
         } else {
@@ -198,6 +209,7 @@ export default function PaymentPage({ params }: Props) {
   }
 
   async function handleRefresh() {
+    if (loadingRefresh) return;
     await loadAll(true);
   }
 

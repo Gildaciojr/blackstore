@@ -28,10 +28,19 @@ export class PagbankProvider {
       `${this.baseUrl}/orders`,
       {
         reference_id: data.referenceId,
+
+        /**
+         * 🔥 WEBHOOK AQUI (CRÍTICO)
+         */
+        notification_urls: [
+          `${process.env.API_URL}/payment/webhook/${process.env.PAGBANK_WEBHOOK_SECRET}`,
+        ],
+
         customer: {
           name: 'Cliente Blackstore',
           email: 'cliente@blackstore.com',
         },
+
         items: [
           {
             name: data.description,
@@ -39,6 +48,7 @@ export class PagbankProvider {
             unit_amount: Math.round(data.amount * 100),
           },
         ],
+
         charges: [
           {
             reference_id: data.referenceId,
@@ -62,7 +72,6 @@ export class PagbankProvider {
     );
 
     const order = response.data;
-
     const charge = order.charges?.[0];
 
     return {

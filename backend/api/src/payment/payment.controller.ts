@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Param, Body } from '@nestjs/common';
+import { Controller, Post, Get, Param, Body, ForbiddenException } from '@nestjs/common';
 import { PaymentService } from './providers/payment.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { WebhookPaymentDto } from './dto/webhook-payment.dto';
@@ -12,8 +12,17 @@ export class PaymentController {
     return this.paymentService.createPayment(data);
   }
 
-  @Post('webhook')
-  webhook(@Body() data: WebhookPaymentDto) {
+  /**
+   * 🔥 WEBHOOK SEGURO (URL + SECRET)
+   */
+  @Post('webhook/:secret')
+  webhook(@Param('secret') secret: string, @Body() data: WebhookPaymentDto) {
+    const expected = process.env.PAGBANK_WEBHOOK_SECRET;
+
+    if (!expected || secret !== expected) {
+      throw new ForbiddenException('Invalid webhook access');
+    }
+
     return this.paymentService.confirmWebhook(data);
   }
 

@@ -11,12 +11,14 @@ type Category = {
 };
 
 export default function ProductsPage() {
-
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const [form, setForm] = useState({
     name: "",
@@ -60,16 +62,16 @@ export default function ProductsPage() {
   }, []);
 
   function handleChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
   ) {
     const { name, value } = e.target;
 
-    setForm(prev => ({
+    setForm((prev) => ({
       ...prev,
       [name]:
-        name === "price" ||
-        name === "oldPrice" ||
-        name === "stock"
+        name === "price" || name === "oldPrice" || name === "stock"
           ? Number(value)
           : value,
     }));
@@ -87,7 +89,7 @@ export default function ProductsPage() {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
-      }
+      },
     );
 
     if (!res.ok) throw new Error("Erro no upload");
@@ -102,6 +104,8 @@ export default function ProductsPage() {
         alert("Selecione uma categoria");
         return;
       }
+
+      setSaving(true);
 
       const payload = {
         name: form.name,
@@ -143,6 +147,8 @@ export default function ProductsPage() {
       await loadProducts();
     } catch {
       alert("Erro ao salvar produto");
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -169,76 +175,176 @@ export default function ProductsPage() {
     <section className="space-y-10">
 
       {/* HEADER */}
-      <div>
+      <div className="space-y-2">
         <p className="text-xs tracking-[0.4em] uppercase text-white/40">
           Admin
         </p>
-        <h1 className="text-3xl md:text-4xl mt-2">
+        <h1 className="text-3xl md:text-5xl font-light mt-2">
           Produtos
         </h1>
       </div>
 
       {/* FORM */}
-      <div className="bg-white/5 p-6 rounded-2xl border border-white/10 space-y-6">
+      <div className="bs-glass p-6 sm:p-8 rounded-3xl border border-white/10 space-y-8">
 
         <h2 className="text-xl">
           {editingId ? "Editar produto" : "Novo produto"}
         </h2>
 
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
           <div>
-            <label>Nome</label>
-            <input name="name" value={form.name} onChange={handleChange} className="input"/>
+            <label className="text-xs uppercase tracking-[0.2em] text-white/50 mb-1 block">
+              Nome
+            </label>
+            <input
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+              className="input"
+            />
           </div>
 
           <div>
-            <label>Slug</label>
-            <input name="slug" value={form.slug} onChange={handleChange} className="input"/>
+            <label className="text-xs uppercase tracking-[0.2em] text-white/50 mb-1 block">
+              Slug
+            </label>
+            <input
+              name="slug"
+              value={form.slug}
+              onChange={handleChange}
+              className="input"
+            />
           </div>
 
           <div className="md:col-span-2">
-            <label>Descrição</label>
-            <textarea name="description" value={form.description} onChange={handleChange} className="input"/>
+            <label className="text-xs uppercase tracking-[0.2em] text-white/50 mb-1 block">
+              Descrição
+            </label>
+            <textarea
+              name="description"
+              value={form.description}
+              onChange={handleChange}
+              className="input"
+            />
           </div>
 
           <div>
-            <label>Preço</label>
-            <input type="number" name="price" value={form.price} onChange={handleChange} className="input"/>
+            <label className="text-xs uppercase tracking-[0.2em] text-white/50 mb-1 block">
+              Preço
+            </label>
+            <input
+              type="number"
+              name="price"
+              value={form.price}
+              onChange={handleChange}
+              className="input"
+            />
           </div>
 
           <div>
-            <label>Preço antigo</label>
-            <input type="number" name="oldPrice" value={form.oldPrice} onChange={handleChange} className="input"/>
+            <label className="text-xs uppercase tracking-[0.2em] text-white/50 mb-1 block">
+              Preço antigo
+            </label>
+            <input
+              type="number"
+              name="oldPrice"
+              value={form.oldPrice}
+              onChange={handleChange}
+              className="input"
+            />
           </div>
 
           <div>
-            <label>Estoque</label>
-            <input type="number" name="stock" value={form.stock} onChange={handleChange} className="input"/>
+            <label className="text-xs uppercase tracking-[0.2em] text-white/50 mb-1 block">
+              Estoque
+            </label>
+            <input
+              type="number"
+              name="stock"
+              value={form.stock}
+              onChange={handleChange}
+              className="input"
+            />
           </div>
 
           <div>
-            <label>Categoria</label>
-            <select name="categoryId" value={form.categoryId} onChange={handleChange} className="input">
+            <label className="text-xs uppercase tracking-[0.2em] text-white/50 mb-1 block">
+              Categoria
+            </label>
+            <select
+              name="categoryId"
+              value={form.categoryId}
+              onChange={handleChange}
+              className="input"
+            >
               <option value="">Selecionar</option>
-              {categories.map(c => (
-                <option key={c.id} value={c.id}>{c.name}</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
               ))}
             </select>
           </div>
 
           <div className="md:col-span-2">
-            <label>Imagem</label>
-            <input type="file" onChange={async (e)=>{
-              const file = e.target.files?.[0];
-              if (!file) return;
-              const url = await uploadImage(file);
-              setForm(prev => ({...prev, image:url}));
-              setImagePreview(resolveImage(url));
-            }} />
+            <label className="text-xs uppercase tracking-[0.2em] text-white/50 mb-2 block">
+              Imagem
+            </label>
+
+            <input
+              type="file"
+              className="
+              w-full
+              text-sm
+              bg-black/40
+              border border-white/20
+              rounded-lg
+              p-2
+              file:mr-4
+              file:py-2
+              file:px-4
+              file:rounded-full
+              file:border-0
+              file:text-xs
+              file:font-semibold
+              file:bg-[var(--gold)]
+              file:text-black
+              hover:file:opacity-90
+              "
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+
+                try {
+                  setUploading(true);
+
+                  const url = await uploadImage(file);
+
+                  setForm((prev) => ({
+                    ...prev,
+                    image: url,
+                  }));
+
+                  setImagePreview(resolveImage(url));
+
+                } finally {
+                  setUploading(false);
+                }
+              }}
+            />
+
+            {uploading && (
+              <p className="text-xs text-white/50 mt-2">
+                Enviando imagem...
+              </p>
+            )}
 
             {imagePreview && (
-              <img src={imagePreview} className="mt-3 w-32 rounded-lg"/>
+              <img
+                src={imagePreview}
+                className="mt-4 w-32 h-32 object-cover rounded-lg border border-white/10"
+              />
             )}
           </div>
 
@@ -246,37 +352,83 @@ export default function ProductsPage() {
 
         <button
           onClick={handleSubmit}
-          className="bg-[var(--gold)] text-black px-6 py-3 rounded-full"
+          disabled={saving}
+          className="
+          w-full sm:w-auto
+          bg-[var(--gold)]
+          text-black
+          px-6 py-3
+          rounded-full
+          font-medium
+          hover:scale-[1.02]
+          transition
+          disabled:opacity-50
+          disabled:cursor-not-allowed
+          "
         >
-          {editingId ? "Atualizar" : "Criar"}
+          {saving
+            ? "Salvando..."
+            : editingId
+            ? "Atualizar produto"
+            : "Criar produto"}
         </button>
 
       </div>
 
-      {/* LISTA MOBILE + DESKTOP */}
+      {/* LISTA */}
       <div className="space-y-4">
 
-        {products.map(p => (
-          <div key={p.id} className="bg-white/5 p-4 rounded-xl border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        {products.map((p) => (
+
+          <div
+            key={p.id}
+            className="
+            group
+            bg-white/[0.03]
+            p-4 sm:p-5
+            rounded-2xl
+            border border-white/10
+            flex flex-col md:flex-row md:items-center justify-between gap-4
+            transition
+            hover:border-[var(--gold)]
+            hover:bg-white/[0.05]
+            hover:scale-[1.01]
+            "
+          >
 
             <div className="flex gap-4 items-center">
-              <img src={resolveImage(p.image)} className="w-16 h-16 object-cover rounded"/>
+              <img
+                src={resolveImage(p.image)}
+                className="w-16 h-16 object-cover rounded-lg border border-white/10"
+              />
               <div>
-                <p>{p.name}</p>
+                <p className="text-white">{p.name}</p>
                 <p className="text-xs text-white/50">{p.slug}</p>
               </div>
             </div>
 
-            <div className="flex gap-6 text-sm">
+            <div className="flex gap-6 text-sm text-white/80">
               <span>R$ {p.price}</span>
               <span>{p.stock} un</span>
             </div>
 
             <div className="flex gap-3">
-              <button onClick={()=>handleEdit(p)} className="text-yellow-400">Editar</button>
+              <button
+                onClick={() => handleEdit(p)}
+                className="
+                text-xs
+                uppercase
+                tracking-[0.2em]
+                text-[var(--gold)]
+                hover:opacity-80
+                "
+              >
+                Editar
+              </button>
             </div>
 
           </div>
+
         ))}
 
       </div>
