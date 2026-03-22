@@ -116,7 +116,7 @@ export default function HeroParallax() {
       </AnimatePresence>
 
       {/* OVERLAY AJUSTADO (MENOS AGRESSIVO MOBILE) */}
-      <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-black/10 md:from-black/90 md:via-black/50 md:to-black/20" />
+      <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent md:from-black/90 md:via-black/50 md:to-black/20" />
 
       {/* CONTENT */}
       <div className="relative z-10 flex items-center min-h-screen">
@@ -130,11 +130,11 @@ export default function HeroParallax() {
             transition={{ duration: 1 }}
             className="
               w-full
-              max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl
-              p-5 sm:p-7 md:p-10
+              max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl
+              p-4 sm:p-6 md:p-08
               rounded-2xl
               bs-glass
-              backdrop-blur-xl
+              backdrop-blur-md
               border border-white/10
             "
           >
