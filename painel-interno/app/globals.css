@@ -27,23 +27,52 @@ html,body{
   font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto;
 }
 
-/* glass card */
+/* ===== GLASS PROFISSIONAL ===== */
 
 .bs-glass{
-  background:rgba(0,0,0,.35);
-  backdrop-filter:blur(14px);
-  border:1px solid var(--line);
-}
+  background:linear-gradient(
+    135deg,
+    rgba(255,255,255,.04),
+    rgba(255,255,255,.02)
+  );
+  backdrop-filter:blur(18px);
+  border:1px solid rgba(255,255,255,.08);
 
-/* subtle hover */
-
-.bs-hover:hover{
   box-shadow:
-  0 0 30px rgba(212,175,55,.25),
-  0 0 60px rgba(212,175,55,.10);
+    0 10px 40px rgba(0,0,0,.35),
+    inset 0 1px 0 rgba(255,255,255,.06);
 }
 
-/* premium title */
+/* ===== INPUT PADRÃO PROFISSIONAL ===== */
+
+.input{
+  width:100%;
+  padding:12px 14px;
+  border-radius:12px;
+
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.10);
+
+  color:white;
+  font-size:14px;
+
+  transition:all .2s ease;
+}
+
+.input::placeholder{
+  color:rgba(255,255,255,.35);
+}
+
+.input:focus{
+  outline:none;
+  border:1px solid var(--gold);
+
+  box-shadow:
+    0 0 0 1px var(--gold),
+    0 0 20px rgba(212,175,55,.25);
+}
+
+/* ===== TITLE ===== */
 
 .bs-title{
   background:linear-gradient(90deg,#fff 0%,var(--gold) 40%,var(--rose) 70%,#fff 100%);
@@ -52,6 +81,8 @@ html,body{
   background-clip:text;
   color:transparent;
 }
+
+/* ===== RESET ===== */
 
 * {
   box-sizing: border-box;

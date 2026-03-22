@@ -123,16 +123,15 @@ export default function ProductForm({
       className="
       bs-glass
       rounded-3xl
-      p-6 sm:p-8
-      border border-white/10
-      space-y-8
+      p-6 sm:p-8 md:p-10
+      space-y-10
       "
     >
 
       {/* HEADER */}
-      <div className="space-y-2">
+      <div className="space-y-3">
 
-        <h2 className="text-2xl font-light">
+        <h2 className="text-2xl md:text-3xl font-light leading-tight">
 
           {editing ? (
             <>
@@ -146,17 +145,17 @@ export default function ProductForm({
 
         </h2>
 
-        <p className="text-xs text-white/40">
-          Preencha todas as informações do produto
+        <p className="text-sm text-white/50 max-w-md">
+          Preencha todas as informações do produto para exibição no e-commerce
         </p>
 
       </div>
 
       {/* GRID */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-7">
 
         <div>
-          <label className="text-xs uppercase tracking-[0.2em] text-white/50 mb-1 block">
+          <label className="text-xs uppercase tracking-[0.2em] text-white/50 mb-2 block">
             Nome
           </label>
           <input
@@ -168,7 +167,7 @@ export default function ProductForm({
         </div>
 
         <div>
-          <label className="text-xs uppercase tracking-[0.2em] text-white/50 mb-1 block">
+          <label className="text-xs uppercase tracking-[0.2em] text-white/50 mb-2 block">
             Slug
           </label>
           <input
@@ -180,19 +179,19 @@ export default function ProductForm({
         </div>
 
         <div className="md:col-span-2">
-          <label className="text-xs uppercase tracking-[0.2em] text-white/50 mb-1 block">
+          <label className="text-xs uppercase tracking-[0.2em] text-white/50 mb-2 block">
             Descrição
           </label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Descrição"
-            className="input"
+            className="input min-h-[110px]"
           />
         </div>
 
         <div>
-          <label className="text-xs uppercase tracking-[0.2em] text-white/50 mb-1 block">
+          <label className="text-xs uppercase tracking-[0.2em] text-white/50 mb-2 block">
             Preço
           </label>
           <input
@@ -205,7 +204,7 @@ export default function ProductForm({
         </div>
 
         <div>
-          <label className="text-xs uppercase tracking-[0.2em] text-white/50 mb-1 block">
+          <label className="text-xs uppercase tracking-[0.2em] text-white/50 mb-2 block">
             Preço antigo
           </label>
           <input
@@ -218,7 +217,7 @@ export default function ProductForm({
         </div>
 
         <div>
-          <label className="text-xs uppercase tracking-[0.2em] text-white/50 mb-1 block">
+          <label className="text-xs uppercase tracking-[0.2em] text-white/50 mb-2 block">
             Estoque
           </label>
           <input
@@ -231,7 +230,7 @@ export default function ProductForm({
         </div>
 
         <div>
-          <label className="text-xs uppercase tracking-[0.2em] text-white/50 mb-1 block">
+          <label className="text-xs uppercase tracking-[0.2em] text-white/50 mb-2 block">
             Categoria
           </label>
           <select
@@ -239,7 +238,6 @@ export default function ProductForm({
             onChange={(e) => setCategoryId(e.target.value)}
             className="input"
           >
-
             <option value="">Categoria</option>
 
             {categories.map((c) => (
@@ -247,12 +245,11 @@ export default function ProductForm({
                 {c.name}
               </option>
             ))}
-
           </select>
         </div>
 
         <div className="md:col-span-2">
-          <label className="text-xs uppercase tracking-[0.2em] text-white/50 mb-1 block">
+          <label className="text-xs uppercase tracking-[0.2em] text-white/50 mb-2 block">
             URL da imagem
           </label>
           <input
@@ -266,7 +263,7 @@ export default function ProductForm({
       </div>
 
       {/* ACTIONS */}
-      <div className="flex flex-col sm:flex-row gap-4">
+      <div className="flex flex-col sm:flex-row gap-4 pt-4">
 
         <button
           type="submit"
@@ -275,13 +272,14 @@ export default function ProductForm({
           w-full sm:w-auto
           bg-[var(--gold)]
           text-black
-          px-6
+          px-8
           py-3
           rounded-full
           text-xs
           tracking-[0.3em]
           uppercase
-          hover:scale-[1.03]
+          font-medium
+          hover:scale-[1.04]
           transition
           disabled:opacity-50
           disabled:cursor-not-allowed
@@ -305,7 +303,7 @@ export default function ProductForm({
             className="
             w-full sm:w-auto
             border border-white/20
-            px-6
+            px-8
             py-3
             rounded-full
             text-xs
