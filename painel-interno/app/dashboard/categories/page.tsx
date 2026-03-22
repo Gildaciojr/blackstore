@@ -72,17 +72,17 @@ export default function CategoriesPage() {
   }
 
   return (
-    <section className="space-y-8 sm:space-y-10">
-      <div className="relative overflow-hidden rounded-[30px] border border-white/10 bg-[rgba(0,0,0,0.28)] p-6 sm:p-8 lg:p-10 backdrop-blur-xl">
+    <section className="space-y-8 sm:space-y-10 px-4 sm:px-6 lg:px-0">
+      <div className="relative overflow-hidden rounded-[24px] sm:rounded-[30px] border border-white/10 bg-[rgba(0,0,0,0.28)] p-5 sm:p-8 lg:p-10 backdrop-blur-xl">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(228,163,181,0.10),transparent_28%),radial-gradient(circle_at_right_center,rgba(212,175,55,0.12),transparent_30%)] pointer-events-none" />
 
-        <div className="relative z-10 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="text-[11px] uppercase tracking-[0.4em] text-white/45">
+        <div className="relative z-10 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <div className="min-w-0">
+            <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.32em] sm:tracking-[0.4em] text-white/45">
               Catálogo Blackstore
             </p>
 
-            <h1 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-light leading-tight">
+            <h1 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-light leading-tight break-words">
               Gestão de <span className="bs-title">categorias</span>
             </h1>
 
@@ -93,13 +93,13 @@ export default function CategoriesPage() {
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-3">
-            <div className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-[11px] uppercase tracking-[0.24em] text-white/55">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 w-full lg:w-auto lg:justify-end">
+            <div className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-[10px] sm:text-[11px] uppercase tracking-[0.18em] sm:tracking-[0.24em] text-white/55 text-center sm:text-left">
               {categories.length} categoria{categories.length !== 1 ? "s" : ""}
             </div>
 
             {editing && (
-              <div className="rounded-full border border-[var(--gold)]/25 bg-[rgba(212,175,55,0.08)] px-4 py-2 text-[11px] uppercase tracking-[0.24em] text-[var(--gold)]">
+              <div className="rounded-full border border-[var(--gold)]/25 bg-[rgba(212,175,55,0.08)] px-4 py-2 text-[10px] sm:text-[11px] uppercase tracking-[0.18em] sm:tracking-[0.24em] text-[var(--gold)] text-center sm:text-left">
                 Editando agora
               </div>
             )}
@@ -116,16 +116,16 @@ export default function CategoriesPage() {
       {isLoading ? (
         <div
           className="
-            rounded-[28px] border border-white/10
+            rounded-[24px] sm:rounded-[28px] border border-white/10
             bg-[rgba(0,0,0,0.35)] backdrop-blur-xl
-            p-8 sm:p-10
+            p-6 sm:p-10
           "
         >
-          <p className="text-[11px] uppercase tracking-[0.35em] text-white/40">
+          <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.3em] sm:tracking-[0.35em] text-white/40">
             Carregando
           </p>
 
-          <h2 className="mt-4 text-2xl font-light">
+          <h2 className="mt-4 text-xl sm:text-2xl font-light leading-tight">
             Buscando <span className="bs-title">categorias</span>
           </h2>
 

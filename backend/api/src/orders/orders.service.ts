@@ -8,6 +8,17 @@ export class OrdersService {
 
   async createOrder(data: CreateOrderDto) {
     return this.prisma.$transaction(async (tx) => {
+      /**
+       * 🔥 NORMALIZAÇÃO SEGURA DE FRETE
+       */
+      const shippingPriceRaw = Number(data.shippingPrice || 0);
+
+      if (isNaN(shippingPriceRaw) || shippingPriceRaw < 0) {
+        throw new BadRequestException('Frete inválido');
+      }
+
+      const shippingPrice = Number(shippingPriceRaw.toFixed(2));
+
       const cartItems = await tx.cartItem.findMany({
         where: { customerId: data.customerId },
         select: {
@@ -30,7 +41,7 @@ export class OrdersService {
       }
 
       /**
-       * validar estoque
+       * 🔥 VALIDAÇÃO DE ESTOQUE
        */
       for (const item of cartItems) {
         if (item.product.stock < item.quantity) {
@@ -39,25 +50,31 @@ export class OrdersService {
       }
 
       /**
-       * subtotal
+       * 🔥 SUBTOTAL (COM ARREDONDAMENTO)
        */
-      const subtotal = cartItems.reduce((acc, item) => {
-        return acc + item.product.price * item.quantity;
-      }, 0);
+      const subtotal = Number(
+        cartItems
+          .reduce((acc, item) => {
+            return acc + item.product.price * item.quantity;
+          }, 0)
+          .toFixed(2),
+      );
 
       if (subtotal <= 0) {
         throw new BadRequestException('Subtotal inválido');
       }
 
       /**
-       * CUPOM
+       * 🔥 CUPOM
        */
       let discountValue = 0;
 
       if (data.couponCode) {
+        const normalizedCode = data.couponCode.trim().toUpperCase();
+
         const coupon = await tx.coupon.findUnique({
           where: {
-            code: data.couponCode.toUpperCase(),
+            code: normalizedCode,
           },
         });
 
@@ -69,42 +86,57 @@ export class OrdersService {
           throw new BadRequestException('Cupom expirado');
         }
 
-        if (coupon.used >= coupon.maxUses) {
-          throw new BadRequestException('Cupom esgotado');
-        }
-
-        discountValue = subtotal * (coupon.discount / 100);
-
         /**
-         * 🔥 PROTEÇÃO CRÍTICA
+         * 🔥 BLOQUEIO DE CONCORRÊNCIA (CRÍTICO)
          */
-        if (discountValue > subtotal) {
-          discountValue = subtotal;
-        }
-
-        await tx.coupon.update({
-          where: { id: coupon.id },
+        const updated = await tx.coupon.updateMany({
+          where: {
+            id: coupon.id,
+            used: {
+              lt: coupon.maxUses,
+            },
+          },
           data: {
             used: {
               increment: 1,
             },
           },
         });
+
+        if (updated.count === 0) {
+          throw new BadRequestException('Cupom esgotado');
+        }
+
+        discountValue = Number((subtotal * (coupon.discount / 100)).toFixed(2));
+
+        /**
+         * 🔥 PROTEÇÃO
+         */
+        if (discountValue > subtotal) {
+          discountValue = subtotal;
+        }
       }
 
-      const subtotalWithDiscount = subtotal - discountValue;
-
-      const total = subtotalWithDiscount + data.shippingPrice;
+      let subtotalWithDiscount = Number((subtotal - discountValue).toFixed(2));
 
       /**
-       * criar pedido
+       * 🔥 PROTEÇÃO FINAL
+       */
+      if (subtotalWithDiscount < 0) {
+        subtotalWithDiscount = 0;
+      }
+
+      const total = Number((subtotalWithDiscount + shippingPrice).toFixed(2));
+
+      /**
+       * 🔥 CRIAR PEDIDO
        */
       const order = await tx.order.create({
         data: {
           customerId: data.customerId,
 
           subtotal: subtotalWithDiscount,
-          shippingPrice: data.shippingPrice,
+          shippingPrice,
           total,
 
           shippingMethod: data.shippingMethod,
@@ -118,7 +150,7 @@ export class OrdersService {
       });
 
       /**
-       * itens
+       * 🔥 ITENS
        */
       await tx.orderItem.createMany({
         data: cartItems.map((item) => ({
@@ -130,7 +162,7 @@ export class OrdersService {
       });
 
       /**
-       * estoque
+       * 🔥 ESTOQUE
        */
       await Promise.all(
         cartItems.map((item) =>
@@ -146,7 +178,7 @@ export class OrdersService {
       );
 
       /**
-       * limpar carrinho
+       * 🔥 LIMPAR CARRINHO
        */
       await tx.cartItem.deleteMany({
         where: { customerId: data.customerId },

@@ -211,27 +211,32 @@ export default function OrdersPage() {
   ];
 
   return (
-    <section className="space-y-10">
-      <div className="relative overflow-hidden rounded-[30px] border border-white/10 bg-[rgba(0,0,0,0.28)] p-6 sm:p-8 lg:p-10 backdrop-blur-xl">
+    <section className="space-y-10 px-4 sm:px-6 lg:px-0">
+
+      {/* HEADER */}
+      <div className="relative overflow-hidden rounded-[24px] sm:rounded-[30px] border border-white/10 bg-[rgba(0,0,0,0.28)] p-5 sm:p-8 lg:p-10 backdrop-blur-xl">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(228,163,181,0.10),transparent_28%),radial-gradient(circle_at_right_center,rgba(212,175,55,0.12),transparent_30%)] pointer-events-none" />
 
         <div className="relative z-10 flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
-          <div>
-            <p className="text-xs tracking-[0.35em] uppercase text-white/40">
+
+          <div className="min-w-0">
+            <p className="text-[10px] sm:text-xs tracking-[0.3em] uppercase text-white/40">
               Gestão
             </p>
 
-            <h1 className="text-4xl md:text-5xl font-light mt-2 leading-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-light mt-2 leading-tight break-words">
               Pedidos da <span className="bs-title">Loja</span>
             </h1>
 
-            <p className="text-white/50 mt-3 max-w-xl leading-relaxed">
+            <p className="text-white/50 mt-3 max-w-xl leading-relaxed text-sm sm:text-base">
               Visualize, filtre, acompanhe e gerencie todos os pedidos realizados
               na Blackstore com uma visão estratégica da operação.
             </p>
           </div>
 
           <div className="flex w-full flex-col gap-3 md:w-auto md:flex-row">
+
+            {/* SEARCH */}
             <div className="relative w-full md:w-80">
               <Search
                 size={16}
@@ -255,6 +260,7 @@ export default function OrdersPage() {
               />
             </div>
 
+            {/* EXPORT */}
             <button
               onClick={exportOrdersCsv}
               className="
@@ -273,11 +279,13 @@ export default function OrdersPage() {
               <Download size={14} />
               Exportar CSV
             </button>
+
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+      {/* MÉTRICAS */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
         {metricCards.map((card) => {
           const Icon = card.icon;
 
@@ -297,7 +305,7 @@ export default function OrdersPage() {
               onClick={onClick}
               className={`
                 relative overflow-hidden text-left
-                rounded-[26px] border p-6 transition duration-300
+                rounded-[24px] sm:rounded-[26px] border p-5 sm:p-6 transition duration-300
                 ${
                   isActive
                     ? "border-[var(--gold)] bg-[rgba(212,175,55,0.06)] shadow-[0_0_35px_rgba(212,175,55,0.12)]"
@@ -314,11 +322,7 @@ export default function OrdersPage() {
                       {card.title}
                     </p>
 
-                    <p
-                      className={`mt-4 text-3xl font-light ${
-                        card.highlight ? "text-[var(--gold)]" : "text-white"
-                      }`}
-                    >
+                    <p className={`mt-4 text-3xl font-light ${card.highlight ? "text-[var(--gold)]" : "text-white"}`}>
                       {card.value}
                     </p>
                   </div>
@@ -337,7 +341,8 @@ export default function OrdersPage() {
         })}
       </div>
 
-      <div className="flex flex-wrap gap-3">
+      {/* FILTROS */}
+      <div className="flex flex-wrap gap-2 sm:gap-3">
         {[
           ["all", "Todos"],
           ["pending", "Pendentes"],
@@ -354,7 +359,7 @@ export default function OrdersPage() {
               key={value}
               onClick={() => setStatusFilter(value as StatusFilter)}
               className={`
-                px-4 py-2 rounded-full border text-sm transition
+                px-3 sm:px-4 py-2 rounded-full border text-xs sm:text-sm transition
                 ${
                   active
                     ? "border-[var(--gold)] text-[var(--gold)] bg-[rgba(212,175,55,0.06)]"
@@ -368,6 +373,7 @@ export default function OrdersPage() {
         })}
       </div>
 
+      {/* TABELA */}
       {loading ? (
         <div className="bs-glass border border-white/10 rounded-2xl p-10 text-white/50">
           Carregando pedidos...
@@ -376,13 +382,14 @@ export default function OrdersPage() {
         <>
           <OrderTable orders={paginatedOrders} onSelect={setSelectedOrder} />
 
+          {/* PAGINAÇÃO */}
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <p className="text-sm text-white/45">
               Exibindo {paginatedOrders.length} de {filteredOrders.length} pedido
               {filteredOrders.length !== 1 ? "s" : ""}
             </p>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
               <button
                 onClick={() => setPage((prev) => Math.max(1, prev - 1))}
                 disabled={page === 1}

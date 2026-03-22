@@ -1,85 +1,165 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { LayoutDashboard, Package, ShoppingCart, Layers } from "lucide-react";
+import {
+  LayoutDashboard,
+  Package,
+  ShoppingCart,
+  Layers,
+  Menu,
+  X,
+} from "lucide-react";
 
-export default function AdminSidebar(){
+export default function AdminSidebar() {
+  const [open, setOpen] = useState(false);
 
-  return(
-
-    <aside
-      className="
-      hidden lg:flex
-      w-72
-      flex-col
-      border-r border-white/10
-      bg-black/60
-      backdrop-blur-xl
-      "
-    >
-
-      {/* BRAND */}
-
-      <div className="px-8 py-10 flex flex-col items-center gap-3">
+  return (
+    <>
+      {/* 🔥 MOBILE HEADER */}
+      <div className="lg:hidden flex items-center justify-between px-4 py-4 border-b border-white/10 bg-black/80 backdrop-blur z-50">
 
         <Image
           src="/logo-saray.png"
           alt="Blackstore"
-          width={160}
-          height={60}
-          className="
-          opacity-90
-          drop-shadow-[0_0_20px_rgba(212,175,55,0.15)]
-          "
+          width={120}
+          height={40}
         />
 
-        <p className="text-xs text-white/40 tracking-[0.35em] uppercase">
-          Admin
-        </p>
-
+        <button onClick={() => setOpen(true)}>
+          <Menu />
+        </button>
       </div>
 
-      {/* NAV */}
+      {/* 🔥 OVERLAY */}
+      {open && (
+        <div
+          onClick={() => setOpen(false)}
+          className="fixed inset-0 bg-black/70 z-40 lg:hidden"
+        />
+      )}
 
-      <nav className="flex flex-col gap-2 px-4">
+      {/* 🔥 DRAWER MOBILE */}
+      <aside
+        className={`
+        fixed top-0 left-0 h-full w-72 bg-black z-50
+        transform transition-transform duration-300
+        ${open ? "translate-x-0" : "-translate-x-full"}
+        lg:hidden
+        `}
+      >
+        <div className="flex items-center justify-between px-6 py-6 border-b border-white/10">
+          <Image
+            src="/logo-saray.png"
+            alt="Blackstore"
+            width={120}
+            height={40}
+          />
 
-        <Link
-          href="/dashboard"
-          className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition"
-        >
-          <LayoutDashboard size={18}/>
-          Dashboard
-        </Link>
+          <button onClick={() => setOpen(false)}>
+            <X />
+          </button>
+        </div>
 
-        <Link
-          href="/dashboard/products"
-          className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition"
-        >
-          <Package size={18}/>
-          Produtos
-        </Link>
+        <nav className="flex flex-col gap-2 px-4 py-6">
 
-        <Link
-          href="/dashboard/orders"
-          className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition"
-        >
-          <ShoppingCart size={18}/>
-          Pedidos
-        </Link>
+          <NavItem href="/dashboard" icon={<LayoutDashboard size={18}/>}>
+            Dashboard
+          </NavItem>
 
-        <Link
-          href="/dashboard/categories"
-          className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition"
-        >
-          <Layers size={18}/>
-          Categorias
-        </Link>
+          <NavItem href="/dashboard/products" icon={<Package size={18}/>}>
+            Produtos
+          </NavItem>
 
-      </nav>
+          <NavItem href="/dashboard/orders" icon={<ShoppingCart size={18}/>}>
+            Pedidos
+          </NavItem>
 
-    </aside>
+          <NavItem href="/dashboard/categories" icon={<Layers size={18}/>}>
+            Categorias
+          </NavItem>
 
+        </nav>
+      </aside>
+
+      {/* 🔥 SIDEBAR DESKTOP (SEU ORIGINAL MELHORADO) */}
+      <aside
+        className="
+        hidden lg:flex
+        w-72
+        flex-col
+        border-r border-white/10
+        bg-black/60
+        backdrop-blur-xl
+        min-h-screen
+        "
+      >
+
+        <div className="px-8 py-10 flex flex-col items-center gap-3">
+
+          <Image
+            src="/logo-saray.png"
+            alt="Blackstore"
+            width={160}
+            height={60}
+            className="
+            opacity-90
+            drop-shadow-[0_0_20px_rgba(212,175,55,0.15)]
+            "
+          />
+
+          <p className="text-xs text-white/40 tracking-[0.35em] uppercase">
+            Admin
+          </p>
+
+        </div>
+
+        <nav className="flex flex-col gap-2 px-4">
+
+          <NavItem href="/dashboard" icon={<LayoutDashboard size={18}/>}>
+            Dashboard
+          </NavItem>
+
+          <NavItem href="/dashboard/products" icon={<Package size={18}/>}>
+            Produtos
+          </NavItem>
+
+          <NavItem href="/dashboard/orders" icon={<ShoppingCart size={18}/>}>
+            Pedidos
+          </NavItem>
+
+          <NavItem href="/dashboard/categories" icon={<Layers size={18}/>}>
+            Categorias
+          </NavItem>
+
+        </nav>
+
+      </aside>
+    </>
   );
+}
 
+function NavItem({
+  href,
+  icon,
+  children,
+}: {
+  href: string;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      className="
+      flex items-center gap-3 px-4 py-3 rounded-xl 
+      hover:bg-white/5 transition
+      text-sm
+      "
+    >
+      {icon}
+      {children}
+    </Link>
+  );
 }

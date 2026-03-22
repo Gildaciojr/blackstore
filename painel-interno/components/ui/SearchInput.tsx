@@ -16,7 +16,14 @@ export default function SearchInput({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder ?? "Buscar..."}
-      className="bg-black border border-white/20 p-3 w-80"
+      className="
+        bg-black
+        border border-white/20
+        p-3
+        w-full
+        md:w-80
+        rounded-md
+      "
     />
   );
 }

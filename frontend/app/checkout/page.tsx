@@ -31,11 +31,6 @@ type OrderResponse = {
   total: number;
 };
 
-type CouponResponse = {
-  code: string;
-  discount: number;
-};
-
 type PaymentResponse = {
   id: string;
   orderId: string;
@@ -56,8 +51,17 @@ export default function CheckoutPage() {
     items,
     clear,
     subtotal,
+    discount,
     shipping,
+    total,
+    zipCode,
+    shippingOptions,
     selectedShipping,
+    calculateShipping,
+    selectShipping,
+    appliedCouponCode,
+    applyCoupon,
+    removeCoupon,
   } = useCart();
 
   const [addresses, setAddresses] = useState<Address[]>([]);
@@ -66,10 +70,11 @@ export default function CheckoutPage() {
   const [payment, setPayment] = useState<"pix" | "card">("pix");
   const [loading, setLoading] = useState(false);
 
-  const [couponCode, setCouponCode] = useState("");
-  const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
-  const [discount, setDiscount] = useState(0);
+  const [couponCode, setCouponCode] = useState(appliedCouponCode ?? "");
   const [couponLoading, setCouponLoading] = useState(false);
+
+  const [zip, setZip] = useState(zipCode);
+  const [shippingLoading, setShippingLoading] = useState(false);
 
   useEffect(() => {
     const customerId = getCustomerId();
@@ -79,24 +84,40 @@ export default function CheckoutPage() {
       .catch(() => {});
   }, []);
 
-  async function applyCoupon() {
+  useEffect(() => {
+    setCouponCode(appliedCouponCode ?? "");
+  }, [appliedCouponCode]);
+
+  useEffect(() => {
+    setZip(zipCode);
+  }, [zipCode]);
+
+  async function handleApplyCoupon() {
     if (!couponCode.trim()) return;
 
     try {
       setCouponLoading(true);
-
-      const coupon = await apiFetch<CouponResponse>(
-        `/coupons/${couponCode.toUpperCase()}`
-      );
-
-      const discountValue = subtotal() * (coupon.discount / 100);
-
-      setDiscount(discountValue);
-      setAppliedCoupon(coupon.code);
+      await applyCoupon(couponCode);
     } catch {
       alert("Cupom inválido ou expirado");
     } finally {
       setCouponLoading(false);
+    }
+  }
+
+  async function handleCalculateShipping() {
+    if (!zip.trim()) {
+      alert("Digite seu CEP");
+      return;
+    }
+
+    try {
+      setShippingLoading(true);
+      await calculateShipping(zip);
+    } catch {
+      alert("Erro ao calcular frete");
+    } finally {
+      setShippingLoading(false);
     }
   }
 
@@ -112,7 +133,7 @@ export default function CheckoutPage() {
     }
 
     if (!selectedShipping) {
-      alert("Selecione o frete no carrinho");
+      alert("Selecione o frete");
       return;
     }
 
@@ -130,7 +151,7 @@ export default function CheckoutPage() {
           shippingMethod: selectedShipping.method,
           shippingName: selectedShipping.name,
           shippingDeadline: selectedShipping.deadline,
-          couponCode: appliedCoupon ?? undefined,
+          couponCode: appliedCouponCode ?? undefined,
         }),
       });
 
@@ -154,21 +175,22 @@ export default function CheckoutPage() {
   }
 
   const subtotalValue = subtotal();
+  const discountValue = discount();
   const shippingValue = shipping();
-  const totalValue = subtotalValue - discount + shippingValue;
+  const totalValue = total();
 
   return (
-    <section className="max-w-7xl mx-auto px-6 md:px-8 pt-32 pb-32">
-      <p className="text-white/50 uppercase text-xs tracking-[0.4em] mb-4">
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 pt-24 sm:pt-28 md:pt-32 pb-24 sm:pb-28 md:pb-32">
+      <p className="text-white/50 uppercase text-[10px] sm:text-xs tracking-[0.35em] sm:tracking-[0.4em] mb-4">
         Checkout seguro
       </p>
 
-      <h1 className="text-3xl md:text-5xl tracking-widest uppercase mb-12 bs-title">
+      <h1 className="text-3xl sm:text-4xl md:text-5xl tracking-widest uppercase mb-10 sm:mb-12 bs-title">
         Finalizar compra
       </h1>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-        <div className="lg:col-span-2 space-y-14">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-10 lg:gap-12">
+        <div className="lg:col-span-2 space-y-10 sm:space-y-12 md:space-y-14">
 
           {/* ENDEREÇO */}
           <div>
@@ -182,7 +204,7 @@ export default function CheckoutPage() {
                   key={address.id}
                   onClick={() => setSelectedAddress(address.id)}
                   className={`
-                    w-full text-left p-5 rounded-xl border transition
+                    w-full text-left p-4 sm:p-5 rounded-xl border transition
                     ${
                       selectedAddress === address.id
                         ? "border-[var(--gold)] bg-white/[0.03]"
@@ -212,6 +234,64 @@ export default function CheckoutPage() {
             </div>
           </div>
 
+          {/* FRETE */}
+          <div>
+            <h2 className="uppercase tracking-widest text-xs mb-6">
+              Frete
+            </h2>
+
+            <div className="rounded-xl border border-white/10 p-4 sm:p-5 bg-black/30">
+              <div className="flex flex-col sm:flex-row gap-3">
+                <input
+                  value={zip}
+                  onChange={(e) => setZip(e.target.value)}
+                  placeholder="Digite seu CEP"
+                  className="flex-1 border border-white/10 p-3 bg-black rounded-md text-sm"
+                />
+
+                <button
+                  onClick={handleCalculateShipping}
+                  disabled={shippingLoading}
+                  className="px-6 py-3 bg-[var(--gold)] text-black rounded-md text-sm sm:text-base"
+                >
+                  {shippingLoading ? "Calculando..." : "Calcular"}
+                </button>
+              </div>
+
+              {shippingOptions.length > 0 && (
+                <div className="mt-4 space-y-3">
+                  {shippingOptions.map((option) => (
+                    <button
+                      key={option.method}
+                      onClick={() => selectShipping(option.method)}
+                      className={`
+                        w-full text-left p-4 rounded-xl border transition
+                        ${
+                          selectedShipping?.method === option.method
+                            ? "border-[var(--gold)] bg-white/[0.03]"
+                            : "border-white/10 hover:border-white/30"
+                        }
+                      `}
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                        <div>
+                          <p className="text-sm sm:text-base">{option.name}</p>
+                          <p className="text-xs text-white/60">
+                            Prazo: {option.deadline}
+                          </p>
+                        </div>
+
+                        <p className="text-sm sm:text-base text-[var(--gold)]">
+                          R$ {option.price.toFixed(2)}
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* PAGAMENTO */}
           <div>
             <h2 className="uppercase tracking-widest text-xs mb-6">
@@ -221,7 +301,7 @@ export default function CheckoutPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <button
                 onClick={() => setPayment("pix")}
-                className={`p-6 rounded-xl border transition text-left ${
+                className={`p-5 sm:p-6 rounded-xl border transition text-left ${
                   payment === "pix"
                     ? "border-[var(--gold)] bg-white/[0.03]"
                     : "border-white/10"
@@ -235,7 +315,7 @@ export default function CheckoutPage() {
 
               <button
                 onClick={() => setPayment("card")}
-                className={`p-6 rounded-xl border transition text-left ${
+                className={`p-5 sm:p-6 rounded-xl border transition text-left ${
                   payment === "card"
                     ? "border-[var(--gold)] bg-white/[0.03]"
                     : "border-white/10"
@@ -255,33 +335,46 @@ export default function CheckoutPage() {
               Cupom de desconto
             </h2>
 
-            <div className="flex gap-3">
-              <input
-                value={couponCode}
-                onChange={(e) => setCouponCode(e.target.value)}
-                placeholder="Digite seu cupom"
-                className="flex-1 border border-white/10 p-3 bg-black rounded-md"
-                disabled={!!appliedCoupon}
-              />
+            <div className="rounded-xl border border-white/10 p-4 sm:p-5 bg-black/30">
+              <div className="flex flex-col sm:flex-row gap-3">
+                <input
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value)}
+                  placeholder="Digite seu cupom"
+                  className="flex-1 border border-white/10 p-3 bg-black rounded-md text-sm"
+                  disabled={!!appliedCouponCode}
+                />
 
-              <button
-                onClick={applyCoupon}
-                disabled={couponLoading || !!appliedCoupon}
-                className="px-6 bg-[var(--gold)] text-black rounded-md"
-              >
-                {couponLoading
-                  ? "..."
-                  : appliedCoupon
-                  ? "Aplicado"
-                  : "Aplicar"}
-              </button>
+                {!appliedCouponCode ? (
+                  <button
+                    onClick={handleApplyCoupon}
+                    disabled={couponLoading}
+                    className="px-6 py-3 bg-[var(--gold)] text-black rounded-md text-sm sm:text-base"
+                  >
+                    {couponLoading ? "Aplicando..." : "Aplicar"}
+                  </button>
+                ) : (
+                  <button
+                    onClick={removeCoupon}
+                    className="px-6 py-3 border border-white/20 text-white rounded-md text-sm sm:text-base"
+                  >
+                    Remover
+                  </button>
+                )}
+              </div>
+
+              {appliedCouponCode && (
+                <p className="mt-3 text-sm text-green-400">
+                  Cupom {appliedCouponCode} aplicado com sucesso.
+                </p>
+              )}
             </div>
           </div>
         </div>
 
         {/* RESUMO */}
         <div className="lg:col-span-1">
-          <div className="sticky top-28 p-6 md:p-8 border border-white/10 rounded-2xl bg-black/40 backdrop-blur">
+          <div className="lg:sticky lg:top-28 p-5 sm:p-6 md:p-8 border border-white/10 rounded-2xl bg-black/40 backdrop-blur">
 
             <h2 className="uppercase tracking-widest text-xs mb-6">
               Resumo do pedido
@@ -298,10 +391,10 @@ export default function CheckoutPage() {
                 <span>R$ {shippingValue.toFixed(2)}</span>
               </div>
 
-              {discount > 0 && (
+              {discountValue > 0 && (
                 <div className="flex justify-between text-green-400">
-                  <span>Desconto ({appliedCoupon})</span>
-                  <span>- R$ {discount.toFixed(2)}</span>
+                  <span>Desconto ({appliedCouponCode})</span>
+                  <span>- R$ {discountValue.toFixed(2)}</span>
                 </div>
               )}
 

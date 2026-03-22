@@ -12,24 +12,24 @@ export default function Pagination({
   setPage,
 }: Props) {
   return (
-    <div className="flex gap-2 mt-6">
+    <div className="flex flex-wrap items-center justify-center gap-2 mt-6 text-xs sm:text-sm">
 
       <button
         disabled={page === 1}
         onClick={() => setPage(page - 1)}
-        className="px-4 py-2 border border-white/20"
+        className="px-3 sm:px-4 py-2 border border-white/20 rounded-md disabled:opacity-40"
       >
         Anterior
       </button>
 
-      <span className="px-4 py-2">
+      <span className="px-3 sm:px-4 py-2">
         {page} / {totalPages}
       </span>
 
       <button
         disabled={page === totalPages}
         onClick={() => setPage(page + 1)}
-        className="px-4 py-2 border border-white/20"
+        className="px-3 sm:px-4 py-2 border border-white/20 rounded-md disabled:opacity-40"
       >
         Próxima
       </button>

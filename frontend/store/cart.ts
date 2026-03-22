@@ -20,6 +20,11 @@ export type ShippingOption = {
   deadline: string;
 };
 
+type CouponResponse = {
+  code: string;
+  discount: number;
+};
+
 type CartApiItem = {
   id: string;
   quantity: number;
@@ -41,6 +46,9 @@ type CartState = {
   shippingOptions: ShippingOption[];
   selectedShipping: ShippingOption | null;
 
+  appliedCouponCode: string | null;
+  couponPercent: number;
+
   loadCart: () => Promise<void>;
 
   addItem: (item: Omit<CartItem, "quantity" | "cartItemId">) => Promise<void>;
@@ -51,10 +59,14 @@ type CartState = {
   calculateShipping: (zip: string) => Promise<void>;
   selectShipping: (method: string) => void;
 
+  applyCoupon: (code: string) => Promise<void>;
+  removeCoupon: () => void;
+
   clear: () => void;
 
   count: () => number;
   subtotal: () => number;
+  discount: () => number;
   shipping: () => number;
   total: () => number;
 };
@@ -69,12 +81,24 @@ function getCustomerId() {
   return id;
 }
 
+function resolveImage(url: string) {
+  if (!url) return "";
+
+  if (url.startsWith("/images")) return url;
+  if (url.startsWith("http")) return url;
+
+  return `${process.env.NEXT_PUBLIC_API_URL}${url}`;
+}
+
 export const useCart = create<CartState>((set, get) => ({
   items: [],
 
   zipCode: "",
   shippingOptions: [],
   selectedShipping: null,
+
+  appliedCouponCode: null,
+  couponPercent: 0,
 
   loadCart: async () => {
     try {
@@ -88,7 +112,7 @@ export const useCart = create<CartState>((set, get) => ({
         name: i.product.name,
         price: i.product.price,
         oldPrice: i.product.oldPrice ?? undefined,
-        image: `${process.env.NEXT_PUBLIC_API_URL}${i.product.image}`,
+        image: resolveImage(i.product.image),
         quantity: i.quantity,
       }));
 
@@ -183,13 +207,15 @@ export const useCart = create<CartState>((set, get) => ({
 
   calculateShipping: async (zip: string) => {
     try {
+      const normalizedZip = zip.replace(/\D/g, "");
+
       const data = await apiFetch<ShippingOption[]>("/shipping/calculate", {
         method: "POST",
-        body: JSON.stringify({ cep: zip }),
+        body: JSON.stringify({ cep: normalizedZip }),
       });
 
       set({
-        zipCode: zip,
+        zipCode: normalizedZip,
         shippingOptions: data,
         selectedShipping: null,
       });
@@ -211,12 +237,37 @@ export const useCart = create<CartState>((set, get) => ({
     });
   },
 
+  applyCoupon: async (code: string) => {
+    const normalizedCode = code.trim().toUpperCase();
+
+    if (!normalizedCode) {
+      throw new Error("Cupom inválido");
+    }
+
+    const coupon = await apiFetch<CouponResponse>(
+      `/coupons/${normalizedCode}`
+    );
+
+    set({
+      appliedCouponCode: coupon.code,
+      couponPercent: coupon.discount,
+    });
+  },
+
+  removeCoupon: () =>
+    set({
+      appliedCouponCode: null,
+      couponPercent: 0,
+    }),
+
   clear: () =>
     set({
       items: [],
       shippingOptions: [],
       selectedShipping: null,
       zipCode: "",
+      appliedCouponCode: null,
+      couponPercent: 0,
     }),
 
   count: () => get().items.reduce((sum, i) => sum + i.quantity, 0),
@@ -224,7 +275,28 @@ export const useCart = create<CartState>((set, get) => ({
   subtotal: () =>
     get().items.reduce((sum, i) => sum + i.price * i.quantity, 0),
 
+  discount: () => {
+    const subtotal = get().subtotal();
+    const percent = get().couponPercent;
+
+    if (subtotal <= 0 || percent <= 0) return 0;
+
+    const value = subtotal * (percent / 100);
+
+    if (value > subtotal) return subtotal;
+
+    return value;
+  },
+
   shipping: () => get().selectedShipping?.price || 0,
 
-  total: () => get().subtotal() + get().shipping(),
+  total: () => {
+    const subtotal = get().subtotal();
+    const discount = get().discount();
+    const shipping = get().shipping();
+
+    const total = subtotal - discount + shipping;
+
+    return total < 0 ? 0 : total;
+  },
 }));

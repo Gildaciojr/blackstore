@@ -1,10 +1,19 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ShoppingBag } from "lucide-react";
 import { useCart } from "@/store/cart";
 import { motion } from "framer-motion";
+
+type Media = {
+  id: string;
+  type?: string;
+  title?: string | null;
+  url: string;
+  productId?: string | null;
+  createdAt?: string;
+};
 
 type Product = {
   id: string;
@@ -17,6 +26,7 @@ type Product = {
   stock: number;
   categoryId: string;
   createdAt: string;
+  medias?: Media[];
 };
 
 type Props = {
@@ -26,13 +36,22 @@ type Props = {
 };
 
 export default function ProductPage({ params }: Props) {
-
   const addItem = useCart((s) => s.addItem);
 
   const [product, setProduct] = useState<Product | null>(null);
   const [size, setSize] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string>("");
 
   const sizes = ["PP", "P", "M", "G", "GG"];
+
+  function resolveImage(url: string) {
+    if (!url) return "";
+
+    if (url.startsWith("/images")) return url;
+    if (url.startsWith("http")) return url;
+
+    return `${process.env.NEXT_PUBLIC_API_URL}${url}`;
+  }
 
   useEffect(() => {
     async function loadProduct() {
@@ -44,10 +63,29 @@ export default function ProductPage({ params }: Props) {
 
       const data: Product = await res.json();
       setProduct(data);
+
+      const mainImage = resolveImage(data.image);
+      const mediaImages =
+        data.medias?.map((media) => resolveImage(media.url)).filter(Boolean) ?? [];
+
+      setSelectedImage(mediaImages[0] || mainImage);
     }
 
     loadProduct();
   }, [params.slug]);
+
+  const galleryImages = useMemo(() => {
+    if (!product) return [];
+
+    const mainImage = resolveImage(product.image);
+
+    const mediaImages =
+      product.medias?.map((media) => resolveImage(media.url)).filter(Boolean) ?? [];
+
+    const merged = [mainImage, ...mediaImages].filter(Boolean);
+
+    return Array.from(new Set(merged));
+  }, [product]);
 
   if (!product) {
     return (
@@ -57,7 +95,7 @@ export default function ProductPage({ params }: Props) {
     );
   }
 
-  const imageUrl = `${process.env.NEXT_PUBLIC_API_URL}${product.image}`;
+  const imageUrl = selectedImage || resolveImage(product.image);
 
   return (
     <section className="relative min-h-screen bg-black text-white">
@@ -93,13 +131,20 @@ export default function ProductPage({ params }: Props) {
           {/* thumbs */}
           <div className="grid grid-cols-4 gap-3">
 
-            {[...Array(4)].map((_, i) => (
-              <div
-                key={i}
-                className="relative aspect-square rounded-xl overflow-hidden border border-white/10 hover:border-[var(--gold)] transition cursor-pointer"
+            {(galleryImages.length ? galleryImages : [imageUrl, imageUrl, imageUrl, imageUrl]).map((img, i) => (
+              <button
+                key={`${img}-${i}`}
+                type="button"
+                onClick={() => setSelectedImage(img)}
+                className={`
+                  relative aspect-square rounded-xl overflow-hidden border transition cursor-pointer
+                  ${imageUrl === img
+                    ? "border-[var(--gold)]"
+                    : "border-white/10 hover:border-[var(--gold)]"}
+                `}
               >
-                <Image src={imageUrl} alt="" fill className="object-cover" />
-              </div>
+                <Image src={img} alt={`${product.name} ${i + 1}`} fill className="object-cover" />
+              </button>
             ))}
 
           </div>
@@ -207,6 +252,7 @@ export default function ProductPage({ params }: Props) {
             <a
               href="https://wa.me/5562994694804"
               target="_blank"
+              rel="noopener noreferrer"
               className="
                 flex-1
                 inline-flex items-center justify-center

@@ -19,13 +19,41 @@ export default function CartPage() {
     subtotal,
     shipping,
     total,
+    discount,
+    appliedCouponCode,
+    applyCoupon,
+    removeCoupon,
   } = useCart();
 
   const [zip, setZip] = useState("");
 
+  // 🔥 NOVO (cupom)
+  const [couponInput, setCouponInput] = useState("");
+  const [couponLoading, setCouponLoading] = useState(false);
+
   useEffect(() => {
     loadCart();
   }, [loadCart]);
+
+  // 🔥 sincroniza cupom com store
+  useEffect(() => {
+    if (appliedCouponCode) {
+      setCouponInput(appliedCouponCode);
+    }
+  }, [appliedCouponCode]);
+
+  async function handleApplyCoupon() {
+    if (!couponInput.trim()) return;
+
+    try {
+      setCouponLoading(true);
+      await applyCoupon(couponInput);
+    } catch {
+      alert("Cupom inválido ou expirado");
+    } finally {
+      setCouponLoading(false);
+    }
+  }
 
   // 🔥 FRETE GRÁTIS
   const FREE_SHIPPING_THRESHOLD = 299;
@@ -193,6 +221,35 @@ export default function CartPage() {
             Resumo do pedido
           </h2>
 
+          {/* 🔥 CUPOM (NOVO — SEM QUEBRAR LAYOUT) */}
+          <div className="mb-6">
+            <div className="flex gap-2">
+              <input
+                value={couponInput}
+                onChange={(e) => setCouponInput(e.target.value)}
+                placeholder="Cupom"
+                className="flex-1 bg-black border border-white/20 px-3 py-2 text-sm rounded-md"
+                disabled={!!appliedCouponCode}
+              />
+
+              {!appliedCouponCode ? (
+                <button
+                  onClick={handleApplyCoupon}
+                  className="px-4 bg-white text-black text-xs rounded-md"
+                >
+                  {couponLoading ? "..." : "OK"}
+                </button>
+              ) : (
+                <button
+                  onClick={removeCoupon}
+                  className="px-4 border border-white/20 text-xs rounded-md"
+                >
+                  X
+                </button>
+              )}
+            </div>
+          </div>
+
           {/* CEP */}
           <div className="mb-6">
             <div className="flex gap-2">
@@ -237,6 +294,14 @@ export default function CartPage() {
               <span>Subtotal</span>
               <span>R$ {subtotal().toFixed(2)}</span>
             </div>
+
+            {/* 🔥 DESCONTO */}
+            {discount() > 0 && (
+              <div className="flex justify-between text-green-400">
+                <span>Desconto</span>
+                <span>- R$ {discount().toFixed(2)}</span>
+              </div>
+            )}
 
             <div className="flex justify-between text-white/70">
               <span>Frete</span>

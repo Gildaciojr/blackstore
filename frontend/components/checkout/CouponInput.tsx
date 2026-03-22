@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { apiFetch } from "@/lib/api";
+import { useCart } from "@/store/cart";
 
 type Props = {
   subtotal: number;
-  onApply: (discount: number, code: string) => void;
+  onApply?: (discount: number, code: string) => void;
 };
 
 type CouponResponse = {
@@ -15,9 +16,21 @@ type CouponResponse = {
 
 export default function CouponInput({ subtotal, onApply }: Props) {
 
+  const {
+    applyCoupon: applyCouponStore,
+    removeCoupon,
+    appliedCouponCode,
+    discount,
+  } = useCart();
+
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
-  const [applied, setApplied] = useState(false);
+
+  useEffect(() => {
+    if (appliedCouponCode) {
+      setCode(appliedCouponCode);
+    }
+  }, [appliedCouponCode]);
 
   async function applyCoupon() {
 
@@ -27,15 +40,20 @@ export default function CouponInput({ subtotal, onApply }: Props) {
 
     try {
 
+      // 🔥 chama backend (validação real)
       const coupon = await apiFetch<CouponResponse>(
         `/coupons/${code.toUpperCase()}`
       );
 
+      // 🔥 aplica no Zustand
+      await applyCouponStore(coupon.code);
+
       const discountValue = subtotal * (coupon.discount / 100);
 
-      onApply(discountValue, coupon.code);
-
-      setApplied(true);
+      // 🔥 mantém compatibilidade com fluxo antigo
+      if (onApply) {
+        onApply(discountValue, coupon.code);
+      }
 
     } catch {
 
@@ -47,6 +65,13 @@ export default function CouponInput({ subtotal, onApply }: Props) {
 
     }
   }
+
+  function handleRemove() {
+    removeCoupon();
+    setCode("");
+  }
+
+  const isApplied = !!appliedCouponCode;
 
   return (
 
@@ -63,18 +88,33 @@ export default function CouponInput({ subtotal, onApply }: Props) {
           onChange={(e) => setCode(e.target.value)}
           placeholder="Digite seu cupom"
           className="flex-1 bg-black border border-white/20 p-2"
-          disabled={applied}
+          disabled={isApplied}
         />
 
-        <button
-          onClick={applyCoupon}
-          disabled={loading || applied}
-          className="px-4 py-2 bg-white text-black"
-        >
-          {loading ? "..." : applied ? "Aplicado" : "Aplicar"}
-        </button>
+        {!isApplied ? (
+          <button
+            onClick={applyCoupon}
+            disabled={loading}
+            className="px-4 py-2 bg-white text-black"
+          >
+            {loading ? "..." : "Aplicar"}
+          </button>
+        ) : (
+          <button
+            onClick={handleRemove}
+            className="px-4 py-2 border border-white/20 text-white"
+          >
+            Remover
+          </button>
+        )}
 
       </div>
+
+      {isApplied && (
+        <p className="mt-2 text-green-400 text-sm">
+          Cupom {appliedCouponCode} aplicado
+        </p>
+      )}
 
     </div>
 

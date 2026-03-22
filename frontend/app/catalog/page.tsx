@@ -51,6 +51,13 @@ export default function CatalogPage() {
 
   }, []);
 
+  function resolveImage(url: string) {
+    if (!url) return "";
+    if (url.startsWith("/images")) return url;
+    if (url.startsWith("http")) return url;
+    return `${process.env.NEXT_PUBLIC_API_URL}${url}`;
+  }
+
   async function handleSearch(value: string) {
 
     setQuery(value);
@@ -169,11 +176,11 @@ export default function CatalogPage() {
         </div>
 
         {/* GRID */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 md:gap-x-8 gap-y-10 md:gap-y14">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 md:gap-x-8 gap-y-10 md:gap-y-14">
 
           {filtered.map((product, index) => {
 
-            const imageUrl = product.image;
+            const imageUrl = resolveImage(product.image);
 
             return (
 

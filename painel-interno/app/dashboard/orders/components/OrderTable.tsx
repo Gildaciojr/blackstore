@@ -71,18 +71,18 @@ export default function OrderTable({ orders, onSelect }: Props) {
 
       {/* HEADER */}
 
-      <div className="px-6 py-6 border-b border-white/10 flex justify-between items-center">
+      <div className="px-4 sm:px-6 py-5 sm:py-6 border-b border-white/10 flex flex-col sm:flex-row justify-between sm:items-center gap-3">
 
         <div>
-          <p className="text-xs uppercase tracking-[0.3em] text-white/40">
+          <p className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-white/40">
             Operação
           </p>
-          <h3 className="text-2xl font-light mt-2">
+          <h3 className="text-xl sm:text-2xl font-light mt-2">
             Pedidos
           </h3>
         </div>
 
-        <span className="text-xs text-white/40">
+        <span className="text-[10px] sm:text-xs text-white/40">
           Clique para abrir
         </span>
 
@@ -106,7 +106,7 @@ export default function OrderTable({ orders, onSelect }: Props) {
             key={order.id}
             onClick={() => onSelect(order)}
             className="
-            px-6 py-5
+            px-4 sm:px-6 py-4 sm:py-5
             flex flex-col md:flex-row md:items-center md:justify-between
             gap-4
             cursor-pointer
@@ -118,7 +118,7 @@ export default function OrderTable({ orders, onSelect }: Props) {
 
             {/* ESQUERDA */}
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 min-w-0">
 
               {/* IMAGE */}
 
@@ -126,12 +126,12 @@ export default function OrderTable({ orders, onSelect }: Props) {
 
                 <img
                   src={`${process.env.NEXT_PUBLIC_API_URL}${order.items[0].product.image}`}
-                  className="w-14 h-14 rounded-xl object-cover border border-white/10"
+                  className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl object-cover border border-white/10 shrink-0"
                 />
 
               ) : (
 
-                <div className="w-14 h-14 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white/30">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white/30 shrink-0">
                   —
                 </div>
 
@@ -139,13 +139,13 @@ export default function OrderTable({ orders, onSelect }: Props) {
 
               {/* INFO */}
 
-              <div>
+              <div className="min-w-0">
 
-                <p className="font-mono text-sm text-white">
+                <p className="font-mono text-sm text-white break-words">
                   #{order.id.slice(0, 8)}
                 </p>
 
-                <p className="text-sm text-white/80 mt-1">
+                <p className="text-sm text-white/80 mt-1 truncate">
                   {order.customer.name} {order.customer.surname}
                 </p>
 
@@ -159,7 +159,7 @@ export default function OrderTable({ orders, onSelect }: Props) {
 
             {/* CENTRO */}
 
-            <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
+            <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-8">
 
               {/* PAGAMENTO */}
 
@@ -187,9 +187,9 @@ export default function OrderTable({ orders, onSelect }: Props) {
 
             {/* DIREITA */}
 
-            <div className="text-right">
+            <div className="text-left md:text-right">
 
-              <p className="text-lg font-light text-white">
+              <p className="text-base sm:text-lg font-light text-white">
                 {formatCurrency(order.total)}
               </p>
 

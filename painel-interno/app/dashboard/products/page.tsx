@@ -31,6 +31,13 @@ export default function ProductsPage() {
 
   const [editingId, setEditingId] = useState<string | null>(null);
 
+  function resolveImage(url: string) {
+    if (!url) return "";
+    if (url.startsWith("/images")) return url;
+    if (url.startsWith("http")) return url;
+    return `${process.env.NEXT_PUBLIC_API_URL}${url}`;
+  }
+
   async function loadProducts() {
     const data = await apiFetch<Product[]>("/products");
     setProducts(data);
@@ -53,13 +60,8 @@ export default function ProductsPage() {
   }, []);
 
   function handleChange(
-    e: React.ChangeEvent<
-      HTMLInputElement |
-      HTMLTextAreaElement |
-      HTMLSelectElement
-    >
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) {
-
     const { name, value } = e.target;
 
     setForm(prev => ({
@@ -71,13 +73,10 @@ export default function ProductsPage() {
           ? Number(value)
           : value,
     }));
-
   }
 
   async function uploadImage(file: File) {
-
     const formData = new FormData();
-
     formData.append("file", file);
 
     const token = localStorage.getItem("admin_token");
@@ -86,26 +85,19 @@ export default function ProductsPage() {
       `${process.env.NEXT_PUBLIC_API_URL}/upload/product`,
       {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
         body: formData,
-      },
+      }
     );
 
-    if (!res.ok) {
-      throw new Error("Erro no upload");
-    }
+    if (!res.ok) throw new Error("Erro no upload");
 
     const data: { filename: string; url: string } = await res.json();
-
     return data.url;
   }
 
   async function handleSubmit() {
-
     try {
-
       if (!form.categoryId) {
         alert("Selecione uma categoria");
         return;
@@ -123,19 +115,15 @@ export default function ProductsPage() {
       };
 
       if (editingId) {
-
         await apiFetch(`/admin/products/${editingId}`, {
           method: "PATCH",
           body: JSON.stringify(payload),
         });
-
       } else {
-
         await apiFetch("/admin/products", {
           method: "POST",
           body: JSON.stringify(payload),
         });
-
       }
 
       setForm({
@@ -153,28 +141,12 @@ export default function ProductsPage() {
       setImagePreview(null);
 
       await loadProducts();
-
     } catch {
-
       alert("Erro ao salvar produto");
-
     }
-
-  }
-
-  async function handleDelete(id: string) {
-
-    if (!confirm("Excluir produto?")) return;
-
-    await apiFetch(`/admin/products/${id}`, {
-      method: "DELETE",
-    });
-
-    await loadProducts();
   }
 
   function handleEdit(product: Product) {
-
     setEditingId(product.id);
 
     setForm({
@@ -188,284 +160,127 @@ export default function ProductsPage() {
       categoryId: product.categoryId ?? "",
     });
 
-    setImagePreview(
-      `${process.env.NEXT_PUBLIC_API_URL}${product.image}`
-    );
+    setImagePreview(resolveImage(product.image));
   }
 
-  if (loading) {
-    return <p className="text-white/60">Carregando produtos...</p>;
-  }
+  if (loading) return <p>Carregando...</p>;
 
   return (
-
-    <section className="space-y-12">
+    <section className="space-y-10">
 
       {/* HEADER */}
-
       <div>
-
         <p className="text-xs tracking-[0.4em] uppercase text-white/40">
-          Blackstore Admin
+          Admin
         </p>
-
-        <h1 className="text-4xl font-light mt-3">
-          Gestão de <span className="bs-title">produtos</span>
+        <h1 className="text-3xl md:text-4xl mt-2">
+          Produtos
         </h1>
-
       </div>
 
-
       {/* FORM */}
+      <div className="bg-white/5 p-6 rounded-2xl border border-white/10 space-y-6">
 
-      <div className="bs-glass rounded-3xl p-8 border border-white/10">
-
-        <h2 className="text-2xl mb-8 font-light">
-
-          {editingId
-            ? <>Editar <span className="bs-title">produto</span></>
-            : <>Novo <span className="bs-title">produto</span></>
-          }
-
+        <h2 className="text-xl">
+          {editingId ? "Editar produto" : "Novo produto"}
         </h2>
 
-        <div className="grid md:grid-cols-2 gap-5">
+        <div className="grid md:grid-cols-2 gap-4">
 
-          <input
-            name="name"
-            placeholder="Nome do produto"
-            value={form.name}
-            onChange={handleChange}
-            className="bg-white/5 border border-white/10 rounded-xl p-3 focus:border-(--gold) outline-none"
-          />
+          <div>
+            <label>Nome</label>
+            <input name="name" value={form.name} onChange={handleChange} className="input"/>
+          </div>
 
-          <input
-            name="slug"
-            placeholder="Slug"
-            value={form.slug}
-            onChange={handleChange}
-            className="bg-white/5 border border-white/10 rounded-xl p-3 focus:border-(--gold) outline-none"
-          />
+          <div>
+            <label>Slug</label>
+            <input name="slug" value={form.slug} onChange={handleChange} className="input"/>
+          </div>
 
-          <textarea
-            name="description"
-            placeholder="Descrição"
-            value={form.description}
-            onChange={handleChange}
-            className="bg-white/5 border border-white/10 rounded-xl p-3 col-span-2 min-h-30"
-          />
+          <div className="md:col-span-2">
+            <label>Descrição</label>
+            <textarea name="description" value={form.description} onChange={handleChange} className="input"/>
+          </div>
 
-          <input
-            name="price"
-            type="number"
-            placeholder="Preço"
-            value={form.price}
-            onChange={handleChange}
-            className="bg-white/5 border border-white/10 rounded-xl p-3"
-          />
+          <div>
+            <label>Preço</label>
+            <input type="number" name="price" value={form.price} onChange={handleChange} className="input"/>
+          </div>
 
-          <input
-            name="oldPrice"
-            type="number"
-            placeholder="Preço promocional"
-            value={form.oldPrice}
-            onChange={handleChange}
-            className="bg-white/5 border border-white/10 rounded-xl p-3"
-          />
+          <div>
+            <label>Preço antigo</label>
+            <input type="number" name="oldPrice" value={form.oldPrice} onChange={handleChange} className="input"/>
+          </div>
 
-          <input
-            name="stock"
-            type="number"
-            placeholder="Estoque"
-            value={form.stock}
-            onChange={handleChange}
-            className="bg-white/5 border border-white/10 rounded-xl p-3"
-          />
+          <div>
+            <label>Estoque</label>
+            <input type="number" name="stock" value={form.stock} onChange={handleChange} className="input"/>
+          </div>
 
-          <select
-            name="categoryId"
-            value={form.categoryId}
-            onChange={handleChange}
-            className="bg-white/5 border border-white/10 rounded-xl p-3"
-          >
-            <option value="">Selecionar categoria</option>
+          <div>
+            <label>Categoria</label>
+            <select name="categoryId" value={form.categoryId} onChange={handleChange} className="input">
+              <option value="">Selecionar</option>
+              {categories.map(c => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+          </div>
 
-            {categories.map(cat => (
-              <option key={cat.id} value={cat.id}>
-                {cat.name}
-              </option>
-            ))}
-          </select>
-
-          {/* IMAGE */}
-
-          <div className="col-span-2">
-
-            <input
-              type="file"
-              accept="image/*"
-              onChange={async (e) => {
-
-                const file = e.target.files?.[0];
-
-                if (!file) return;
-
-                try {
-
-                  const url = await uploadImage(file);
-
-                  setForm(prev => ({
-                    ...prev,
-                    image: url,
-                  }));
-
-                  setImagePreview(
-                    `${process.env.NEXT_PUBLIC_API_URL}${url}`
-                  );
-
-                } catch {
-
-                  alert("Erro ao enviar imagem");
-
-                }
-
-              }}
-            />
+          <div className="md:col-span-2">
+            <label>Imagem</label>
+            <input type="file" onChange={async (e)=>{
+              const file = e.target.files?.[0];
+              if (!file) return;
+              const url = await uploadImage(file);
+              setForm(prev => ({...prev, image:url}));
+              setImagePreview(resolveImage(url));
+            }} />
 
             {imagePreview && (
-
-              <img
-                src={imagePreview}
-                alt="Preview"
-                className="mt-4 w-40 rounded-xl border border-white/10"
-              />
-
+              <img src={imagePreview} className="mt-3 w-32 rounded-lg"/>
             )}
-
           </div>
 
         </div>
 
         <button
           onClick={handleSubmit}
-          className="
-          mt-8
-          px-8 py-3
-          bg-(--gold)
-          text-black
-          rounded-full
-          text-xs
-          tracking-[0.3em]
-          uppercase
-          hover:scale-105
-          transition
-          "
+          className="bg-[var(--gold)] text-black px-6 py-3 rounded-full"
         >
-
           {editingId ? "Atualizar" : "Criar"}
-
         </button>
 
       </div>
 
+      {/* LISTA MOBILE + DESKTOP */}
+      <div className="space-y-4">
 
-      {/* TABLE */}
+        {products.map(p => (
+          <div key={p.id} className="bg-white/5 p-4 rounded-xl border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4">
 
-      <div className="bs-glass rounded-3xl border border-white/10 overflow-hidden">
+            <div className="flex gap-4 items-center">
+              <img src={resolveImage(p.image)} className="w-16 h-16 object-cover rounded"/>
+              <div>
+                <p>{p.name}</p>
+                <p className="text-xs text-white/50">{p.slug}</p>
+              </div>
+            </div>
 
-        <table className="w-full">
+            <div className="flex gap-6 text-sm">
+              <span>R$ {p.price}</span>
+              <span>{p.stock} un</span>
+            </div>
 
-          <thead>
+            <div className="flex gap-3">
+              <button onClick={()=>handleEdit(p)} className="text-yellow-400">Editar</button>
+            </div>
 
-            <tr className="border-b border-white/10 text-xs uppercase tracking-[0.3em] text-white/50">
-
-              <th className="p-5 text-left">Produto</th>
-              <th className="p-5 text-left">Preço</th>
-              <th className="p-5 text-left">Promoção</th>
-              <th className="p-5 text-left">Estoque</th>
-              <th className="p-5 text-left">Ações</th>
-
-            </tr>
-
-          </thead>
-
-          <tbody>
-
-            {products.map(product => (
-
-              <tr
-                key={product.id}
-                className="border-b border-white/10 hover:bg-white/5 transition"
-              >
-
-                <td className="p-5">
-
-                  <div className="flex items-center gap-4">
-
-                    <img
-                      src={`${process.env.NEXT_PUBLIC_API_URL}${product.image}`}
-                      alt={product.name}
-                      className="w-14 h-14 object-cover rounded-lg"
-                    />
-
-                    <div>
-
-                      <p>{product.name}</p>
-
-                      <p className="text-xs text-white/50">
-                        {product.slug}
-                      </p>
-
-                    </div>
-
-                  </div>
-
-                </td>
-
-                <td className="p-5">
-                  R$ {product.price}
-                </td>
-
-                <td className="p-5">
-                  {product.oldPrice
-                    ? `R$ ${product.oldPrice}`
-                    : "-"
-                  }
-                </td>
-
-                <td className="p-5">
-                  {product.stock}
-                </td>
-
-                <td className="p-5 flex gap-4">
-
-                  <button
-                    onClick={() => handleEdit(product)}
-                    className="text-(--gold) text-xs uppercase tracking-[0.2em]"
-                  >
-                    Editar
-                  </button>
-
-                  <button
-                    onClick={() => handleDelete(product.id)}
-                    className="text-red-400 text-xs uppercase tracking-[0.2em]"
-                  >
-                    Excluir
-                  </button>
-
-                </td>
-
-              </tr>
-
-            ))}
-
-          </tbody>
-
-        </table>
+          </div>
+        ))}
 
       </div>
 
     </section>
-
   );
 }
