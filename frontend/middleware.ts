@@ -9,8 +9,11 @@ function isProtectedPath(pathname: string) {
 
 export function middleware(req: NextRequest) {
 
-  const { pathname } = req.nextUrl;
+  const { pathname, search } = req.nextUrl;
 
+  /**
+   * liberar rotas públicas
+   */
   if (!isProtectedPath(pathname)) {
     return NextResponse.next();
   }
@@ -18,19 +21,21 @@ export function middleware(req: NextRequest) {
   const token = req.cookies.get("bs_token")?.value;
 
   /**
-   * Se não tiver token → redireciona login
+   * se não tiver token → redireciona login
    */
   if (!token) {
 
     const loginUrl = new URL("/login", req.url);
 
+    /**
+     * manter rota original + query
+     */
     loginUrl.searchParams.set(
       "redirect",
-      pathname
+      `${pathname}${search || ""}`
     );
 
     return NextResponse.redirect(loginUrl);
-
   }
 
   return NextResponse.next();

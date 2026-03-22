@@ -45,11 +45,11 @@ export default function Header() {
             {/* LOGO */}
             <Link href="/" className="flex items-center">
               <Image
-                src="/images/logo.png"
+                src="/images/logo-v2.png"
                 alt="Blackstore"
-                width={120}
-                height={50}
-                className="object-contain"
+                width={130}
+                height={60}
+                className="object-contain brightness-110 contrast-110"
                 priority
               />
             </Link>

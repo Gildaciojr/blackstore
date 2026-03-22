@@ -27,6 +27,12 @@ export default function CartPage() {
     loadCart();
   }, [loadCart]);
 
+  // 🔥 FRETE GRÁTIS
+  const FREE_SHIPPING_THRESHOLD = 299;
+  const subtotalValue = subtotal();
+  const remainingForFreeShipping =
+    FREE_SHIPPING_THRESHOLD - subtotalValue;
+
   if (items.length === 0) {
     return (
       <section className="pt-32 pb-24 text-center px-6">
@@ -51,75 +57,140 @@ export default function CartPage() {
   return (
     <section className="max-w-7xl mx-auto px-4 md:px-8 pt-28 pb-40">
 
-      <h1 className="text-3xl md:text-5xl tracking-widest uppercase mb-12 bs-title">
+      {/* HEADER */}
+      <p className="text-white/50 uppercase text-xs tracking-[0.4em] mb-4">
+        Checkout seguro
+      </p>
+
+      <h1 className="text-3xl md:text-5xl tracking-widest uppercase mb-10 bs-title">
         Seu carrinho
       </h1>
+
+      {/* 🔥 FRETE BAR */}
+      <div className="mb-10">
+        <div className="flex justify-between text-xs text-white/60 mb-2 uppercase tracking-widest">
+          <span>Frete grátis</span>
+          <span>
+            {remainingForFreeShipping > 0
+              ? `Faltam R$ ${remainingForFreeShipping.toFixed(2)}`
+              : "Você desbloqueou"}
+          </span>
+        </div>
+
+        <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-[var(--gold)] transition-all duration-500"
+            style={{
+              width: `${Math.min(
+                (subtotalValue / FREE_SHIPPING_THRESHOLD) * 100,
+                100
+              )}%`,
+            }}
+          />
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
 
         {/* ITENS */}
-        <div className="lg:col-span-2 space-y-10">
+        <div className="lg:col-span-2 space-y-6">
 
           {items.map((item) => (
             <div
               key={item.id}
-              className="flex gap-4 md:gap-8 pb-6 border-b border-white/10"
+              className="
+                flex gap-4 md:gap-8 
+                p-4 md:p-6 
+                rounded-2xl 
+                bg-white/[0.02] 
+                border border-white/10 
+                hover:border-[var(--gold)]/30 
+                transition-all duration-300
+              "
             >
-              <div className="relative w-28 md:w-40 aspect-3/4 overflow-hidden rounded-xl">
-                <Image src={item.image} alt={item.name} fill className="object-cover" />
+              <div className="relative w-28 md:w-40 aspect-[3/4] overflow-hidden rounded-xl">
+                <Image
+                  src={item.image}
+                  alt={item.name}
+                  fill
+                  className="object-cover"
+                />
               </div>
 
               <div className="flex-1 flex flex-col justify-between">
 
                 <div>
-                  <h3 className="uppercase tracking-widest text-xs md:text-sm">
+                  <h3 className="uppercase tracking-widest text-xs md:text-sm text-white/90">
                     {item.name}
                   </h3>
 
-                  <p className="mt-2 text-[var(--gold)] text-lg md:text-xl">
+                  <p className="mt-2 text-[var(--gold)] text-lg md:text-xl font-medium">
                     R$ {item.price.toFixed(2)}
                   </p>
                 </div>
 
-                <div className="flex items-center justify-between mt-4">
+                <div className="flex items-center justify-between mt-6">
 
                   <div className="flex items-center gap-3 text-sm">
+
                     <button
                       onClick={() => decrease(item.id)}
-                      className="w-8 h-8 border border-white/20 rounded-full"
+                      className="w-9 h-9 border border-white/20 rounded-full hover:border-[var(--gold)] transition"
                     >
                       −
                     </button>
 
-                    <span>{item.quantity}</span>
+                    <span className="min-w-[20px] text-center">
+                      {item.quantity}
+                    </span>
 
                     <button
                       onClick={() => increase(item.id)}
-                      className="w-8 h-8 border border-white/20 rounded-full"
+                      className="w-9 h-9 border border-white/20 rounded-full hover:border-[var(--gold)] transition"
                     >
                       +
                     </button>
+
                   </div>
 
                   <button
                     onClick={() => removeItem(item.id)}
-                    className="text-red-400 text-[10px] uppercase tracking-widest"
+                    className="text-red-400 text-[10px] uppercase tracking-widest hover:text-red-300 transition"
                   >
                     Remover
                   </button>
 
                 </div>
-
               </div>
             </div>
           ))}
+
+          {/* 🔥 UPSELL */}
+          <div className="mt-6 p-6 rounded-2xl border border-white/10 bg-white/[0.02]">
+            <p className="text-xs uppercase tracking-widest text-white/50 mb-3">
+              Dica Blackstore
+            </p>
+
+            <p className="text-sm text-white/70">
+              Combine peças e monte um look completo para potencializar seu estilo.
+            </p>
+          </div>
+
         </div>
 
         {/* RESUMO */}
-        <div className="border border-white/10 p-6 md:p-10 bg-black/40 backdrop-blur rounded-2xl h-fit sticky top-24">
+        <div className="
+          border border-white/10 
+          p-6 md:p-10 
+          bg-black/40 
+          backdrop-blur 
+          rounded-2xl 
+          h-fit 
+          sticky top-24
+        ">
 
           <h2 className="uppercase tracking-widest text-xs mb-6">
-            Resumo
+            Resumo do pedido
           </h2>
 
           {/* CEP */}
@@ -128,7 +199,7 @@ export default function CartPage() {
               <input
                 value={zip}
                 onChange={(e) => setZip(e.target.value)}
-                placeholder="CEP"
+                placeholder="Digite seu CEP"
                 className="flex-1 bg-black border border-white/20 px-3 py-2 text-sm rounded-md"
               />
               <button
@@ -147,13 +218,13 @@ export default function CartPage() {
                 <button
                   key={option.method}
                   onClick={() => selectShipping(option.method)}
-                  className={`w-full p-3 text-left text-xs border rounded-lg ${
+                  className={`w-full p-3 text-left text-xs border rounded-lg transition ${
                     selectedShipping?.method === option.method
-                      ? "border-[var(--gold)]"
-                      : "border-white/10"
+                      ? "border-[var(--gold)] bg-white/5"
+                      : "border-white/10 hover:border-white/30"
                   }`}
                 >
-                  {option.name} - R$ {option.price.toFixed(2)}
+                  {option.name} — R$ {option.price.toFixed(2)}
                 </button>
               ))}
             </div>
@@ -161,33 +232,80 @@ export default function CartPage() {
 
           {/* VALORES */}
           <div className="space-y-3 text-sm">
-            <div className="flex justify-between">
+
+            <div className="flex justify-between text-white/70">
               <span>Subtotal</span>
               <span>R$ {subtotal().toFixed(2)}</span>
             </div>
 
-            <div className="flex justify-between">
+            <div className="flex justify-between text-white/70">
               <span>Frete</span>
               <span>R$ {shipping().toFixed(2)}</span>
             </div>
 
             <div className="flex justify-between text-lg border-t border-white/10 pt-4">
               <span>Total</span>
-              <span className="text-[var(--gold)]">
+              <span className="text-[var(--gold)] font-semibold">
                 R$ {total().toFixed(2)}
               </span>
             </div>
+
           </div>
 
+          {/* PROVA */}
+          <div className="mt-6 text-[10px] md:text-xs text-white/60 uppercase tracking-widest space-y-1">
+            <p>✦ Compra segura</p>
+            <p>✦ Envio rápido</p>
+            <p>✦ Troca facilitada</p>
+          </div>
+
+          {/* CTA */}
           <Link
             href="/checkout"
-            className="block mt-8 py-4 text-center rounded-full bg-[var(--gold)] text-black text-xs tracking-[0.35em] uppercase hover:scale-105 transition"
+            className="
+              block mt-8 py-4 text-center rounded-full 
+              bg-[var(--gold)] text-black 
+              text-xs tracking-[0.35em] uppercase 
+              hover:scale-105 active:scale-[0.98]
+              transition
+            "
           >
-            Finalizar compra
+            Finalizar compra segura
           </Link>
 
         </div>
+
       </div>
+
+      {/* 🔥 MOBILE FIXO */}
+      <div className="fixed bottom-0 left-0 w-full bg-black/95 border-t border-white/10 p-4 flex items-center justify-between lg:hidden z-50">
+
+        <div>
+          <p className="text-[10px] uppercase text-white/50 tracking-widest">
+            Total
+          </p>
+          <p className="text-[var(--gold)] font-semibold">
+            R$ {total().toFixed(2)}
+          </p>
+        </div>
+
+        <Link
+          href="/checkout"
+          className="
+            px-6 py-3 
+            bg-[var(--gold)] 
+            text-black 
+            text-[10px] 
+            uppercase 
+            tracking-[0.35em] 
+            rounded-full
+          "
+        >
+          Finalizar
+        </Link>
+
+      </div>
+
     </section>
   );
 }

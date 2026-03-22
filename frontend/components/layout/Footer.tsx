@@ -16,7 +16,7 @@ export default function Footer() {
           {/* MARCA */}
           <div className="max-w-sm">
             <Image
-              src="/images/logo.png"
+              src="/images/logo-v2.png"
               alt="Blackstore"
               width={120}
               height={50}

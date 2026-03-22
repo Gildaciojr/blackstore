@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Param, Body } from '@nestjs/common';
+import { Controller, Post, Get, Param, Body, UsePipes, ValidationPipe } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 
@@ -7,6 +7,7 @@ export class OrdersController {
   constructor(private ordersService: OrdersService) {}
 
   @Post('checkout')
+  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
   checkout(@Body() data: CreateOrderDto) {
     return this.ordersService.createOrder(data);
   }

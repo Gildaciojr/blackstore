@@ -7,11 +7,11 @@ export type Product = {
   oldPrice?: number | null;
   stock: number;
   image: string;
-  categoryId?: string;
+  categoryId: string;
 };
 
 export type Category = {
-  id: string
-  name: string
-  slug: string
-}
+  id: string;
+  name: string;
+  slug: string;
+};

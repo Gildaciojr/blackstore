@@ -1,5 +1,5 @@
 import { Controller, Post, Get, Param, Body } from '@nestjs/common';
-import { PaymentService } from './payment.service';
+import { PaymentService } from './providers/payment.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { WebhookPaymentDto } from './dto/webhook-payment.dto';
 

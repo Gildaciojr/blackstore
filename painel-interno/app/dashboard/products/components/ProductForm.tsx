@@ -4,8 +4,12 @@ import { useEffect, useState } from "react";
 
 type ProductPayload = {
   name: string;
+  slug: string;
+  description?: string;
   price: number;
+  oldPrice?: number;
   stock: number;
+  image: string;
   categoryId: string;
 };
 
@@ -24,28 +28,40 @@ export default function ProductForm({
 }: Props) {
 
   const [name, setName] = useState("");
+  const [slug, setSlug] = useState("");
+  const [description, setDescription] = useState("");
   const [price, setPrice] = useState(0);
+  const [oldPrice, setOldPrice] = useState<number | undefined>(undefined);
   const [stock, setStock] = useState(0);
+  const [image, setImage] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [saving, setSaving] = useState(false);
 
   /**
-   * Sincroniza o formulário quando muda o produto em edição
+   * sincroniza edição
    */
   useEffect(() => {
 
     if (editing) {
 
       setName(editing.name);
+      setSlug(editing.slug);
+      setDescription(editing.description ?? "");
       setPrice(editing.price);
+      setOldPrice(editing.oldPrice);
       setStock(editing.stock);
+      setImage(editing.image);
       setCategoryId(editing.categoryId);
 
     } else {
 
       setName("");
+      setSlug("");
+      setDescription("");
       setPrice(0);
+      setOldPrice(undefined);
       setStock(0);
+      setImage("");
       setCategoryId("");
 
     }
@@ -61,8 +77,18 @@ export default function ProductForm({
       return;
     }
 
+    if (!slug.trim()) {
+      alert("Slug obrigatório");
+      return;
+    }
+
     if (!categoryId) {
       alert("Selecione uma categoria");
+      return;
+    }
+
+    if (!image) {
+      alert("Imagem obrigatória");
       return;
     }
 
@@ -72,8 +98,12 @@ export default function ProductForm({
 
       await onSave({
         name,
+        slug,
+        description,
         price,
+        oldPrice,
         stock,
+        image,
         categoryId,
       });
 
@@ -99,7 +129,6 @@ export default function ProductForm({
     >
 
       {/* HEADER */}
-
       <div>
 
         <h2 className="text-2xl font-light">
@@ -117,67 +146,49 @@ export default function ProductForm({
         </h2>
 
         <p className="text-xs text-white/40 mt-1">
-          Preencha as informações do produto
+          Preencha todas as informações do produto
         </p>
 
       </div>
 
-      {/* FORM GRID */}
-
+      {/* GRID */}
       <div className="grid md:grid-cols-2 gap-6">
 
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Nome do produto"
-          className="
-          bg-white/5
-          border border-white/10
-          rounded-xl
-          p-3
-          focus:border-(--gold)
-          outline-none
-          "
+          className="bg-white/5 border border-white/10 rounded-xl p-3 outline-none"
         />
 
-        <select
-          value={categoryId}
-          onChange={(e) => setCategoryId(e.target.value)}
-          className="
-          bg-white/5
-          border border-white/10
-          rounded-xl
-          p-3
-          focus:border-(--gold)
-          outline-none
-          "
-        >
+        <input
+          value={slug}
+          onChange={(e) => setSlug(e.target.value)}
+          placeholder="Slug (url)"
+          className="bg-white/5 border border-white/10 rounded-xl p-3 outline-none"
+        />
 
-          <option value="">Categoria</option>
-
-          {categories.map((c) => (
-
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-
-          ))}
-
-        </select>
+        <textarea
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Descrição"
+          className="bg-white/5 border border-white/10 rounded-xl p-3 outline-none md:col-span-2"
+        />
 
         <input
           type="number"
           value={price}
           onChange={(e) => setPrice(Number(e.target.value))}
           placeholder="Preço"
-          className="
-          bg-white/5
-          border border-white/10
-          rounded-xl
-          p-3
-          focus:border-(--gold)
-          outline-none
-          "
+          className="bg-white/5 border border-white/10 rounded-xl p-3 outline-none"
+        />
+
+        <input
+          type="number"
+          value={oldPrice ?? ""}
+          onChange={(e) => setOldPrice(Number(e.target.value))}
+          placeholder="Preço antigo"
+          className="bg-white/5 border border-white/10 rounded-xl p-3 outline-none"
         />
 
         <input
@@ -185,20 +196,35 @@ export default function ProductForm({
           value={stock}
           onChange={(e) => setStock(Number(e.target.value))}
           placeholder="Estoque"
-          className="
-          bg-white/5
-          border border-white/10
-          rounded-xl
-          p-3
-          focus:border-(--gold)
-          outline-none
-          "
+          className="bg-white/5 border border-white/10 rounded-xl p-3 outline-none"
         />
+
+        <input
+          value={image}
+          onChange={(e) => setImage(e.target.value)}
+          placeholder="URL da imagem"
+          className="bg-white/5 border border-white/10 rounded-xl p-3 outline-none"
+        />
+
+        <select
+          value={categoryId}
+          onChange={(e) => setCategoryId(e.target.value)}
+          className="bg-white/5 border border-white/10 rounded-xl p-3 outline-none"
+        >
+
+          <option value="">Categoria</option>
+
+          {categories.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+
+        </select>
 
       </div>
 
       {/* ACTIONS */}
-
       <div className="flex gap-4">
 
         <button

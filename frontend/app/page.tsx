@@ -6,12 +6,12 @@ import ProductCard from "@/components/ui/ProductCard";
 import Reveal from "@/components/ui/Reveal";
 import Image from "next/image";
 import Lookbook from "@/components/sections/Lookbook";
-import CompleteLook from "@/components/sections/CompleteLook";
 import InstagramShowcase from "@/components/sections/InstagramShowcase";
 import { apiFetch } from "@/lib/api";
 import ProductQuickView from "@/components/ui/ProductQuickView";
 import WeeklyBestSellers from "@/components/sections/WeeklyBestSellers";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 type Media = {
   id: string;
@@ -57,6 +57,8 @@ export default function HomePage() {
   const [quickProduct, setQuickProduct] = useState<QuickProduct | null>(null);
   const [weekly, setWeekly] = useState<WeeklyBestSellerItem[]>([]);
 
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+
   useEffect(() => {
     async function load() {
       const data = await apiFetch<Product[]>("/products");
@@ -81,6 +83,20 @@ export default function HomePage() {
     loadWeekly();
   }, []);
 
+  function scroll(direction: "left" | "right") {
+    if (!scrollRef.current) return;
+
+    const card = scrollRef.current.querySelector("div");
+    if (!card) return;
+
+    const cardWidth = (card as HTMLElement).offsetWidth + 24;
+
+    scrollRef.current.scrollBy({
+      left: direction === "left" ? -cardWidth : cardWidth,
+      behavior: "smooth",
+    });
+  }
+
   // ================= RESOLVER IMAGEM =================
   function resolveImage(url: string) {
     if (!url) return "";
@@ -99,7 +115,6 @@ export default function HomePage() {
     return product.medias?.map((m) => resolveImage(m.url)) ?? [];
   }
 
-  // 🔥 NORMALIZA PRODUTO PARA QUICKVIEW
   function normalizeProduct(product: Product): QuickProduct {
     return {
       id: product.id,
@@ -115,17 +130,75 @@ export default function HomePage() {
     <>
       <HeroParallax />
 
-      {/* ================= LANÇAMENTOS ================= */}
-      <section className="relative bg-gradient-to-b from-black via-[#0b0906] to-[#0f0c06] py-20 md:py-28">
-        <Reveal>
-          <Section
-            id="lancamentos"
-            title={<span className="bs-title">Lançamentos</span>}
-            subtitle="Novidades que definem a temporada."
-          >
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-10">
-              {products.slice(0, 4).map((product, index) => (
-                <Reveal key={product.id} delay={0.08 * (index + 1)}>
+{/* ================= LANÇAMENTOS ================= */}
+<section className="relative bg-gradient-to-b from-black via-[#0b0906] to-[#0f0c06] py-20 md:py-28">
+  <Reveal>
+    <Section
+      id="lancamentos"
+      title={<span className="bs-title">Lançamentos</span>}
+      subtitle="Novidades que definem a temporada."
+    >
+      <div className="relative">
+
+        {/* GRADIENTE ESQUERDA */}
+        <div className="pointer-events-none absolute left-0 top-0 h-full w-16 bg-gradient-to-r from-black via-black/80 to-transparent z-10" />
+
+        {/* GRADIENTE DIREITA */}
+        <div className="pointer-events-none absolute right-0 top-0 h-full w-16 bg-gradient-to-l from-black via-black/80 to-transparent z-10" />
+
+        {/* BOTÃO ESQUERDA */}
+        <button
+          onClick={() => scroll("left")}
+          className="
+            hidden md:flex absolute left-3 top-1/2 -translate-y-1/2 z-20
+            w-11 h-11 items-center justify-center
+            rounded-full bg-black/70 backdrop-blur-xl border border-white/10
+            hover:border-[var(--gold)] transition
+          "
+        >
+          <ChevronLeft size={18} />
+        </button>
+
+        {/* BOTÃO DIREITA */}
+        <button
+          onClick={() => scroll("right")}
+          className="
+            hidden md:flex absolute right-3 top-1/2 -translate-y-1/2 z-20
+            w-11 h-11 items-center justify-center
+            rounded-full bg-black/70 backdrop-blur-xl border border-white/10
+            hover:border-[var(--gold)] transition
+          "
+        >
+          <ChevronRight size={18} />
+        </button>
+
+        {/* CAROUSEL */}
+        <div
+          ref={scrollRef}
+          className="
+            flex gap-5 md:gap-8
+            overflow-x-auto
+            scroll-smooth
+            snap-x snap-mandatory
+            px-4 md:px-6
+            scrollbar-hide
+          "
+        >
+          {products.slice(0, 10).map((product, index) => (
+            <div
+              key={product.id}
+              className="
+                snap-start
+                min-w-[80%]
+                sm:min-w-[48%]
+                md:min-w-[32%]
+                lg:min-w-[24%]
+                xl:min-w-[22%]
+                transition-transform duration-500
+              "
+            >
+              <Reveal delay={0.06 * (index + 1)}>
+                <div className="group">
                   <ProductCard
                     id={product.id}
                     slug={product.slug}
@@ -138,12 +211,16 @@ export default function HomePage() {
                       setQuickProduct(normalizeProduct(product))
                     }
                   />
-                </Reveal>
-              ))}
+                </div>
+              </Reveal>
             </div>
-          </Section>
-        </Reveal>
-      </section>
+          ))}
+        </div>
+
+      </div>
+    </Section>
+  </Reveal>
+</section>
 
       {/* ================= MAIS VENDIDOS ================= */}
       <section className="relative bg-gradient-to-b from-[#0f0c06] via-[#0a0907] to-black py-24 md:py-32">
@@ -166,10 +243,6 @@ export default function HomePage() {
 
       <Reveal>
         <Lookbook />
-      </Reveal>
-
-      <Reveal>
-        <CompleteLook />
       </Reveal>
 
       {/* ================= PROMOÇÃO ================= */}

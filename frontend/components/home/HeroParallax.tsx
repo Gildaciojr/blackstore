@@ -2,10 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import {
-  motion,
-  AnimatePresence,
-} from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 
 type SlideType = "collection" | "product" | "promo";
@@ -14,6 +11,7 @@ const slides = [
   {
     type: "collection" as SlideType,
     image: "/images/hero.jpg",
+    focus: "center 25%", // ajuste fino aqui
     title1: "Moda que",
     title2: "impõe presença",
     subtitle:
@@ -24,6 +22,7 @@ const slides = [
   {
     type: "product" as SlideType,
     image: "/images/product-3.jpg",
+    focus: "center 20%",
     title1: "Elegância em",
     title2: "movimento",
     subtitle:
@@ -34,6 +33,7 @@ const slides = [
   {
     type: "promo" as SlideType,
     image: "/images/product-4.jpg",
+    focus: "center 35%",
     title1: "Promoção da",
     title2: "semana",
     subtitle:
@@ -44,7 +44,6 @@ const slides = [
 ];
 
 export default function HeroParallax() {
-
   const [index, setIndex] = useState(0);
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
 
@@ -69,11 +68,10 @@ export default function HeroParallax() {
       onMouseMove={handleMouseMove}
       className="
         relative 
-        h-[78vh] sm:h-[85vh] md:h-[92vh] 
+        h-[70vh] sm:h-[80vh] md:h-[92vh] 
         w-full overflow-hidden
       "
     >
-
       {/* BACKGROUND PRINCIPAL */}
       <AnimatePresence mode="wait">
         <motion.div
@@ -102,11 +100,15 @@ export default function HeroParallax() {
               alt="Blackstore"
               fill
               priority
-              className="
-                object-cover
-                object-[center_20%]
-                md:object-center
-              "
+              style={{
+                objectFit: "cover",
+                objectPosition:
+                  slide.type === "product"
+                  ? "center 20%"
+                  :slide.type === "collection"
+                  ?"center 30%"
+                  : "center",
+              }}
             />
           </motion.div>
         </motion.div>
@@ -122,42 +124,40 @@ export default function HeroParallax() {
       <div
         className={`absolute inset-0 ${
           slide.type === "promo"
-            ? "bg-gradient-to-r from-black/95 via-black/85 to-black/40"
-            : "bg-gradient-to-r from-black/95 via-black/70 to-black/25"
+            ? "bg-gradient-to-r from-black/95 via-black/50 to-black/20"
+            : "bg-gradient-to-r from-black/95 via-black/50 to-black/20"
         }`}
       />
 
       {/* CONTENT */}
       <div className="relative z-10 h-full flex items-center">
         <div className="max-w-8xl mx-auto px-5 md:px-8 w-full">
-
           <motion.div
             key={index}
             initial={{ opacity: 0, y: 90 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1 }}
             className="
-              max-w-xl md:max-w-2xl
-              p-6 md:p-10
-              rounded-2xl
-              bs-glass
-              backdrop-blur-xl
-              border border-white/10
-              shadow-[0_0_60px_rgba(0,0,0,0.6)]
-            "
+        max-w-xl md:max-w-2xl
+        p-6 md:p-10
+        rounded-2xl
+        bs-glass
+        backdrop-blur-xl
+        border border-white/10
+        shadow-[0_0_60px_rgba(0,0,0,0.6)]
+      "
           >
-
             <p className="uppercase text-[10px] md:text-xs tracking-[0.4em] text-white/60">
               {slide.type === "promo"
-                ? "Oferta especial"
-                : "Nova coleção"}
+                ? "Últimas unidades"
+                : slide.type === "product"
+                  ? "Alta performance"
+                  : "Nova coleção"}
             </p>
 
             <h1 className="mt-4 text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-light leading-tight">
               <span className="block">{slide.title1}</span>
-              <span className="block bs-title">
-                {slide.title2}
-              </span>
+              <span className="block bs-title">{slide.title2}</span>
             </h1>
 
             <p className="mt-5 text-white/70 text-sm md:text-lg max-w-lg">
@@ -165,44 +165,57 @@ export default function HeroParallax() {
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row gap-4">
-
-              <Link
-                href={slide.cta1}
-                className="
-                  px-8 py-3 rounded-full 
-                  bg-[var(--gold)] text-black 
-                  text-[10px] md:text-xs tracking-[0.35em] uppercase 
-                  hover:scale-105 active:scale-[0.98]
-                  transition-all duration-300
-                "
+              <motion.div
+                whileHover={{ scale: 1.06 }}
+                whileTap={{ scale: 0.96 }}
               >
-                {slide.type === "promo"
-                  ? "Ver oferta"
-                  : "Comprar agora"}
-              </Link>
+                <Link
+                  href={slide.cta1}
+                  className="
+              px-8 py-3 rounded-full 
+              bg-[var(--gold)] text-black 
+              text-[10px] md:text-xs tracking-[0.35em] uppercase 
+              transition-all duration-300
+            "
+                >
+                  {slide.type === "promo"
+                    ? "Aproveitar agora"
+                    : "Quero essa coleção"}
+                </Link>
+              </motion.div>
 
               <Link
                 href={slide.cta2}
                 className="
-                  px-8 py-3 rounded-full 
-                  border border-white/20 
-                  text-[10px] md:text-xs tracking-[0.35em] uppercase 
-                  hover:bg-white/5 hover:border-white/40
-                  transition-all duration-300
-                "
+            px-8 py-3 rounded-full 
+            border border-white/20 
+            text-[10px] md:text-xs tracking-[0.35em] uppercase 
+            hover:bg-white/5 hover:border-white/40
+            transition-all duration-300
+          "
               >
-                Ver coleção
+                Explorar catálogo
               </Link>
-
             </div>
 
+            {/* PROVA + URGÊNCIA */}
+            <div className="mt-6 flex flex-wrap gap-4 text-[10px] md:text-xs text-white/60 tracking-widest uppercase">
+              <span className="flex items-center gap-2">
+                ✦ Frete rápido para todo Brasil
+              </span>
+              <span className="flex items-center gap-2">
+                ✦ Peças exclusivas e limitadas
+              </span>
+              <span className="flex items-center gap-2 text-[var(--gold)]">
+                ✦ 
+              </span>
+            </div>
           </motion.div>
         </div>
       </div>
 
       {/* INDICADORES PREMIUM */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3">
-
         {slides.map((_, i) => (
           <button
             key={i}
@@ -222,9 +235,7 @@ export default function HeroParallax() {
             />
           </button>
         ))}
-
       </div>
-
     </section>
   );
 }

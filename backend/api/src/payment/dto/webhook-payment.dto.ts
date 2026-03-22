@@ -1,4 +1,10 @@
 export class WebhookPaymentDto {
-  providerId: string;
-  status: string;
+  id: string;
+
+  reference_id: string;
+
+  charges: {
+    id: string;
+    status: string;
+  }[];
 }

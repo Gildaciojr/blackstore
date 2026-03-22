@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
+
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+
 import GlowCursor from "@/components/ui/GlowCursor";
 import CartLoader from "@/components/cart/CartLoader";
 import AuthLoader from "@/components/auth/AuthLoader";
@@ -20,10 +22,13 @@ export default function RootLayout({
     <html lang="pt-BR">
       <body className="bg-black text-white antialiased">
 
-        {/* loader do carrinho */}
-        <CartLoader />
+        {/* 🔒 sessão primeiro */}
         <AuthLoader />
 
+        {/* 🛒 carrinho depende da sessão */}
+        <CartLoader />
+
+        {/* UI */}
         <GlowCursor />
         <Header />
 

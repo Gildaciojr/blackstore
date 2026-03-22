@@ -39,7 +39,7 @@ export default function OrderSuccessPage({ params }: Props) {
 
       setOrder({
         ...data,
-        items: data.items.map((item) => ({
+        items: data.items.map((item: OrderItem) => ({
           ...item,
           product: {
             ...item.product,
@@ -61,23 +61,37 @@ export default function OrderSuccessPage({ params }: Props) {
   }
 
   return (
-    <section className="max-w-5xl mx-auto px-8 pt-40 pb-32">
-      <h1 className="text-4xl md:text-5xl tracking-widest uppercase bs-title mb-16">
+    <section className="max-w-5xl mx-auto px-6 md:px-8 pt-32 pb-32">
+      <p className="text-white/50 uppercase text-xs tracking-[0.4em] mb-4">
+        Pedido realizado com sucesso
+      </p>
+
+      <h1 className="text-3xl md:text-5xl tracking-widest uppercase bs-title mb-6">
         Pedido confirmado
       </h1>
 
-      <p className="text-white/60 mb-14">
-        Seu pedido foi criado com sucesso. Em breve você receberá mais
-        informações sobre pagamento e envio.
+      <p className="text-white/60 mb-10 max-w-xl">
+        Seu pedido foi criado com sucesso. Você poderá acompanhar o status de envio a qualquer momento.
       </p>
 
-      <div className="space-y-10">
-        {order.items.map((item) => (
+      {/* STATUS */}
+      <div className="mb-12 p-5 rounded-xl border border-[var(--gold)] bg-white/[0.02]">
+        <p className="text-xs uppercase tracking-widest text-white/50 mb-2">
+          Status atual
+        </p>
+        <p className="text-[var(--gold)] text-sm">
+          Pedido confirmado
+        </p>
+      </div>
+
+      {/* ITENS */}
+      <div className="space-y-8">
+        {order.items.map((item: OrderItem) => (
           <div
             key={item.id}
-            className="flex gap-8 pb-8 border-b border-white/10"
+            className="flex gap-6 md:gap-8 pb-6 border-b border-white/10"
           >
-            <div className="relative w-28 aspect-3/4 overflow-hidden">
+            <div className="relative w-24 md:w-28 aspect-[3/4] overflow-hidden rounded-lg">
               <Image
                 src={item.product.image}
                 alt={item.product.name}
@@ -87,13 +101,15 @@ export default function OrderSuccessPage({ params }: Props) {
             </div>
 
             <div className="flex-1">
-              <h3 className="uppercase tracking-widest text-sm">
+              <h3 className="uppercase tracking-widest text-xs md:text-sm">
                 {item.product.name}
               </h3>
 
-              <p className="text-white/60 mt-2">Quantidade: {item.quantity}</p>
+              <p className="text-white/60 mt-2 text-sm">
+                Quantidade: {item.quantity}
+              </p>
 
-              <p className="text-[var(--gold)] mt-2">
+              <p className="text-[var(--gold)] mt-2 text-lg">
                 R$ {(item.price * item.quantity).toFixed(2)}
               </p>
             </div>
@@ -101,31 +117,41 @@ export default function OrderSuccessPage({ params }: Props) {
         ))}
       </div>
 
-      <div className="border-t border-white/10 mt-14 pt-10 flex justify-between text-lg">
+      {/* TOTAL */}
+      <div className="border-t border-white/10 mt-10 pt-6 flex justify-between text-lg">
         <span>Total</span>
-
-        <span className="text-[var(--gold)]">R$ {order.total.toFixed(2)}</span>
+        <span className="text-[var(--gold)] font-semibold">
+          R$ {order.total.toFixed(2)}
+        </span>
       </div>
 
-      <div className="mt-16 flex gap-6">
+      {/* CONFIANÇA */}
+      <div className="mt-8 text-[10px] uppercase tracking-widest text-white/60 space-y-1">
+        <p>✦ Pagamento seguro</p>
+        <p>✦ Atualizações por status</p>
+        <p>✦ Entrega garantida</p>
+      </div>
+
+      {/* AÇÕES */}
+      <div className="mt-14 flex flex-col sm:flex-row gap-4">
         <Link
-          href="/"
+          href={`/orders/${order.id}`}
           className="
-            px-10 py-4 rounded-full
-            border border-white/20
+            px-8 py-4 rounded-full 
+            border border-white/20 
             text-xs tracking-[0.35em] uppercase
-            hover:border-white transition
+            hover:border-[var(--gold)] transition
           "
         >
-          Voltar à loja
+          Acompanhar pedido
         </Link>
 
         <Link
           href="/catalog"
           className="
-            px-10 py-4 rounded-full
+            px-8 py-4 rounded-full
             bg-[var(--gold)] text-black
-            text-xs tracking-[0.35em] uppercase font-medium
+            text-xs tracking-[0.35em] uppercase
             hover:scale-105 transition
           "
         >

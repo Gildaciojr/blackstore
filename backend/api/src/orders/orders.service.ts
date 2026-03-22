@@ -45,6 +45,10 @@ export class OrdersService {
         return acc + item.product.price * item.quantity;
       }, 0);
 
+      if (subtotal <= 0) {
+        throw new BadRequestException('Subtotal inválido');
+      }
+
       /**
        * CUPOM
        */
@@ -70,6 +74,13 @@ export class OrdersService {
         }
 
         discountValue = subtotal * (coupon.discount / 100);
+
+        /**
+         * 🔥 PROTEÇÃO CRÍTICA
+         */
+        if (discountValue > subtotal) {
+          discountValue = subtotal;
+        }
 
         await tx.coupon.update({
           where: { id: coupon.id },
@@ -107,7 +118,7 @@ export class OrdersService {
       });
 
       /**
-       * criar itens
+       * itens
        */
       await tx.orderItem.createMany({
         data: cartItems.map((item) => ({
@@ -119,7 +130,7 @@ export class OrdersService {
       });
 
       /**
-       * atualizar estoque
+       * estoque
        */
       await Promise.all(
         cartItems.map((item) =>

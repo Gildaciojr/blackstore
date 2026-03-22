@@ -60,11 +60,10 @@ type CartState = {
 };
 
 function getCustomerId() {
-  let id = localStorage.getItem("bs_customer");
+  const id = localStorage.getItem("bs_customer");
 
   if (!id) {
-    id = crypto.randomUUID();
-    localStorage.setItem("bs_customer", id);
+    throw new Error("Usuário não autenticado");
   }
 
   return id;
@@ -78,97 +77,126 @@ export const useCart = create<CartState>((set, get) => ({
   selectedShipping: null,
 
   loadCart: async () => {
-    const customerId = getCustomerId();
+    try {
+      const customerId = getCustomerId();
 
-    const data = await apiFetch<CartApiItem[]>(`/cart/${customerId}`);
+      const data = await apiFetch<CartApiItem[]>(`/cart/${customerId}`);
 
-    const items: CartItem[] = data.map((i: CartApiItem) => ({
-      id: i.product.id,
-      cartItemId: i.id,
-      name: i.product.name,
-      price: i.product.price,
-      oldPrice: i.product.oldPrice ?? undefined,
-      image: `${process.env.NEXT_PUBLIC_API_URL}${i.product.image}`,
-      quantity: i.quantity,
-    }));
+      const items: CartItem[] = data.map((i: CartApiItem) => ({
+        id: i.product.id,
+        cartItemId: i.id,
+        name: i.product.name,
+        price: i.product.price,
+        oldPrice: i.product.oldPrice ?? undefined,
+        image: `${process.env.NEXT_PUBLIC_API_URL}${i.product.image}`,
+        quantity: i.quantity,
+      }));
 
-    set({ items });
+      set({ items });
+    } catch (err) {
+      console.error("Erro ao carregar carrinho:", err);
+    }
   },
 
   addItem: async (item) => {
-    const customerId = getCustomerId();
+    try {
+      const customerId = getCustomerId();
 
-    await apiFetch("/cart/add", {
-      method: "POST",
-      body: JSON.stringify({
-        productId: item.id,
-        quantity: 1,
-        customerId,
-      }),
-    });
+      await apiFetch("/cart/add", {
+        method: "POST",
+        body: JSON.stringify({
+          productId: item.id,
+          quantity: 1,
+          customerId,
+        }),
+      });
 
-    await get().loadCart();
+      await get().loadCart();
+    } catch (err) {
+      console.error("Erro ao adicionar item:", err);
+      throw err;
+    }
   },
 
   removeItem: async (id) => {
-    const item = get().items.find((i) => i.id === id);
-    if (!item) return;
+    try {
+      const item = get().items.find((i) => i.id === id);
+      if (!item) return;
 
-    await apiFetch(`/cart/${item.cartItemId}`, {
-      method: "DELETE",
-    });
+      await apiFetch(`/cart/${item.cartItemId}`, {
+        method: "DELETE",
+      });
 
-    await get().loadCart();
+      await get().loadCart();
+    } catch (err) {
+      console.error("Erro ao remover item:", err);
+      throw err;
+    }
   },
 
   increase: async (id) => {
-    const item = get().items.find((i) => i.id === id);
-    if (!item) return;
+    try {
+      const item = get().items.find((i) => i.id === id);
+      if (!item) return;
 
-    await apiFetch("/cart/update", {
-      method: "PATCH",
-      body: JSON.stringify({
-        cartItemId: item.cartItemId,
-        quantity: item.quantity + 1,
-      }),
-    });
+      await apiFetch("/cart/update", {
+        method: "PATCH",
+        body: JSON.stringify({
+          cartItemId: item.cartItemId,
+          quantity: item.quantity + 1,
+        }),
+      });
 
-    await get().loadCart();
+      await get().loadCart();
+    } catch (err) {
+      console.error("Erro ao aumentar quantidade:", err);
+      throw err;
+    }
   },
 
   decrease: async (id) => {
-    const item = get().items.find((i) => i.id === id);
-    if (!item) return;
+    try {
+      const item = get().items.find((i) => i.id === id);
+      if (!item) return;
 
-    const qty = item.quantity - 1;
+      const qty = item.quantity - 1;
 
-    if (qty <= 0) {
-      await get().removeItem(id);
-      return;
+      if (qty <= 0) {
+        await get().removeItem(id);
+        return;
+      }
+
+      await apiFetch("/cart/update", {
+        method: "PATCH",
+        body: JSON.stringify({
+          cartItemId: item.cartItemId,
+          quantity: qty,
+        }),
+      });
+
+      await get().loadCart();
+    } catch (err) {
+      console.error("Erro ao diminuir quantidade:", err);
+      throw err;
     }
-
-    await apiFetch("/cart/update", {
-      method: "PATCH",
-      body: JSON.stringify({
-        cartItemId: item.cartItemId,
-        quantity: qty,
-      }),
-    });
-
-    await get().loadCart();
   },
 
   calculateShipping: async (zip: string) => {
-    const data = await apiFetch<ShippingOption[]>("/shipping/calculate", {
-      method: "POST",
-      body: JSON.stringify({ cep: zip }),
-    });
+    try {
+      const data = await apiFetch<ShippingOption[]>("/shipping/calculate", {
+        method: "POST",
+        body: JSON.stringify({ cep: zip }),
+      });
 
-    set({
-      zipCode: zip,
-      shippingOptions: data,
-      selectedShipping: null,
-    });
+      set({
+        zipCode: zip,
+        shippingOptions: data,
+        selectedShipping: null,
+      });
+    } catch (err) {
+      console.error("Erro ao calcular frete:", err);
+      throw err;
+    }
   },
 
   selectShipping: (method: string) => {

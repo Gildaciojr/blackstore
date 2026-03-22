@@ -11,7 +11,7 @@ type Props = {
   id: string;
   slug?: string;
   image: string;
-  images?: string[]; // 🔥 NOVO
+  images?: string[];
   name: string;
   price: number;
   oldPrice?: number;
@@ -39,16 +39,15 @@ export default function ProductCard({
   highlight,
   onQuickView,
 }: Props) {
-
   const addItem = useCart((s) => s.addItem);
   const cardRef = useRef<HTMLDivElement>(null);
 
   const [imgIndex, setImgIndex] = useState(0);
 
- const imgs = [
-  image,
-  ...(images && images.length > 0 ? images : []),
-];
+  const imgs = [
+    image,
+    ...(images && images.length > 0 ? images : []),
+  ];
 
   const discount =
     oldPrice && oldPrice > price
@@ -88,19 +87,17 @@ export default function ProductCard({
       onMouseMove={handleMove}
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -4, scale: 1.02}}
+      whileHover={{ y: -4, scale: 1.02 }}
       transition={{ duration: 0.4 }}
       viewport={{ once: true }}
       className="group relative"
     >
-
       {/* CARD */}
       <div className="relative overflow-hidden rounded-2xl">
 
         {/* IMAGE */}
         <Link href={productUrl}>
-          <div className="relative aspect-[4/5] bg-black overflow-hidden">
-
+          <div className="relative aspect-[3/4] bg-black overflow-hidden">
             <motion.div
               key={imgIndex}
               initial={{ opacity: 0.6 }}
@@ -115,26 +112,26 @@ export default function ProductCard({
                 sizes="(max-width:768px) 50vw, 20vw"
                 className="
                   object-cover
+                  object-center
                   transition-transform duration-700
-                  group-hover:scale-[1.08]
+                  group-hover:scale-[1.06]
                 "
               />
             </motion.div>
 
             {/* GRADIENT */}
             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-500 pointer-events-none bg-[radial-gradient(circle_at_30%_20%,rgba(212,175,55,0.12),transparent_60%)]" />
-
           </div>
         </Link>
 
-        {/* SETAS (slider) */}
+        {/* SETAS */}
         {imgs.length > 1 && (
           <>
             <button
               onClick={prevImage}
               className="
                 absolute left-2 top-1/2 -translate-y-1/2 z-20
-                w-8 h-8 rounded-full
+                w-7 h-7 rounded-full
                 bg-black/60 backdrop-blur
                 border border-white/20
                 flex items-center justify-center
@@ -143,14 +140,14 @@ export default function ProductCard({
                 transition
               "
             >
-              <ChevronLeft size={16} />
+              <ChevronLeft size={14} />
             </button>
 
             <button
               onClick={nextImage}
               className="
                 absolute right-2 top-1/2 -translate-y-1/2 z-20
-                w-8 h-8 rounded-full
+                w-7 h-7 rounded-full
                 bg-black/60 backdrop-blur
                 border border-white/20
                 flex items-center justify-center
@@ -159,7 +156,7 @@ export default function ProductCard({
                 transition
               "
             >
-              <ChevronRight size={16} />
+              <ChevronRight size={14} />
             </button>
           </>
         )}
@@ -167,7 +164,6 @@ export default function ProductCard({
         {/* BADGES */}
         {(badge || discount) && (
           <div className="absolute top-3 left-3 flex gap-2 z-20">
-
             {badge && (
               <span className="px-2 py-1 text-[9px] uppercase tracking-[0.3em] bg-white/10 border border-white/20 rounded-full">
                 {badge}
@@ -179,21 +175,16 @@ export default function ProductCard({
                 {discount}% OFF
               </span>
             )}
-
           </div>
         )}
 
         {/* QUICK VIEW */}
         {onQuickView && (
-          <div className="
-            absolute top-3 right-3 z-20
-            opacity-0 group-hover:opacity-100
-            transition duration-300
-          ">
+          <div className="absolute top-3 right-3 z-20 opacity-0 group-hover:opacity-100 transition duration-300">
             <button
               onClick={onQuickView}
               className="
-                w-10 h-10 rounded-full
+                w-9 h-9 rounded-full
                 bg-black/60 backdrop-blur
                 border border-white/20
                 flex items-center justify-center
@@ -203,7 +194,7 @@ export default function ProductCard({
                 transition
               "
             >
-              <Eye size={18} />
+              <Eye size={16} />
             </button>
           </div>
         )}
@@ -215,14 +206,13 @@ export default function ProductCard({
           transition duration-300
           pointer-events-none group-hover:pointer-events-auto
         ">
-          <div className="w-full p-4">
-
+          <div className="w-full p-3">
             <button
               onClick={() =>
                 addItem({ id, name, price, oldPrice, image })
               }
               className="
-                w-full py-3 rounded-full
+                w-full py-2.5 rounded-full
                 bg-[var(--gold)] text-black
                 text-[10px] uppercase tracking-[0.35em]
                 flex items-center justify-center gap-2
@@ -230,17 +220,15 @@ export default function ProductCard({
                 transition-all duration-300
               "
             >
-              <ShoppingBag size={16} />
+              <ShoppingBag size={14} />
               Adicionar
             </button>
-
           </div>
         </div>
-
       </div>
 
       {/* CONTENT */}
-      <div className="mt-4 px-1">
+      <div className="mt-3 px-1">
 
         <p className="text-[9px] uppercase tracking-[0.35em] text-white/40">
           Blackstore
@@ -259,7 +247,7 @@ export default function ProductCard({
           </h3>
         </Link>
 
-        <div className="mt-2 flex items-center gap-2">
+        <div className="mt-1.5 flex items-center gap-2">
 
           {oldPrice && oldPrice > price && (
             <p className="text-[10px] text-white/40 line-through">
@@ -274,7 +262,6 @@ export default function ProductCard({
         </div>
 
       </div>
-
     </motion.div>
   );
 }
