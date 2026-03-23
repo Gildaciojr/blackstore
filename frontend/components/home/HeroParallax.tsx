@@ -133,37 +133,122 @@ export default function HeroParallax() {
         <div className="w-full max-w-7xl mx-auto px-5 md:px-10">
           <motion.div
             key={index}
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
+            initial="hidden"
+            animate="show"
+            variants={{
+              hidden: {},
+              show: {
+                transition: {
+                  staggerChildren: 0.12,
+                  delayChildren: 0.2,
+                },
+              },
+            }}
             className="
-              w-full
-              max-w-[280px] sm:max-w-sm md:max-w-lg lg:max-w-xl
-              p-0 sm:p-4 md:p-6
-              rounded-none sm:rounded-xl
-            "
+        w-full
+        max-w-[280px] sm:max-w-sm md:max-w-lg lg:max-w-xl
+        p-0 sm:p-4 md:p-6
+        rounded-none sm:rounded-xl
+      "
           >
-            <p className="uppercase text-[10px] tracking-[0.4em] text-white/70">
+            {/* LABEL */}
+            <motion.p
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                show: { opacity: 1, y: 0 },
+              }}
+              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              className="
+          uppercase text-[10px]
+          tracking-[0.4em]
+          text-white/70
+
+          px-2 py-[3px]
+          inline-block
+
+          bg-white/5
+          backdrop-blur-sm
+          rounded-sm
+        "
+            >
               {slide.type === "promo"
                 ? "Últimas unidades"
                 : slide.type === "product"
                   ? "Alta performance"
                   : "Nova coleção"}
-            </p>
+            </motion.p>
 
-            <h1 className="mt-4 text-2xl sm:text-4xl md:text-6xl lg:text-7xl font-light leading-tight">
-              <span className="block">{slide.title1}</span>
-              <span className="block bs-title">{slide.title2}</span>
-            </h1>
+            {/* TITLE */}
+            <motion.h1
+              variants={{
+                hidden: { opacity: 0, y: 40 },
+                show: { opacity: 1, y: 0 },
+              }}
+              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+              className="mt-4 text-2xl sm:text-4xl md:text-6xl lg:text-7xl font-light leading-tight"
+            >
+              <span className="block text-white">{slide.title1}</span>
 
-            <p className="mt-5 text-white/90 text-sm md:text-lg max-w-lg drop-shadow">
+              <span
+                className="
+            block
+            bg-gradient-to-r from-[var(--gold)] via-[#f5d07a] to-white
+            bg-clip-text text-transparent
+          "
+              >
+                {slide.title2}
+              </span>
+            </motion.h1>
+
+            {/* SUBTITLE */}
+            <motion.p
+              variants={{
+                hidden: { opacity: 0, y: 30 },
+                show: { opacity: 1, y: 0 },
+              }}
+              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+              className="
+          mt-5
+          text-white/90
+          text-sm md:text-lg
+          max-w-lg
+          leading-relaxed
+
+          px-3 py-2
+          rounded-md
+
+          bg-black/20
+          backdrop-blur-[2px]
+
+          shadow-[0_4px_20px_rgba(0,0,0,0.25)]
+        "
+            >
               {slide.subtitle}
-            </p>
+            </motion.p>
 
-            <div className="mt-6 flex flex-col sm:flex-row gap-4">
+            {/* BUTTONS */}
+            <motion.div
+              variants={{
+                hidden: { opacity: 0, y: 30 },
+                show: { opacity: 1, y: 0 },
+              }}
+              transition={{ duration: 0.7 }}
+              className="mt-6 flex flex-col sm:flex-row gap-4"
+            >
               <Link
                 href={slide.cta1}
-                className="px-6 py-3 rounded-full bg-[var(--gold)] text-black text-xs tracking-[0.3em] uppercase"
+                className="
+            px-6 py-3
+            rounded-full
+            bg-[var(--gold)]
+            text-black
+            text-xs
+            tracking-[0.3em]
+            uppercase
+
+            hover:brightness-110
+            transition
+          "
               >
                 {slide.type === "promo"
                   ? "Aproveitar agora"
@@ -172,16 +257,41 @@ export default function HeroParallax() {
 
               <Link
                 href={slide.cta2}
-                className="px-6 py-3 rounded-full border border-white/20 text-xs tracking-[0.3em] uppercase"
+                className="
+            px-6 py-3
+            rounded-full
+            border border-white/20
+            text-xs
+            tracking-[0.3em]
+            uppercase
+
+            hover:bg-white/5
+            transition
+          "
               >
                 Explorar catálogo
               </Link>
-            </div>
+            </motion.div>
 
-            <div className="mt-6 flex flex-wrap gap-3 text-[10px] text-white/80 uppercase tracking-widest">
+            {/* INFO */}
+            <motion.div
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                show: { opacity: 1, y: 0 },
+              }}
+              transition={{ duration: 0.6 }}
+              className="
+          mt-6
+          flex flex-wrap gap-3
+          text-[10px]
+          text-white/80
+          uppercase
+          tracking-widest
+        "
+            >
               <span>✦ Frete rápido para todo Brasil</span>
               <span>✦ Peças exclusivas</span>
-            </div>
+            </motion.div>
           </motion.div>
         </div>
       </div>
