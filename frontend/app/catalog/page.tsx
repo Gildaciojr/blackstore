@@ -15,6 +15,7 @@ type Product = {
   oldPrice?: number | null;
   image: string;
   categoryId: string;
+  stock: number; // ✅ ADICIONADO
 };
 
 type Category = {
@@ -192,6 +193,7 @@ export default function CatalogPage() {
                   image={imageUrl}
                   name={product.name}
                   price={product.price}
+                  stock={product.stock} // ✅ AQUI ESTÁ O PONTO CRÍTICO
                   onQuickView={() =>
                     setSelectedProduct({
                       id: product.id,

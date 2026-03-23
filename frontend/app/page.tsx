@@ -207,6 +207,7 @@ export default function HomePage() {
                     name={product.name}
                     price={product.price}
                     oldPrice={product.oldPrice ?? undefined}
+                    stock={product.stock}
                     onQuickView={() =>
                       setQuickProduct(normalizeProduct(product))
                     }
@@ -270,6 +271,7 @@ export default function HomePage() {
                   name={products[0].name}
                   price={products[0].price}
                   oldPrice={products[0].oldPrice ?? undefined}
+                  stock={products[0].stock}
                   highlight
                   badge="OFERTA"
                   onQuickView={() =>

@@ -18,6 +18,7 @@ type Props = {
   oldPrice?: number;
   badge?: string;
   highlight?: boolean;
+  stock?: number; // ✅ ADICIONADO
   onQuickView?: () => void;
 };
 
@@ -51,6 +52,7 @@ export default function ProductCard({
   oldPrice,
   badge,
   highlight,
+  stock, // ✅ ADICIONADO
   onQuickView,
 }: Props) {
   const addItem = useCart((s) => s.addItem);
@@ -142,6 +144,29 @@ export default function ProductCard({
             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-500 pointer-events-none bg-[radial-gradient(circle_at_30%_20%,rgba(212,175,55,0.12),transparent_60%)]" />
           </div>
         </Link>
+
+        {/* 🔥 ÚLTIMAS UNIDADES */}
+        {stock !== undefined && stock <= 2 && (
+          <div className="absolute bottom-3 left-3 z-30">
+            <motion.span
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="
+                px-3 py-1.5
+                text-[10px]
+                uppercase tracking-[0.3em]
+                rounded-full
+                border border-orange-400/30
+                bg-orange-400/10
+                text-orange-300
+                backdrop-blur
+                shadow-[0_0_20px_rgba(255,120,0,0.25)]
+              "
+            >
+              🔥 Últimas unidades
+            </motion.span>
+          </div>
+        )}
 
         {/* SETAS */}
         {imgs.length > 1 && (
