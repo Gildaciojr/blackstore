@@ -1,9 +1,14 @@
 import axios from 'axios';
+import { BadRequestException, InternalServerErrorException } from '@nestjs/common';
 
 type CreatePixPayload = {
   referenceId: string;
   amount: number;
   description: string;
+  customer: {
+    name: string;
+    email: string;
+  };
 };
 
 type PagbankCharge = {
@@ -19,11 +24,40 @@ type PagbankResponse = {
 };
 
 export class PagbankProvider {
-  private baseUrl = 'https://sandbox.api.pagseguro.com';
+  private readonly env = (process.env.PAGBANK_ENV || 'sandbox').toLowerCase();
 
-  private token = process.env.PAGBANK_TOKEN;
+  private readonly baseUrl =
+    this.env === 'production' ? 'https://api.pagseguro.com' : 'https://sandbox.api.pagseguro.com';
+
+  private readonly token = process.env.PAGBANK_TOKEN;
 
   async createPixPayment(data: CreatePixPayload) {
+    if (!this.token) {
+      throw new InternalServerErrorException('PAGBANK_TOKEN não configurado no ambiente.');
+    }
+
+    if (!data.referenceId?.trim()) {
+      throw new BadRequestException('referenceId é obrigatório.');
+    }
+
+    if (!data.description?.trim()) {
+      throw new BadRequestException('description é obrigatória.');
+    }
+
+    if (!data.customer?.name?.trim()) {
+      throw new BadRequestException('Nome do cliente é obrigatório.');
+    }
+
+    if (!data.customer?.email?.trim()) {
+      throw new BadRequestException('Email do cliente é obrigatório.');
+    }
+
+    if (!data.amount || data.amount <= 0) {
+      throw new BadRequestException('amount deve ser maior que zero.');
+    }
+
+    const notificationUrl = `${process.env.API_URL}/payment/webhook/${process.env.PAGBANK_WEBHOOK_SECRET}`;
+
     const response = await axios.post<PagbankResponse>(
       `${this.baseUrl}/orders`,
       {
@@ -32,13 +66,11 @@ export class PagbankProvider {
         /**
          * 🔥 WEBHOOK AQUI (CRÍTICO)
          */
-        notification_urls: [
-          `${process.env.API_URL}/payment/webhook/${process.env.PAGBANK_WEBHOOK_SECRET}`,
-        ],
+        notification_urls: [notificationUrl],
 
         customer: {
-          name: 'Cliente Blackstore',
-          email: 'cliente@blackstore.com',
+          name: data.customer.name,
+          email: data.customer.email,
         },
 
         items: [
@@ -64,6 +96,7 @@ export class PagbankProvider {
         ],
       },
       {
+        timeout: 15000,
         headers: {
           Authorization: `Bearer ${this.token}`,
           'Content-Type': 'application/json',

@@ -94,6 +94,7 @@ model Order {
   items OrderItem[]
 
   payment Payment?
+  paymentId String?
 }
 
 model OrderItem {
@@ -144,14 +145,40 @@ model Payment {
   providerId  String?
   providerRef String?
 
+  // =========================
+  // PIX
+  // =========================
   qrCode      String?
   qrCodeText  String?
 
-  cardLast4   String?
-  cardBrand   String?
+  // =========================
+  // CARTÃO (PROFISSIONAL)
+  // =========================
+  cardLast4      String?
+  cardBrand      String?
+  cardHolderName String?
+  installments   Int?
+  cardExpMonth   String?
+  cardExpYear    String?
+
+  logs PaymentLog[]
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model PaymentLog {
+  id String @id @default(uuid())
+
+  paymentId String
+  payment   Payment @relation(fields: [paymentId], references: [id])
+
+  type String
+  message String?
+
+  rawPayload Json?
+
+  createdAt DateTime @default(now())
 }
 
 model ShippingRate {

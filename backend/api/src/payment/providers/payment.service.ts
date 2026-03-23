@@ -34,16 +34,42 @@ export class PaymentService {
       return existing;
     }
 
+    /**
+     * 🔥 BUSCA CUSTOMER REAL (CRÍTICO PARA PRODUÇÃO)
+     */
+    const customer = await this.prisma.customer.findUnique({
+      where: { id: order.customerId },
+    });
+
+    if (!customer) {
+      throw new NotFoundException('Customer not found');
+    }
+
     let providerData: ProviderData | null = null;
 
+    /**
+     * =========================
+     * PIX
+     * =========================
+     */
     if (data.method === 'pix') {
       providerData = await this.pagbank.createPixPayment({
         referenceId: order.id,
         amount: order.total,
         description: `Pedido ${order.id}`,
+
+        customer: {
+          name: `${customer.name} ${customer.surname}`,
+          email: customer.email,
+        },
       });
     }
 
+    /**
+     * =========================
+     * CARTÃO (SERÁ IMPLEMENTADO)
+     * =========================
+     */
     if (data.method === 'card') {
       providerData = {
         providerId: null,
@@ -52,6 +78,11 @@ export class PaymentService {
       };
     }
 
+    /**
+     * =========================
+     * CRIA PAYMENT
+     * =========================
+     */
     const payment = await this.prisma.payment.create({
       data: {
         orderId: data.orderId,
@@ -81,19 +112,24 @@ export class PaymentService {
       throw new BadRequestException('Invalid webhook payload');
     }
 
-    /**
-     * =========================
-     * TIPAGEM CORRETA (AQUI ERA O BUG)
-     * =========================
-     */
     let payment: Payment | null = null;
 
+    /**
+     * =========================
+     * BUSCA POR providerId
+     * =========================
+     */
     if (providerId) {
       payment = await this.prisma.payment.findFirst({
         where: { providerId },
       });
     }
 
+    /**
+     * =========================
+     * FALLBACK POR orderId
+     * =========================
+     */
     if (!payment && referenceId) {
       payment = await this.prisma.payment.findUnique({
         where: { orderId: referenceId },
@@ -112,6 +148,9 @@ export class PaymentService {
     if (rawStatus === 'DECLINED' || rawStatus === 'CANCELED') status = 'failed';
     if (rawStatus === 'IN_ANALYSIS' || rawStatus === 'WAITING') status = 'pending';
 
+    /**
+     * 🔥 ATUALIZA PAYMENT
+     */
     await this.prisma.payment.update({
       where: { id: payment.id },
       data: {
@@ -120,6 +159,9 @@ export class PaymentService {
       },
     });
 
+    /**
+     * 🔥 ATUALIZA ORDER
+     */
     if (status === 'paid') {
       await this.prisma.order.update({
         where: { id: payment.orderId },
