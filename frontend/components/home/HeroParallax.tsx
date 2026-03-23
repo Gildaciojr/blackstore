@@ -147,8 +147,8 @@ export default function HeroParallax() {
               {slide.type === "promo"
                 ? "Últimas unidades"
                 : slide.type === "product"
-                ? "Alta performance"
-                : "Nova coleção"}
+                  ? "Alta performance"
+                  : "Nova coleção"}
             </p>
 
             <h1 className="mt-4 text-2xl sm:text-4xl md:text-6xl lg:text-7xl font-light leading-tight">
@@ -189,33 +189,60 @@ export default function HeroParallax() {
       {/* BENEFÍCIOS */}
       <div className="absolute bottom-20 w-full z-20">
         <div className="max-w-7xl mx-auto px-4 md:px-10">
-          <div className="
-            bg-black/80
-            border border-white/10
-            rounded-xl
-            grid grid-cols-2 md:grid-cols-4
-            gap-3
-            px-4 py-3
-            text-center md:text-left
-          ">
-            <div>
-              <p className="text-sm font-semibold">Compra segura</p>
-              <p className="text-xs text-white/60">dados protegidos</p>
+          <div
+            className="
+        bg-black/70
+        backdrop-blur-md
+
+        border border-white/10
+        rounded-lg md:rounded-xl
+
+        grid grid-cols-2 md:grid-cols-4
+        gap-2 md:gap-4
+
+        px-3 py-2.5 md:px-5 md:py-3.5
+
+        text-center md:text-left
+
+        shadow-[0_10px_30px_rgba(0,0,0,0.35)]
+      "
+          >
+            {/* ITEM 1 */}
+            <div className="flex flex-col items-center md:items-start leading-tight">
+              <p className="text-[12px] md:text-sm font-medium text-white">
+                Compra segura
+              </p>
+              <p className="text-[10px] md:text-xs text-white/70">
+                dados protegidos
+              </p>
             </div>
 
-            <div>
-              <p className="text-sm font-semibold">Parcele em até 3x</p>
-              <p className="text-xs text-white/60">sem juros</p>
+            {/* ITEM 2 */}
+            <div className="flex flex-col items-center md:items-start leading-tight">
+              <p className="text-[12px] md:text-sm font-medium text-white">
+                Parcele em até 3x
+              </p>
+              <p className="text-[10px] md:text-xs text-white/70">sem juros</p>
             </div>
 
-            <div>
-              <p className="text-sm font-semibold">Entrega rápida</p>
-              <p className="text-xs text-white/60">todo Brasil</p>
+            {/* ITEM 3 */}
+            <div className="flex flex-col items-center md:items-start leading-tight">
+              <p className="text-[12px] md:text-sm font-medium text-white">
+                Entrega rápida
+              </p>
+              <p className="text-[10px] md:text-xs text-white/70">
+                todo Brasil
+              </p>
             </div>
 
-            <div>
-              <p className="text-sm font-semibold">Qualidade garantida</p>
-              <p className="text-xs text-white/60">produtos premium</p>
+            {/* ITEM 4 */}
+            <div className="flex flex-col items-center md:items-start leading-tight">
+              <p className="text-[12px] md:text-sm font-medium text-white">
+                Qualidade garantida
+              </p>
+              <p className="text-[10px] md:text-xs text-white/70">
+                produtos premium
+              </p>
             </div>
           </div>
         </div>
