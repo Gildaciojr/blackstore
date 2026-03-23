@@ -107,6 +107,10 @@ export class PaymentService {
         cardBrand: providerData?.cardBrand ?? null,
         cardHolderName: data.holderName ?? null,
         installments: data.installments ?? null,
+
+        // mantém compatibilidade com schema
+        cardExpMonth: null,
+        cardExpYear: null,
       },
     });
 
@@ -115,14 +119,15 @@ export class PaymentService {
 
   /**
    * =========================
-   * WEBHOOK
+   * WEBHOOK (BLINDADO)
    * =========================
    */
   async confirmWebhook(data: WebhookPaymentDto) {
     const charge = data.charges?.[0];
 
     const providerId = charge?.id ?? data.id ?? null;
-    const referenceId = data.reference_id;
+
+    const referenceId = data.reference_id ?? null;
 
     if (!providerId && !referenceId) {
       throw new BadRequestException('Invalid webhook payload');
@@ -130,12 +135,18 @@ export class PaymentService {
 
     let payment: Payment | null = null;
 
+    /**
+     * 🔥 PRIORIDADE 1: providerId (mais confiável)
+     */
     if (providerId) {
       payment = await this.prisma.payment.findFirst({
         where: { providerId },
       });
     }
 
+    /**
+     * 🔥 PRIORIDADE 2: fallback por orderId
+     */
     if (!payment && referenceId) {
       payment = await this.prisma.payment.findUnique({
         where: { orderId: referenceId },
@@ -150,9 +161,16 @@ export class PaymentService {
 
     let status: 'pending' | 'paid' | 'failed' = 'pending';
 
-    if (rawStatus === 'PAID') status = 'paid';
-    if (rawStatus === 'DECLINED' || rawStatus === 'CANCELED') status = 'failed';
-    if (rawStatus === 'IN_ANALYSIS' || rawStatus === 'WAITING') status = 'pending';
+    /**
+     * 🔥 NORMALIZAÇÃO DE STATUS (ROBUSTA)
+     */
+    if (rawStatus === 'PAID') {
+      status = 'paid';
+    } else if (rawStatus === 'DECLINED' || rawStatus === 'CANCELED' || rawStatus === 'CANCELLED') {
+      status = 'failed';
+    } else if (rawStatus === 'IN_ANALYSIS' || rawStatus === 'WAITING') {
+      status = 'pending';
+    }
 
     await this.prisma.payment.update({
       where: { id: payment.id },
@@ -162,6 +180,9 @@ export class PaymentService {
       },
     });
 
+    /**
+     * 🔥 ATUALIZA PEDIDO (CRÍTICO)
+     */
     if (status === 'paid') {
       await this.prisma.order.update({
         where: { id: payment.orderId },

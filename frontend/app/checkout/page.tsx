@@ -46,6 +46,74 @@ type PaymentResponse = {
   cardBrand?: string | null;
 };
 
+type PaymentPayload = {
+  orderId: string;
+  method: "pix" | "card";
+  cardToken?: string;
+  installments?: number;
+  holderName?: string;
+};
+
+type PagSeguroEncryptCardInput = {
+  publicKey: string;
+  holder: string;
+  number: string;
+  expMonth: string;
+  expYear: string;
+  securityCode: string;
+};
+
+type PagSeguroEncryptCardError = {
+  code: string;
+  message: string;
+};
+
+type PagSeguroEncryptCardResult = {
+  encryptedCard: string;
+  hasErrors: boolean;
+  errors?: PagSeguroEncryptCardError[];
+};
+
+type PagSeguroSdk = {
+  encryptCard: (data: PagSeguroEncryptCardInput) => PagSeguroEncryptCardResult;
+};
+
+declare global {
+  interface Window {
+    PagSeguro?: PagSeguroSdk;
+  }
+}
+
+function normalizeCardNumber(value: string) {
+  return value.replace(/\D/g, "").slice(0, 16);
+}
+
+function formatCardNumber(value: string) {
+  const digits = normalizeCardNumber(value);
+  return digits.replace(/(\d{4})(?=\d)/g, "$1 ").trim();
+}
+
+function normalizeExpiry(value: string) {
+  const digits = value.replace(/\D/g, "").slice(0, 4);
+
+  if (digits.length <= 2) return digits;
+
+  return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+}
+
+function normalizeCvv(value: string) {
+  return value.replace(/\D/g, "").slice(0, 4);
+}
+
+function normalizeInstallments(value: string) {
+  const numeric = Number(value.replace(/\D/g, "") || "1");
+
+  if (numeric < 1) return 1;
+  if (numeric > 3) return 3;
+
+  return numeric;
+}
+
 export default function CheckoutPage() {
   const {
     items,
@@ -76,18 +144,12 @@ export default function CheckoutPage() {
   const [zip, setZip] = useState(zipCode);
   const [shippingLoading, setShippingLoading] = useState(false);
 
-  /**
-   * 🔥 CARTÃO STATE
-   */
   const [cardNumber, setCardNumber] = useState("");
   const [cardName, setCardName] = useState("");
   const [cardExpiry, setCardExpiry] = useState("");
   const [cardCvv, setCardCvv] = useState("");
   const [installments, setInstallments] = useState(1);
 
-  /**
-   * 🔒 CONTROLE ANTI DUPLO CLICK
-   */
   const [checkoutLock, setCheckoutLock] = useState(false);
 
   useEffect(() => {
@@ -139,9 +201,72 @@ export default function CheckoutPage() {
     }
   }
 
+  function waitForPagSeguro(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const timeout = 5000;
+      const interval = 100;
+
+      let elapsed = 0;
+
+      const check = () => {
+        if (window.PagSeguro) {
+          resolve();
+        } else {
+          elapsed += interval;
+
+          if (elapsed >= timeout) {
+            reject(new Error("PagSeguro não carregou"));
+          } else {
+            setTimeout(check, interval);
+          }
+        }
+      };
+
+      check();
+    });
+  }
+
+  async function generateCardToken(): Promise<string> {
+    await waitForPagSeguro();
+
+    const publicKey = process.env.NEXT_PUBLIC_PAGBANK_PUBLIC_KEY;
+
+    if (!window.PagSeguro) {
+      throw new Error("PagSeguro não disponível");
+    }
+
+    if (!publicKey) {
+      throw new Error("Public key não configurada");
+    }
+
+    const [month, shortYear] = cardExpiry.split("/");
+
+    const encrypted = window.PagSeguro.encryptCard({
+      publicKey,
+      holder: cardName.trim(),
+      number: cardNumber.replace(/\s/g, ""),
+      expMonth: month,
+      expYear: `20${shortYear}`,
+      securityCode: cardCvv,
+    });
+
+    if (encrypted.hasErrors) {
+      throw new Error(
+        encrypted.errors?.[0]?.message ?? "Erro ao gerar token do cartão",
+      );
+    }
+
+    if (!encrypted.encryptedCard) {
+      throw new Error("Token do cartão não retornado");
+    }
+
+    return encrypted.encryptedCard;
+  }
+
   async function handleCheckout() {
     if (loading || checkoutLock) return;
 
+    // 🔴 VALIDAÇÕES GERAIS (CRÍTICO)
     if (!items.length) {
       alert("Seu carrinho está vazio");
       return;
@@ -157,12 +282,25 @@ export default function CheckoutPage() {
       return;
     }
 
-    /**
-     * 🔥 VALIDAÇÃO CARTÃO
-     */
+    // 🟡 VALIDAÇÃO DO CARTÃO (UX + SEGURANÇA)
     if (payment === "card") {
       if (!cardNumber || !cardName || !cardExpiry || !cardCvv) {
         alert("Preencha todos os dados do cartão");
+        return;
+      }
+
+      if (normalizeCardNumber(cardNumber).length < 13) {
+        alert("Número do cartão inválido");
+        return;
+      }
+
+      if (!cardExpiry.includes("/") || cardExpiry.length !== 5) {
+        alert("Validade do cartão inválida");
+        return;
+      }
+
+      if (cardCvv.length < 3) {
+        alert("CVV inválido");
         return;
       }
     }
@@ -197,19 +335,22 @@ export default function CheckoutPage() {
         throw new Error("Falha ao criar pedido");
       }
 
+      const payload: PaymentPayload = {
+        orderId: order.id,
+        method: payment,
+      };
+
+      if (payment === "card") {
+        const token = await generateCardToken();
+
+        payload.cardToken = token;
+        payload.installments = installments;
+        payload.holderName = cardName.trim();
+      }
+
       const paymentData = await apiFetch<PaymentResponse>("/payment", {
         method: "POST",
-        body: JSON.stringify({
-          orderId: order.id,
-          method: payment,
-
-          /**
-           * 🔥 CARTÃO (TEMPORÁRIO)
-           */
-          cardToken: "TEMP_TOKEN",
-          installments,
-          holderName: cardName,
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!paymentData?.orderId) {
@@ -221,7 +362,11 @@ export default function CheckoutPage() {
       window.location.href = `/payment/${paymentData.orderId}`;
     } catch (err) {
       console.error(err);
-      alert("Erro ao finalizar checkout");
+
+      const message =
+        err instanceof Error ? err.message : "Erro ao finalizar checkout";
+
+      alert(message);
       setCheckoutLock(false);
     } finally {
       setLoading(false);
@@ -245,7 +390,6 @@ export default function CheckoutPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-10 lg:gap-12">
         <div className="lg:col-span-2 space-y-10 sm:space-y-12 md:space-y-14">
-          {/* ENDEREÇO */}
           <div>
             <h2 className="uppercase tracking-widest text-xs mb-6">
               Endereço de entrega
@@ -285,7 +429,6 @@ export default function CheckoutPage() {
             </div>
           </div>
 
-          {/* FRETE */}
           <div>
             <h2 className="uppercase tracking-widest text-xs mb-6">Frete</h2>
 
@@ -341,7 +484,6 @@ export default function CheckoutPage() {
             </div>
           </div>
 
-          {/* PAGAMENTO */}
           <div>
             <h2 className="uppercase tracking-widest text-xs mb-6">
               Forma de pagamento
@@ -375,14 +517,17 @@ export default function CheckoutPage() {
               </button>
             </div>
 
-            {/* 🔥 FORMULÁRIO CARTÃO */}
             {payment === "card" && (
               <div className="mt-6 space-y-4">
                 <input
                   placeholder="Número do cartão"
                   value={cardNumber}
-                  onChange={(e) => setCardNumber(e.target.value)}
+                  onChange={(e) =>
+                    setCardNumber(formatCardNumber(e.target.value))
+                  }
                   className="w-full p-3 bg-black border border-white/10 rounded-md"
+                  inputMode="numeric"
+                  autoComplete="cc-number"
                 />
 
                 <input
@@ -390,38 +535,52 @@ export default function CheckoutPage() {
                   value={cardName}
                   onChange={(e) => setCardName(e.target.value)}
                   className="w-full p-3 bg-black border border-white/10 rounded-md"
+                  autoComplete="cc-name"
                 />
 
                 <div className="grid grid-cols-2 gap-3">
                   <input
                     placeholder="MM/AA"
                     value={cardExpiry}
-                    onChange={(e) => setCardExpiry(e.target.value)}
+                    onChange={(e) =>
+                      setCardExpiry(normalizeExpiry(e.target.value))
+                    }
                     className="p-3 bg-black border border-white/10 rounded-md"
+                    inputMode="numeric"
+                    autoComplete="cc-exp"
                   />
 
                   <input
                     placeholder="CVV"
                     value={cardCvv}
-                    onChange={(e) => setCardCvv(e.target.value)}
+                    onChange={(e) => setCardCvv(normalizeCvv(e.target.value))}
                     className="p-3 bg-black border border-white/10 rounded-md"
+                    inputMode="numeric"
+                    autoComplete="cc-csc"
                   />
                 </div>
 
-                <input
-                  type="number"
-                  min={1}
-                  max={12}
-                  value={installments}
-                  onChange={(e) => setInstallments(Number(e.target.value))}
-                  className="w-full p-3 bg-black border border-white/10 rounded-md"
-                  placeholder="Parcelas"
-                />
+                <div>
+                  <label className="block text-xs uppercase tracking-widest text-white/50 mb-2">
+                    Parcelamento
+                  </label>
+
+                  <select
+                    value={installments}
+                    onChange={(e) =>
+                      setInstallments(normalizeInstallments(e.target.value))
+                    }
+                    className="w-full p-3 bg-black border border-white/10 rounded-md text-sm"
+                  >
+                    <option value={1}>1x sem juros</option>
+                    <option value={2}>2x sem juros</option>
+                    <option value={3}>3x sem juros</option>
+                  </select>
+                </div>
               </div>
             )}
           </div>
 
-          {/* CUPOM */}
           <div>
             <h2 className="uppercase tracking-widest text-xs mb-6">
               Cupom de desconto
@@ -464,7 +623,6 @@ export default function CheckoutPage() {
           </div>
         </div>
 
-        {/* RESUMO */}
         <div className="lg:col-span-1">
           <div className="lg:sticky lg:top-28 p-5 sm:p-6 md:p-8 border border-white/10 rounded-2xl bg-black/40 backdrop-blur">
             <h2 className="uppercase tracking-widest text-xs mb-6">

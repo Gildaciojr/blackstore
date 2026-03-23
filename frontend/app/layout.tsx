@@ -8,6 +8,8 @@ import GlowCursor from "@/components/ui/GlowCursor";
 import CartLoader from "@/components/cart/CartLoader";
 import AuthLoader from "@/components/auth/AuthLoader";
 
+import Script from "next/script";
+
 export const metadata: Metadata = {
   title: "Blackstore — Moda Fitness Premium",
   description: "Moda fitness e vestidos com estética premium",
@@ -21,23 +23,21 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className="bg-black text-white antialiased">
+        {/* ✅ SCRIPT PAGBANK (FORMA CORRETA) */}
+        <Script
+          src="https://assets.pagseguro.com.br/checkout-sdk-js/rc/dist/browser/pagseguro.min.js"
+          strategy="afterInteractive"
+        />
 
-        {/* 🔒 sessão primeiro */}
         <AuthLoader />
-
-        {/* 🛒 carrinho depende da sessão */}
         <CartLoader />
 
-        {/* UI */}
         <GlowCursor />
         <Header />
 
-        <main className="pt-20">
-          {children}
-        </main>
+        <main className="pt-20">{children}</main>
 
         <Footer />
-
       </body>
     </html>
   );
