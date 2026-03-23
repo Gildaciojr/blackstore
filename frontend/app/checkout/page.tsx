@@ -77,7 +77,16 @@ export default function CheckoutPage() {
   const [shippingLoading, setShippingLoading] = useState(false);
 
   /**
-   * 🔒 CONTROLE ANTI DUPLO CLICK (CRÍTICO)
+   * 🔥 CARTÃO STATE
+   */
+  const [cardNumber, setCardNumber] = useState("");
+  const [cardName, setCardName] = useState("");
+  const [cardExpiry, setCardExpiry] = useState("");
+  const [cardCvv, setCardCvv] = useState("");
+  const [installments, setInstallments] = useState(1);
+
+  /**
+   * 🔒 CONTROLE ANTI DUPLO CLICK
    */
   const [checkoutLock, setCheckoutLock] = useState(false);
 
@@ -131,9 +140,6 @@ export default function CheckoutPage() {
   }
 
   async function handleCheckout() {
-    /**
-     * 🔒 BLOQUEIO DUPLO CLICK
-     */
     if (loading || checkoutLock) return;
 
     if (!items.length) {
@@ -151,6 +157,16 @@ export default function CheckoutPage() {
       return;
     }
 
+    /**
+     * 🔥 VALIDAÇÃO CARTÃO
+     */
+    if (payment === "card") {
+      if (!cardNumber || !cardName || !cardExpiry || !cardCvv) {
+        alert("Preencha todos os dados do cartão");
+        return;
+      }
+    }
+
     let customerId: string;
 
     try {
@@ -164,9 +180,6 @@ export default function CheckoutPage() {
       setLoading(true);
       setCheckoutLock(true);
 
-      /**
-       * 🔥 CRIA PEDIDO
-       */
       const order = await apiFetch<OrderResponse>("/orders/checkout", {
         method: "POST",
         body: JSON.stringify({
@@ -184,14 +197,18 @@ export default function CheckoutPage() {
         throw new Error("Falha ao criar pedido");
       }
 
-      /**
-       * 🔥 CRIA PAGAMENTO
-       */
       const paymentData = await apiFetch<PaymentResponse>("/payment", {
         method: "POST",
         body: JSON.stringify({
           orderId: order.id,
           method: payment,
+
+          /**
+           * 🔥 CARTÃO (TEMPORÁRIO)
+           */
+          cardToken: "TEMP_TOKEN",
+          installments,
+          holderName: cardName,
         }),
       });
 
@@ -199,14 +216,8 @@ export default function CheckoutPage() {
         throw new Error("Falha ao criar pagamento");
       }
 
-      /**
-       * 🔥 LIMPA CARRINHO SOMENTE SE TUDO DER CERTO
-       */
       clear();
 
-      /**
-       * 🔥 REDIRECIONAMENTO SEGURO
-       */
       window.location.href = `/payment/${paymentData.orderId}`;
     } catch (err) {
       console.error(err);
@@ -234,7 +245,6 @@ export default function CheckoutPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-10 lg:gap-12">
         <div className="lg:col-span-2 space-y-10 sm:space-y-12 md:space-y-14">
-
           {/* ENDEREÇO */}
           <div>
             <h2 className="uppercase tracking-widest text-xs mb-6">
@@ -269,9 +279,7 @@ export default function CheckoutPage() {
                     {address.district} - {address.city} - {address.state}
                   </p>
 
-                  <p className="text-xs text-white/60">
-                    CEP {address.zipCode}
-                  </p>
+                  <p className="text-xs text-white/60">CEP {address.zipCode}</p>
                 </button>
               ))}
             </div>
@@ -279,9 +287,7 @@ export default function CheckoutPage() {
 
           {/* FRETE */}
           <div>
-            <h2 className="uppercase tracking-widest text-xs mb-6">
-              Frete
-            </h2>
+            <h2 className="uppercase tracking-widest text-xs mb-6">Frete</h2>
 
             <div className="rounded-xl border border-white/10 p-4 sm:p-5 bg-black/30">
               <div className="flex flex-col sm:flex-row gap-3">
@@ -365,11 +371,54 @@ export default function CheckoutPage() {
                 }`}
               >
                 <p className="uppercase tracking-widest text-xs mb-2">Cartão</p>
-                <p className="text-white/60 text-sm">
-                  Integração via PagBank.
-                </p>
+                <p className="text-white/60 text-sm">Integração via PagBank.</p>
               </button>
             </div>
+
+            {/* 🔥 FORMULÁRIO CARTÃO */}
+            {payment === "card" && (
+              <div className="mt-6 space-y-4">
+                <input
+                  placeholder="Número do cartão"
+                  value={cardNumber}
+                  onChange={(e) => setCardNumber(e.target.value)}
+                  className="w-full p-3 bg-black border border-white/10 rounded-md"
+                />
+
+                <input
+                  placeholder="Nome no cartão"
+                  value={cardName}
+                  onChange={(e) => setCardName(e.target.value)}
+                  className="w-full p-3 bg-black border border-white/10 rounded-md"
+                />
+
+                <div className="grid grid-cols-2 gap-3">
+                  <input
+                    placeholder="MM/AA"
+                    value={cardExpiry}
+                    onChange={(e) => setCardExpiry(e.target.value)}
+                    className="p-3 bg-black border border-white/10 rounded-md"
+                  />
+
+                  <input
+                    placeholder="CVV"
+                    value={cardCvv}
+                    onChange={(e) => setCardCvv(e.target.value)}
+                    className="p-3 bg-black border border-white/10 rounded-md"
+                  />
+                </div>
+
+                <input
+                  type="number"
+                  min={1}
+                  max={12}
+                  value={installments}
+                  onChange={(e) => setInstallments(Number(e.target.value))}
+                  className="w-full p-3 bg-black border border-white/10 rounded-md"
+                  placeholder="Parcelas"
+                />
+              </div>
+            )}
           </div>
 
           {/* CUPOM */}
@@ -418,7 +467,6 @@ export default function CheckoutPage() {
         {/* RESUMO */}
         <div className="lg:col-span-1">
           <div className="lg:sticky lg:top-28 p-5 sm:p-6 md:p-8 border border-white/10 rounded-2xl bg-black/40 backdrop-blur">
-
             <h2 className="uppercase tracking-widest text-xs mb-6">
               Resumo do pedido
             </h2>
@@ -456,7 +504,6 @@ export default function CheckoutPage() {
             >
               {loading ? "Processando..." : "Finalizar compra"}
             </button>
-
           </div>
         </div>
       </div>

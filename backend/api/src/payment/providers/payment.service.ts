@@ -9,6 +9,8 @@ type ProviderData = {
   providerId: string | null;
   qrCode: string | null;
   qrCodeText: string | null;
+  cardLast4?: string | null;
+  cardBrand?: string | null;
 };
 
 @Injectable()
@@ -34,9 +36,6 @@ export class PaymentService {
       return existing;
     }
 
-    /**
-     * 🔥 BUSCA CUSTOMER REAL (CRÍTICO PARA PRODUÇÃO)
-     */
     const customer = await this.prisma.customer.findUnique({
       where: { id: order.customerId },
     });
@@ -57,7 +56,6 @@ export class PaymentService {
         referenceId: order.id,
         amount: order.total,
         description: `Pedido ${order.id}`,
-
         customer: {
           name: `${customer.name} ${customer.surname}`,
           email: customer.email,
@@ -67,15 +65,26 @@ export class PaymentService {
 
     /**
      * =========================
-     * CARTÃO (SERÁ IMPLEMENTADO)
+     * CARTÃO REAL
      * =========================
      */
     if (data.method === 'card') {
-      providerData = {
-        providerId: null,
-        qrCode: null,
-        qrCodeText: null,
-      };
+      if (!data.cardToken) {
+        throw new BadRequestException('Token do cartão é obrigatório');
+      }
+
+      providerData = await this.pagbank.createCardPayment({
+        referenceId: order.id,
+        amount: order.total,
+        description: `Pedido ${order.id}`,
+        customer: {
+          name: `${customer.name} ${customer.surname}`,
+          email: customer.email,
+        },
+        cardToken: data.cardToken,
+        installments: data.installments ?? 1,
+        holderName: data.holderName ?? customer.name,
+      });
     }
 
     /**
@@ -93,6 +102,11 @@ export class PaymentService {
         providerId: providerData?.providerId ?? null,
         qrCode: providerData?.qrCode ?? null,
         qrCodeText: providerData?.qrCodeText ?? null,
+
+        cardLast4: providerData?.cardLast4 ?? null,
+        cardBrand: providerData?.cardBrand ?? null,
+        cardHolderName: data.holderName ?? null,
+        installments: data.installments ?? null,
       },
     });
 
@@ -100,7 +114,9 @@ export class PaymentService {
   }
 
   /**
-   * 🔥 WEBHOOK UNIVERSAL PAGBANK
+   * =========================
+   * WEBHOOK
+   * =========================
    */
   async confirmWebhook(data: WebhookPaymentDto) {
     const charge = data.charges?.[0];
@@ -114,22 +130,12 @@ export class PaymentService {
 
     let payment: Payment | null = null;
 
-    /**
-     * =========================
-     * BUSCA POR providerId
-     * =========================
-     */
     if (providerId) {
       payment = await this.prisma.payment.findFirst({
         where: { providerId },
       });
     }
 
-    /**
-     * =========================
-     * FALLBACK POR orderId
-     * =========================
-     */
     if (!payment && referenceId) {
       payment = await this.prisma.payment.findUnique({
         where: { orderId: referenceId },
@@ -148,9 +154,6 @@ export class PaymentService {
     if (rawStatus === 'DECLINED' || rawStatus === 'CANCELED') status = 'failed';
     if (rawStatus === 'IN_ANALYSIS' || rawStatus === 'WAITING') status = 'pending';
 
-    /**
-     * 🔥 ATUALIZA PAYMENT
-     */
     await this.prisma.payment.update({
       where: { id: payment.id },
       data: {
@@ -159,9 +162,6 @@ export class PaymentService {
       },
     });
 
-    /**
-     * 🔥 ATUALIZA ORDER
-     */
     if (status === 'paid') {
       await this.prisma.order.update({
         where: { id: payment.orderId },
