@@ -206,127 +206,117 @@ export default function HeroParallax() {
       </div>
 
       {/* BENEFÍCIOS */}
-      <div className="absolute bottom-14 md:bottom-16 w-full z-20">
+      <div className="relative z-20 mt-10 md:mt-14">
         <div className="max-w-7xl mx-auto px-4 md:px-10">
           <div
             className="
         relative
 
-        bg-white/[0.06] md:bg-white/[0.05]
+        bg-white/[0.05]
         backdrop-blur-xl
 
         border border-white/10
         rounded-2xl
 
         grid grid-cols-2 md:grid-cols-4
-        gap-4
+        gap-5 md:gap-6
 
-        px-4 py-4 md:px-6 md:py-5
+        px-5 py-5 md:px-8 md:py-6
 
         text-center md:text-left
 
-        shadow-[0_20px_60px_rgba(0,0,0,0.45)]
+        shadow-[0_20px_60px_rgba(0,0,0,0.35)]
       "
           >
             {/* DIVISÓRIAS DESKTOP */}
-            <div className="hidden md:block absolute inset-y-4 left-1/4 w-px bg-white/10" />
-            <div className="hidden md:block absolute inset-y-4 left-2/4 w-px bg-white/10" />
-            <div className="hidden md:block absolute inset-y-4 left-3/4 w-px bg-white/10" />
+            <div className="hidden md:block absolute inset-y-6 left-1/4 w-px bg-white/10" />
+            <div className="hidden md:block absolute inset-y-6 left-2/4 w-px bg-white/10" />
+            <div className="hidden md:block absolute inset-y-6 left-3/4 w-px bg-white/10" />
 
             {/* ITEM 1 */}
-            <div className="flex flex-col items-center md:items-start gap-1">
-              <p
-                className="
-          text-[12px] md:text-sm
-          font-semibold
-          text-white
-          tracking-wide
-        "
-              >
+            <div className="flex flex-col items-center md:items-start gap-2">
+              <div className="text-white/80">
+                <svg
+                  width="20"
+                  height="20"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                >
+                  <path d="M12 2L4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3z" />
+                </svg>
+              </div>
+
+              <p className="text-sm font-semibold text-white tracking-wide">
                 Compra segura
               </p>
 
-              <p
-                className="
-          text-[11px]
-          text-white/70
-          leading-tight
-        "
-              >
-                dados protegidos
-              </p>
+              <p className="text-xs text-white/60">dados protegidos</p>
             </div>
 
             {/* ITEM 2 */}
-            <div className="flex flex-col items-center md:items-start gap-1">
-              <p
-                className="
-          text-[12px] md:text-sm
-          font-semibold
-          text-white
-          tracking-wide
-        "
-              >
+            <div className="flex flex-col items-center md:items-start gap-2">
+              <div className="text-white/80">
+                <svg
+                  width="20"
+                  height="20"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                >
+                  <rect x="2" y="5" width="16" height="10" rx="2" />
+                  <path d="M2 10h16" />
+                </svg>
+              </div>
+
+              <p className="text-sm font-semibold text-white tracking-wide">
                 Parcele em até 3x
               </p>
 
-              <p
-                className="
-          text-[11px]
-          text-white/70
-          leading-tight
-        "
-              >
-                no cartão
-              </p>
+              <p className="text-xs text-white/60">no cartão</p>
             </div>
 
             {/* ITEM 3 */}
-            <div className="flex flex-col items-center md:items-start gap-1">
-              <p
-                className="
-          text-[12px] md:text-sm
-          font-semibold
-          text-white
-          tracking-wide
-        "
-              >
+            <div className="flex flex-col items-center md:items-start gap-2">
+              <div className="text-white/80">
+                <svg
+                  width="20"
+                  height="20"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                >
+                  <path d="M3 12h13l3-3-3-3H3v6z" />
+                  <path d="M3 12l3 3" />
+                </svg>
+              </div>
+
+              <p className="text-sm font-semibold text-white tracking-wide">
                 Entrega rápida
               </p>
 
-              <p
-                className="
-          text-[11px]
-          text-white/70
-          leading-tight
-        "
-              >
-                todo Brasil
-              </p>
+              <p className="text-xs text-white/60">todo Brasil</p>
             </div>
 
             {/* ITEM 4 */}
-            <div className="flex flex-col items-center md:items-start gap-1">
-              <p
-                className="
-          text-[12px] md:text-sm
-          font-semibold
-          text-white
-          tracking-wide
-        "
-              >
+            <div className="flex flex-col items-center md:items-start gap-2">
+              <div className="text-white/80">
+                <svg
+                  width="20"
+                  height="20"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                >
+                  <path d="M12 3l2.5 5 5.5.8-4 3.9 1 5.5-5-2.6-5 2.6 1-5.5-4-3.9 5.5-.8L12 3z" />
+                </svg>
+              </div>
+
+              <p className="text-sm font-semibold text-white tracking-wide">
                 Qualidade garantida
               </p>
 
-              <p
-                className="
-          text-[11px]
-          text-white/70
-          leading-tight
-        "
-              >
-                produtos premium
-              </p>
+              <p className="text-xs text-white/60">produtos premium</p>
             </div>
           </div>
         </div>
