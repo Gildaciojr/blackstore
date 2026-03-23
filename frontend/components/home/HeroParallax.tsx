@@ -110,16 +110,27 @@ export default function HeroParallax() {
         >
           <motion.div
             animate={{ x: mouse.x, y: mouse.y }}
-            transition={{ duration: 8 }}
-            className="absolute inset-0"
+            transition={{
+              duration: 12,
+              ease: "linear",
+            }}
+            className="absolute inset-0 transform-gpu"
           >
             <Image
               src={slide.image}
               alt="Blackstore"
               fill
               priority
-              className="object-cover"
-              style={{ objectPosition: slide.focus }}
+              sizes="100vw"
+              className="
+          object-cover
+          will-change-transform
+
+          scale-[1.01] md:scale-[1.05]
+        "
+              style={{
+                objectPosition: slide.focus,
+              }}
             />
           </motion.div>
         </motion.div>
