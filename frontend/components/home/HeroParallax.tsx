@@ -191,7 +191,7 @@ export default function HeroParallax() {
         <div className="max-w-7xl mx-auto px-4 md:px-10">
           <div
             className="
-        bg-black/70
+        bg-black/10
         backdrop-blur-md
 
         border border-white/10

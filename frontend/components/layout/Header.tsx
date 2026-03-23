@@ -21,7 +21,7 @@ export default function Header() {
     <header
       className={`fixed top-0 w-full z-50 transition-all duration-500 ${
         scrolled
-          ? "backdrop-blur-2xl bg-black/70 border-b border-white/10"
+          ? "backdrop-blur-xl bg-gradient-to-b from-black/70 via-black/50 to-black/30 border-b border-white/10"
           : "bg-transparent"
       }`}
     >
@@ -46,14 +46,14 @@ export default function Header() {
         </Link>
 
         {/* NAV DESKTOP */}
-        <nav className="hidden md:flex items-center gap-10 text-[11px] tracking-[0.35em] uppercase">
+        <nav className="hidden md:flex items-center gap-12 text-[11px] tracking-[0.35em] uppercase">
 
           <Link
             href="/"
             className="relative group text-white/70 hover:text-white transition"
           >
             Home
-            <span className="absolute left-0 -bottom-2 w-0 h-[1px] bg-[var(--gold)] transition-all group-hover:w-full" />
+            <span className="absolute left-0 -bottom-2 w-0 h-[1px] bg-[var(--gold)] transition-all duration-300 group-hover:w-full" />
           </Link>
 
           <Link
@@ -61,18 +61,28 @@ export default function Header() {
             className="relative group text-white/70 hover:text-white transition"
           >
             Catálogo
-            <span className="absolute left-0 -bottom-2 w-0 h-[1px] bg-[var(--gold)] transition-all group-hover:w-full" />
+            <span className="absolute left-0 -bottom-2 w-0 h-[1px] bg-[var(--gold)] transition-all duration-300 group-hover:w-full" />
           </Link>
 
         </nav>
 
         {/* RIGHT */}
-        <div className="flex items-center gap-2 md:gap-5">
+        <div className="flex items-center gap-2 md:gap-6">
 
           {/* CONTA */}
           <Link
             href="/login"
-            className="flex items-center justify-center w-9 h-9 md:w-auto md:h-auto md:px-3 md:py-2 rounded-full md:rounded-none border md:border-none border-white/10 bg-black/40 md:bg-transparent backdrop-blur md:backdrop-blur-none text-white/70 hover:text-[var(--gold)] transition"
+            className="
+              flex items-center justify-center
+              w-9 h-9 md:w-auto md:h-auto
+              md:px-3 md:py-2
+
+              rounded-full md:rounded-none
+
+              text-white/70 hover:text-[var(--gold)]
+
+              transition-all duration-300
+            "
           >
             <User size={17} />
 
@@ -84,7 +94,20 @@ export default function Header() {
           {/* CART */}
           <Link
             href="/cart"
-            className="relative w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-full border border-white/10 bg-black/40 backdrop-blur hover:border-[var(--gold)]/40 transition"
+            className="
+              relative w-9 h-9 md:w-10 md:h-10
+              flex items-center justify-center
+
+              rounded-full
+
+              bg-white/5
+              backdrop-blur-sm
+
+              border border-white/10
+              hover:border-[var(--gold)]/40
+
+              transition-all duration-300
+            "
           >
             <ShoppingBag size={17} />
 
@@ -92,7 +115,17 @@ export default function Header() {
               <motion.span
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                className="absolute -top-1 -right-1 text-[10px] bg-[var(--gold)] text-black w-5 h-5 flex items-center justify-center rounded-full font-medium"
+                className="
+                  absolute -top-1 -right-1
+                  text-[10px]
+                  bg-[var(--gold)]
+                  text-black
+                  w-5 h-5
+                  flex items-center justify-center
+                  rounded-full
+                  font-medium
+                  shadow-[0_0_10px_rgba(212,175,55,0.6)]
+                "
               >
                 {count}
               </motion.span>
@@ -102,9 +135,8 @@ export default function Header() {
         </div>
       </div>
 
-      {/* 🔥 MOBILE NAV (NOVA CAMADA) */}
+      {/* MOBILE NAV */}
       <div className="md:hidden px-4 pb-2">
-
         <div className="flex justify-center gap-8 text-[11px] tracking-[0.35em] uppercase">
 
           <Link
@@ -122,11 +154,10 @@ export default function Header() {
           </Link>
 
         </div>
-
       </div>
 
-      {/* LINE */}
-      <div className="h-px w-full bg-gradient-to-r from-transparent via-[var(--gold)]/40 to-transparent opacity-80" />
+      {/* LINHA PREMIUM */}
+      <div className="h-px w-full bg-gradient-to-r from-transparent via-[var(--gold)]/30 to-transparent opacity-70" />
     </header>
   );
 }
