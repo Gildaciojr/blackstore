@@ -94,7 +94,6 @@ model Order {
   items OrderItem[]
 
   payment Payment?
-  paymentId String?
 }
 
 model OrderItem {
@@ -190,9 +189,8 @@ model ShippingRate {
   minDays Int
   maxDays Int
 
-  // regra simples por UF ou CEP prefix
-  state     String? // ex: "GO"
-  cepPrefix String? // ex: "74"
+  state     String?
+  cepPrefix String?
 
   createdAt DateTime @default(now())
 }
@@ -200,7 +198,7 @@ model ShippingRate {
 model Media {
   id String @id @default(uuid())
 
-  type  String // ex: "banner", "hero", "promo"
+  type  String
   title String?
   url   String
 
