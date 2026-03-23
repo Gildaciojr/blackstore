@@ -24,9 +24,9 @@ export default function ProductsPage() {
     name: "",
     slug: "",
     description: "",
-    price: 0,
-    oldPrice: 0,
-    stock: 0,
+    price: "",
+    oldPrice: "",
+    stock: "",
     image: "",
     categoryId: "",
   });
@@ -70,10 +70,7 @@ export default function ProductsPage() {
 
     setForm((prev) => ({
       ...prev,
-      [name]:
-        name === "price" || name === "oldPrice" || name === "stock"
-          ? Number(value)
-          : value,
+      [name]: value,
     }));
   }
 
@@ -111,10 +108,13 @@ export default function ProductsPage() {
         name: form.name,
         slug: form.slug,
         description: form.description || undefined,
-        price: form.price,
-        oldPrice: form.oldPrice > 0 ? form.oldPrice : undefined,
+        price: parseFloat(form.price),
+        oldPrice:
+          form.oldPrice && parseFloat(form.oldPrice) > 0
+            ? parseFloat(form.oldPrice)
+            : undefined,
         image: form.image,
-        stock: form.stock,
+        stock: Number(form.stock),
         categoryId: form.categoryId,
       };
 
@@ -134,9 +134,9 @@ export default function ProductsPage() {
         name: "",
         slug: "",
         description: "",
-        price: 0,
-        oldPrice: 0,
-        stock: 0,
+        price: "",
+        oldPrice: "",
+        stock: "",
         image: "",
         categoryId: "",
       });
@@ -159,9 +159,9 @@ export default function ProductsPage() {
       name: product.name,
       slug: product.slug,
       description: product.description ?? "",
-      price: product.price,
-      oldPrice: product.oldPrice ?? 0,
-      stock: product.stock,
+      price: String(product.price),
+      oldPrice: product.oldPrice ? String(product.oldPrice) : "",
+      stock: String(product.stock),
       image: product.image,
       categoryId: product.categoryId ?? "",
     });
@@ -173,26 +173,21 @@ export default function ProductsPage() {
 
   return (
     <section className="space-y-10">
-
       {/* HEADER */}
       <div className="space-y-2">
         <p className="text-xs tracking-[0.4em] uppercase text-white/40">
           Admin
         </p>
-        <h1 className="text-3xl md:text-5xl font-light mt-2">
-          Produtos
-        </h1>
+        <h1 className="text-3xl md:text-5xl font-light mt-2">Produtos</h1>
       </div>
 
       {/* FORM */}
       <div className="bs-glass p-6 sm:p-8 rounded-3xl border border-white/10 space-y-8">
-
         <h2 className="text-xl">
           {editingId ? "Editar produto" : "Novo produto"}
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
           <div>
             <label className="text-xs uppercase tracking-[0.2em] text-white/50 mb-1 block">
               Nome
@@ -327,7 +322,6 @@ export default function ProductsPage() {
                   }));
 
                   setImagePreview(resolveImage(url));
-
                 } finally {
                   setUploading(false);
                 }
@@ -335,9 +329,7 @@ export default function ProductsPage() {
             />
 
             {uploading && (
-              <p className="text-xs text-white/50 mt-2">
-                Enviando imagem...
-              </p>
+              <p className="text-xs text-white/50 mt-2">Enviando imagem...</p>
             )}
 
             {imagePreview && (
@@ -347,7 +339,6 @@ export default function ProductsPage() {
               />
             )}
           </div>
-
         </div>
 
         <button
@@ -369,17 +360,14 @@ export default function ProductsPage() {
           {saving
             ? "Salvando..."
             : editingId
-            ? "Atualizar produto"
-            : "Criar produto"}
+              ? "Atualizar produto"
+              : "Criar produto"}
         </button>
-
       </div>
 
       {/* LISTA */}
       <div className="space-y-4">
-
         {products.map((p) => (
-
           <div
             key={p.id}
             className="
@@ -395,7 +383,6 @@ export default function ProductsPage() {
             hover:scale-[1.01]
             "
           >
-
             <div className="flex gap-4 items-center">
               <img
                 src={resolveImage(p.image)}
@@ -426,13 +413,9 @@ export default function ProductsPage() {
                 Editar
               </button>
             </div>
-
           </div>
-
         ))}
-
       </div>
-
     </section>
   );
 }
