@@ -147,8 +147,6 @@ export default function HeroParallax() {
             className="
         w-full
         max-w-[280px] sm:max-w-sm md:max-w-lg lg:max-w-xl
-        p-0 sm:p-4 md:p-6
-        rounded-none sm:rounded-xl
       "
           >
             {/* LABEL */}
@@ -161,14 +159,10 @@ export default function HeroParallax() {
               className="
           uppercase text-[10px]
           tracking-[0.4em]
+
           text-white/70
 
-          px-2 py-[3px]
-          inline-block
-
-          bg-white/5
-          backdrop-blur-sm
-          rounded-sm
+          drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]
         "
             >
               {slide.type === "promo"
@@ -187,13 +181,23 @@ export default function HeroParallax() {
               transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
               className="mt-4 text-2xl sm:text-4xl md:text-6xl lg:text-7xl font-light leading-tight"
             >
-              <span className="block text-white">{slide.title1}</span>
+              <span
+                className="
+            block
+            text-white
+            drop-shadow-[0_4px_20px_rgba(0,0,0,0.9)]
+          "
+              >
+                {slide.title1}
+              </span>
 
               <span
                 className="
             block
             bg-gradient-to-r from-[var(--gold)] via-[#f5d07a] to-white
             bg-clip-text text-transparent
+
+            drop-shadow-[0_6px_25px_rgba(212,175,55,0.35)]
           "
               >
                 {slide.title2}
@@ -214,13 +218,7 @@ export default function HeroParallax() {
           max-w-lg
           leading-relaxed
 
-          px-3 py-2
-          rounded-md
-
-          bg-black/20
-          backdrop-blur-[2px]
-
-          shadow-[0_4px_20px_rgba(0,0,0,0.25)]
+          drop-shadow-[0_4px_18px_rgba(0,0,0,0.85)]
         "
             >
               {slide.subtitle}
@@ -287,6 +285,8 @@ export default function HeroParallax() {
           text-white/80
           uppercase
           tracking-widest
+
+          drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]
         "
             >
               <span>✦ Frete rápido para todo Brasil</span>
