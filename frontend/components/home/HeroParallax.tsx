@@ -96,24 +96,21 @@ export default function HeroParallax() {
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
-      className="relative min-h-screen w-full overflow-hidden"
+      className="relative h-[88vh] md:h-[92vh] w-full overflow-hidden"
     >
-      {/* BACKGROUND CINEMÁTICO */}
+      {/* BACKGROUND */}
       <AnimatePresence mode="wait">
         <motion.div
           key={slide.image}
-          initial={{ opacity: 0, x: 80, scale: 1.06, filter: "blur(6px)" }}
-          animate={{ opacity: 1, x: 0, scale: 1, filter: "blur(0px)" }}
-          exit={{ opacity: 0, x: -80, scale: 1.04, filter: "blur(4px)" }}
-          transition={{
-            duration: 1.2,
-            ease: [0.22, 1, 0.36, 1], // 🔥 easing premium
-          }}
+          initial={{ opacity: 0, scale: 1.05 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 1.1 }}
           className="absolute inset-0"
         >
           <motion.div
             animate={{ x: mouse.x, y: mouse.y }}
-            transition={{ duration: 8, ease: "easeOut" }}
+            transition={{ duration: 8 }}
             className="absolute inset-0"
           >
             <Image
@@ -121,45 +118,37 @@ export default function HeroParallax() {
               alt="Blackstore"
               fill
               priority
-              sizes="(max-width:768px) 100vw, 100vw"
               className="object-cover"
-              style={{
-                objectPosition: slide.focus,
-              }}
+              style={{ objectPosition: slide.focus }}
             />
           </motion.div>
         </motion.div>
       </AnimatePresence>
 
       {/* OVERLAY */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent md:bg-gradient-to-r md:from-black/80 md:via-black/40 md:to-black/10" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent md:bg-gradient-to-r md:from-black/70 md:via-black/30 md:to-transparent" />
 
       {/* CONTENT */}
-      <div className="relative z-10 flex items-center min-h-screen">
+      <div className="relative z-10 flex items-center h-full">
         <div className="w-full max-w-7xl mx-auto px-5 md:px-10">
           <motion.div
             key={index}
-            initial={{ opacity: 0, y: 60 }}
+            initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9 }}
+            transition={{ duration: 0.8 }}
             className="
               w-full
               max-w-[280px] sm:max-w-sm md:max-w-lg lg:max-w-xl
-              p-4 sm:p-6 md:p-8
-              rounded-xl sm:rounded-2xl
-              bg-black/30 sm:bg-black/25 md:bg-black/20
-              backdrop-blur-md
-
-              border border-white/10
-              shadow-[0_10px_40px_rgba(0,0,0,0.35)]
+              p-0 sm:p-4 md:p-6
+              rounded-none sm:rounded-xl
             "
           >
-            <p className="uppercase text-[10px] md:text-xs tracking-[0.4em] text-white/70">
+            <p className="uppercase text-[10px] tracking-[0.4em] text-white/70">
               {slide.type === "promo"
                 ? "Últimas unidades"
                 : slide.type === "product"
-                  ? "Alta performance"
-                  : "Nova coleção"}
+                ? "Alta performance"
+                : "Nova coleção"}
             </p>
 
             <h1 className="mt-4 text-2xl sm:text-4xl md:text-6xl lg:text-7xl font-light leading-tight">
@@ -167,14 +156,14 @@ export default function HeroParallax() {
               <span className="block bs-title">{slide.title2}</span>
             </h1>
 
-            <p className="mt-5 md:mt-6 text-white/90 text-sm md:text-lg max-w-lg leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
+            <p className="mt-5 text-white/90 text-sm md:text-lg max-w-lg drop-shadow">
               {slide.subtitle}
             </p>
 
-            <div className="mt-5 md:mt-8 flex flex-col sm:flex-row gap-4">
+            <div className="mt-6 flex flex-col sm:flex-row gap-4">
               <Link
                 href={slide.cta1}
-                className="px-6 md:px-8 py-3 rounded-full bg-[var(--gold)] text-black text-[10px] md:text-xs tracking-[0.35em] uppercase"
+                className="px-6 py-3 rounded-full bg-[var(--gold)] text-black text-xs tracking-[0.3em] uppercase"
               >
                 {slide.type === "promo"
                   ? "Aproveitar agora"
@@ -183,21 +172,13 @@ export default function HeroParallax() {
 
               <Link
                 href={slide.cta2}
-                className="px-6 md:px-8 py-3 rounded-full border border-white/20 text-[10px] md:text-xs tracking-[0.35em] uppercase hover:bg-white/5"
+                className="px-6 py-3 rounded-full border border-white/20 text-xs tracking-[0.3em] uppercase"
               >
                 Explorar catálogo
               </Link>
             </div>
 
-            <div
-              className="
-                mt-6 md:mt-7
-                flex flex-wrap gap-3 md:gap-4
-                text-[10px] md:text-xs
-                text-white/80
-                tracking-widest uppercase
-                drop-shadow-[0_2px_6px_rgba(0,0,0,0.7)]"
-            >
+            <div className="mt-6 flex flex-wrap gap-3 text-[10px] text-white/80 uppercase tracking-widest">
               <span>✦ Frete rápido para todo Brasil</span>
               <span>✦ Peças exclusivas</span>
             </div>
@@ -206,116 +187,34 @@ export default function HeroParallax() {
       </div>
 
       {/* BENEFÍCIOS */}
-      <div className="relative z-20 mt-10 md:mt-14">
+      <div className="absolute bottom-20 w-full z-20">
         <div className="max-w-7xl mx-auto px-4 md:px-10">
-          <div
-            className="
-        relative
-
-        bg-white/[0.05]
-        backdrop-blur-xl
-
-        border border-white/10
-        rounded-2xl
-
-        grid grid-cols-2 md:grid-cols-4
-        gap-5 md:gap-6
-
-        px-5 py-5 md:px-8 md:py-6
-
-        text-center md:text-left
-
-        shadow-[0_20px_60px_rgba(0,0,0,0.35)]
-      "
-          >
-            {/* DIVISÓRIAS DESKTOP */}
-            <div className="hidden md:block absolute inset-y-6 left-1/4 w-px bg-white/10" />
-            <div className="hidden md:block absolute inset-y-6 left-2/4 w-px bg-white/10" />
-            <div className="hidden md:block absolute inset-y-6 left-3/4 w-px bg-white/10" />
-
-            {/* ITEM 1 */}
-            <div className="flex flex-col items-center md:items-start gap-2">
-              <div className="text-white/80">
-                <svg
-                  width="20"
-                  height="20"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                >
-                  <path d="M12 2L4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3z" />
-                </svg>
-              </div>
-
-              <p className="text-sm font-semibold text-white tracking-wide">
-                Compra segura
-              </p>
-
+          <div className="
+            bg-black/80
+            border border-white/10
+            rounded-xl
+            grid grid-cols-2 md:grid-cols-4
+            gap-3
+            px-4 py-3
+            text-center md:text-left
+          ">
+            <div>
+              <p className="text-sm font-semibold">Compra segura</p>
               <p className="text-xs text-white/60">dados protegidos</p>
             </div>
 
-            {/* ITEM 2 */}
-            <div className="flex flex-col items-center md:items-start gap-2">
-              <div className="text-white/80">
-                <svg
-                  width="20"
-                  height="20"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                >
-                  <rect x="2" y="5" width="16" height="10" rx="2" />
-                  <path d="M2 10h16" />
-                </svg>
-              </div>
-
-              <p className="text-sm font-semibold text-white tracking-wide">
-                Parcele em até 3x
-              </p>
-
-              <p className="text-xs text-white/60">no cartão</p>
+            <div>
+              <p className="text-sm font-semibold">Parcele em até 3x</p>
+              <p className="text-xs text-white/60">sem juros</p>
             </div>
 
-            {/* ITEM 3 */}
-            <div className="flex flex-col items-center md:items-start gap-2">
-              <div className="text-white/80">
-                <svg
-                  width="20"
-                  height="20"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                >
-                  <path d="M3 12h13l3-3-3-3H3v6z" />
-                  <path d="M3 12l3 3" />
-                </svg>
-              </div>
-
-              <p className="text-sm font-semibold text-white tracking-wide">
-                Entrega rápida
-              </p>
-
+            <div>
+              <p className="text-sm font-semibold">Entrega rápida</p>
               <p className="text-xs text-white/60">todo Brasil</p>
             </div>
 
-            {/* ITEM 4 */}
-            <div className="flex flex-col items-center md:items-start gap-2">
-              <div className="text-white/80">
-                <svg
-                  width="20"
-                  height="20"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                >
-                  <path d="M12 3l2.5 5 5.5.8-4 3.9 1 5.5-5-2.6-5 2.6 1-5.5-4-3.9 5.5-.8L12 3z" />
-                </svg>
-              </div>
-
-              <p className="text-sm font-semibold text-white tracking-wide">
-                Qualidade garantida
-              </p>
-
+            <div>
+              <p className="text-sm font-semibold">Qualidade garantida</p>
               <p className="text-xs text-white/60">produtos premium</p>
             </div>
           </div>
@@ -324,7 +223,7 @@ export default function HeroParallax() {
 
       {/* PROGRESS BAR */}
       <div className="absolute bottom-10 left-0 w-full px-6 md:px-10">
-        <div className="h-[2px] bg-white/10 w-full overflow-hidden">
+        <div className="h-[2px] bg-white/10 w-full">
           <motion.div
             className="h-full bg-[var(--gold)]"
             style={{ width: `${progress * 100}%` }}
@@ -335,21 +234,11 @@ export default function HeroParallax() {
       {/* INDICADORES */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3">
         {slides.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => setIndex(i)}
-            className="group flex items-center justify-center"
-          >
+          <button key={i} onClick={() => setIndex(i)}>
             <span
-              className={`
-                h-[2px] w-8 
-                transition-all duration-300
-                ${
-                  i === index
-                    ? "bg-[var(--gold)] w-12"
-                    : "bg-white/30 group-hover:bg-white/60"
-                }
-              `}
+              className={`h-[2px] w-8 ${
+                i === index ? "bg-[var(--gold)] w-12" : "bg-white/30"
+              }`}
             />
           </button>
         ))}
