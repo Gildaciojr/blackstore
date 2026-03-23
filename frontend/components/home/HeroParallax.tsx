@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type SlideType = "collection" | "product" | "promo";
 
@@ -47,43 +47,48 @@ export default function HeroParallax() {
   const [index, setIndex] = useState(0);
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
 
-  // ✅ NOVO: autoplay premium
   const [progress, setProgress] = useState(0);
   const [paused, setPaused] = useState(false);
 
-  useEffect(() => {
-    let frame: number;
-    let start: number | null = null;
+  const frameRef = useRef<number | null>(null);
+  const startRef = useRef<number | null>(null);
 
+  // ✅ AUTOPLAY ESTÁVEL (SEM TRAVAMENTO)
+  useEffect(() => {
     const duration = 5200;
 
     function animate(timestamp: number) {
-      if (paused) return;
+      if (paused) {
+        frameRef.current = requestAnimationFrame(animate);
+        return;
+      }
 
-      if (!start) start = timestamp;
+      if (!startRef.current) startRef.current = timestamp;
 
-      const elapsed = timestamp - start;
+      const elapsed = timestamp - startRef.current;
       const progressValue = elapsed / duration;
-
-      setProgress(progressValue);
 
       if (progressValue >= 1) {
         setIndex((prev) => (prev + 1) % slides.length);
         setProgress(0);
-        start = timestamp;
+        startRef.current = timestamp;
+      } else {
+        setProgress(progressValue);
       }
 
-      frame = requestAnimationFrame(animate);
+      frameRef.current = requestAnimationFrame(animate);
     }
 
-    frame = requestAnimationFrame(animate);
+    frameRef.current = requestAnimationFrame(animate);
 
-    return () => cancelAnimationFrame(frame);
+    return () => {
+      if (frameRef.current) cancelAnimationFrame(frameRef.current);
+    };
   }, [paused]);
 
   function handleMouseMove(e: React.MouseEvent) {
-    const x = (e.clientX / window.innerWidth - 0.5) * 15;
-    const y = (e.clientY / window.innerHeight - 0.5) * 15;
+    const x = (e.clientX / window.innerWidth - 0.5) * 10;
+    const y = (e.clientY / window.innerHeight - 0.5) * 10;
     setMouse({ x, y });
   }
 
@@ -96,26 +101,19 @@ export default function HeroParallax() {
       onMouseLeave={() => setPaused(false)}
       className="relative min-h-screen w-full overflow-hidden"
     >
-
       {/* BACKGROUND */}
       <AnimatePresence mode="wait">
         <motion.div
           key={slide.image}
-          initial={{ opacity: 0, scale: 1.08 }}
+          initial={{ opacity: 0, scale: 1.04 }} // 🔥 menos zoom
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 1.2 }}
           className="absolute inset-0"
         >
           <motion.div
-            animate={{
-              x: mouse.x,
-              y: mouse.y,
-            }}
-            transition={{
-              duration: 10,
-              ease: "easeOut",
-            }}
+            animate={{ x: mouse.x, y: mouse.y }}
+            transition={{ duration: 8, ease: "easeOut" }}
             className="absolute inset-0"
           >
             <Image
@@ -123,9 +121,9 @@ export default function HeroParallax() {
               alt="Blackstore"
               fill
               priority
-              sizes="100vw"
+              sizes="(max-width:768px) 100vw, 100vw"
+              className="object-cover"
               style={{
-                objectFit: "cover",
                 objectPosition: slide.focus,
               }}
             />
@@ -134,12 +132,11 @@ export default function HeroParallax() {
       </AnimatePresence>
 
       {/* OVERLAY */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent md:bg-gradient-to-r md:from-black/90 md:via-black/50 md:to-black/20" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent md:bg-gradient-to-r md:from-black/80 md:via-black/40 md:to-black/10" />
 
       {/* CONTENT */}
       <div className="relative z-10 flex items-center min-h-screen">
         <div className="w-full max-w-7xl mx-auto px-5 md:px-10">
-
           <motion.div
             key={index}
             initial={{ opacity: 0, y: 60 }}
@@ -150,13 +147,12 @@ export default function HeroParallax() {
               max-w-[280px] sm:max-w-sm md:max-w-lg lg:max-w-xl
               p-0 sm:p-6 md:p-8
               rounded-none sm:rounded-2xl
-              bs-transparent sm:bg-black/30
-              sm:backdrop-blur-md
+              sm:bg-black/20   /* 🔥 MENOS ESCURO */
+              sm:backdrop-blur-sm
               border-0 sm:border sm:border-white/10
             "
           >
-
-            <p className="uppercase text-[10px] md:text-xs tracking-[0.4em] text-white/60">
+            <p className="uppercase text-[10px] md:text-xs tracking-[0.4em] text-white/70">
               {slide.type === "promo"
                 ? "Últimas unidades"
                 : slide.type === "product"
@@ -169,7 +165,7 @@ export default function HeroParallax() {
               <span className="block bs-title">{slide.title2}</span>
             </h1>
 
-            <p className="mt-5 md:mt-6 text-white/70 text-sm md:text-lg max-w-lg">
+            <p className="mt-5 md:mt-6 text-white/80 text-sm md:text-lg max-w-lg">
               {slide.subtitle}
             </p>
 
@@ -191,12 +187,10 @@ export default function HeroParallax() {
               </Link>
             </div>
 
-            {/* INFO ORIGINAL */}
-            <div className="mt-5 md:mt-6 flex flex-wrap gap-3 md:gap-4 text-[10px] md:text-xs text-white/60 tracking-widest uppercase">
+            <div className="mt-5 md:mt-6 flex flex-wrap gap-3 md:gap-4 text-[10px] md:text-xs text-white/70 tracking-widest uppercase">
               <span>✦ Frete rápido para todo Brasil</span>
               <span>✦ Peças exclusivas</span>
             </div>
-
           </motion.div>
         </div>
       </div>
@@ -205,7 +199,8 @@ export default function HeroParallax() {
       <div className="absolute bottom-14 md:bottom-16 w-full z-20">
         <div className="max-w-7xl mx-auto px-4 md:px-10">
           <div className="
-            bg-black/80 backdrop-blur-md
+            bg-black/40 md:bg-black/30   /* 🔥 MAIS LEVE */
+            backdrop-blur-sm
             border border-white/10
             rounded-xl
             grid grid-cols-2 md:grid-cols-4
@@ -213,32 +208,46 @@ export default function HeroParallax() {
             px-4 py-3
             text-center md:text-left
           ">
-
             <div>
-              <p className="text-[11px] md:text-sm font-medium">Compra segura</p>
-              <p className="text-[10px] md:text-xs text-white/60">dados protegidos</p>
+              <p className="text-[12px] md:text-sm font-semibold text-white">
+                Compra segura
+              </p>
+              <p className="text-[11px] text-white/80">
+                dados protegidos
+              </p>
             </div>
 
             <div>
-              <p className="text-[11px] md:text-sm font-medium">Parcele em até 3x</p>
-              <p className="text-[10px] md:text-xs text-white/60">sem juros</p>
+              <p className="text-[12px] md:text-sm font-semibold text-white">
+                Parcele em até 3x
+              </p>
+              <p className="text-[11px] text-white/80">
+                sem juros
+              </p>
             </div>
 
             <div>
-              <p className="text-[11px] md:text-sm font-medium">Entrega rápida</p>
-              <p className="text-[10px] md:text-xs text-white/60">todo Brasil</p>
+              <p className="text-[12px] md:text-sm font-semibold text-white">
+                Entrega rápida
+              </p>
+              <p className="text-[11px] text-white/80">
+                todo Brasil
+              </p>
             </div>
 
             <div>
-              <p className="text-[11px] md:text-sm font-medium">Qualidade garantida</p>
-              <p className="text-[10px] md:text-xs text-white/60">produtos premium</p>
+              <p className="text-[12px] md:text-sm font-semibold text-white">
+                Qualidade garantida
+              </p>
+              <p className="text-[11px] text-white/80">
+                produtos premium
+              </p>
             </div>
-
           </div>
         </div>
       </div>
 
-      {/* PROGRESS BAR PREMIUM */}
+      {/* PROGRESS BAR */}
       <div className="absolute bottom-10 left-0 w-full px-6 md:px-10">
         <div className="h-[2px] bg-white/10 w-full overflow-hidden">
           <motion.div
@@ -270,7 +279,6 @@ export default function HeroParallax() {
           </button>
         ))}
       </div>
-
     </section>
   );
 }
