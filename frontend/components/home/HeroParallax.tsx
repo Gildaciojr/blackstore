@@ -47,13 +47,39 @@ export default function HeroParallax() {
   const [index, setIndex] = useState(0);
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setIndex((prev) => (prev + 1) % slides.length);
-    }, 5200);
+  // ✅ NOVO: autoplay premium
+  const [progress, setProgress] = useState(0);
+  const [paused, setPaused] = useState(false);
 
-    return () => clearInterval(interval);
-  }, []);
+  useEffect(() => {
+    let frame: number;
+    let start: number | null = null;
+
+    const duration = 5200;
+
+    function animate(timestamp: number) {
+      if (paused) return;
+
+      if (!start) start = timestamp;
+
+      const elapsed = timestamp - start;
+      const progressValue = elapsed / duration;
+
+      setProgress(progressValue);
+
+      if (progressValue >= 1) {
+        setIndex((prev) => (prev + 1) % slides.length);
+        setProgress(0);
+        start = timestamp;
+      }
+
+      frame = requestAnimationFrame(animate);
+    }
+
+    frame = requestAnimationFrame(animate);
+
+    return () => cancelAnimationFrame(frame);
+  }, [paused]);
 
   function handleMouseMove(e: React.MouseEvent) {
     const x = (e.clientX / window.innerWidth - 0.5) * 15;
@@ -66,12 +92,9 @@ export default function HeroParallax() {
   return (
     <section
       onMouseMove={handleMouseMove}
-      className="
-        relative
-        min-h-screen
-        w-full
-        overflow-hidden
-      "
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      className="relative min-h-screen w-full overflow-hidden"
     >
 
       {/* BACKGROUND */}
@@ -103,24 +126,18 @@ export default function HeroParallax() {
               sizes="100vw"
               style={{
                 objectFit: "cover",
-                objectPosition:
-                  slide.type === "product"
-                    ? "center 20%"
-                    : slide.type === "collection"
-                    ? "center 30%"
-                    : "center",
+                objectPosition: slide.focus,
               }}
             />
           </motion.div>
         </motion.div>
       </AnimatePresence>
 
-      {/* OVERLAY AJUSTADO (MENOS AGRESSIVO MOBILE) */}
+      {/* OVERLAY */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent md:bg-gradient-to-r md:from-black/90 md:via-black/50 md:to-black/20" />
 
       {/* CONTENT */}
       <div className="relative z-10 flex items-center min-h-screen">
-
         <div className="w-full max-w-7xl mx-auto px-5 md:px-10">
 
           <motion.div
@@ -135,7 +152,6 @@ export default function HeroParallax() {
               rounded-none sm:rounded-2xl
               bs-transparent sm:bg-black/30
               sm:backdrop-blur-md
-
               border-0 sm:border sm:border-white/10
             "
           >
@@ -158,14 +174,9 @@ export default function HeroParallax() {
             </p>
 
             <div className="mt-5 md:mt-8 flex flex-col sm:flex-row gap-4">
-
               <Link
                 href={slide.cta1}
-                className="
-                  px-6 md:px-8 py-3 rounded-full 
-                  bg-[var(--gold)] text-black 
-                  text-[10px] md:text-xs tracking-[0.35em] uppercase 
-                "
+                className="px-6 md:px-8 py-3 rounded-full bg-[var(--gold)] text-black text-[10px] md:text-xs tracking-[0.35em] uppercase"
               >
                 {slide.type === "promo"
                   ? "Aproveitar agora"
@@ -174,31 +185,70 @@ export default function HeroParallax() {
 
               <Link
                 href={slide.cta2}
-                className="
-                  px-6 md:px-8 py-3 rounded-full 
-                  border border-white/20 
-                  text-[10px] md:text-xs tracking-[0.35em] uppercase 
-                  hover:bg-white/5
-                "
+                className="px-6 md:px-8 py-3 rounded-full border border-white/20 text-[10px] md:text-xs tracking-[0.35em] uppercase hover:bg-white/5"
               >
                 Explorar catálogo
               </Link>
-
             </div>
 
-            {/* INFO */}
+            {/* INFO ORIGINAL */}
             <div className="mt-5 md:mt-6 flex flex-wrap gap-3 md:gap-4 text-[10px] md:text-xs text-white/60 tracking-widest uppercase">
               <span>✦ Frete rápido para todo Brasil</span>
               <span>✦ Peças exclusivas</span>
             </div>
 
           </motion.div>
-
         </div>
-
       </div>
 
-      {/* INDICADORES PREMIUM */}
+      {/* BENEFÍCIOS */}
+      <div className="absolute bottom-14 md:bottom-16 w-full z-20">
+        <div className="max-w-7xl mx-auto px-4 md:px-10">
+          <div className="
+            bg-black/80 backdrop-blur-md
+            border border-white/10
+            rounded-xl
+            grid grid-cols-2 md:grid-cols-4
+            gap-4
+            px-4 py-3
+            text-center md:text-left
+          ">
+
+            <div>
+              <p className="text-[11px] md:text-sm font-medium">Compra segura</p>
+              <p className="text-[10px] md:text-xs text-white/60">dados protegidos</p>
+            </div>
+
+            <div>
+              <p className="text-[11px] md:text-sm font-medium">Parcele em até 3x</p>
+              <p className="text-[10px] md:text-xs text-white/60">sem juros</p>
+            </div>
+
+            <div>
+              <p className="text-[11px] md:text-sm font-medium">Entrega rápida</p>
+              <p className="text-[10px] md:text-xs text-white/60">todo Brasil</p>
+            </div>
+
+            <div>
+              <p className="text-[11px] md:text-sm font-medium">Qualidade garantida</p>
+              <p className="text-[10px] md:text-xs text-white/60">produtos premium</p>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      {/* PROGRESS BAR PREMIUM */}
+      <div className="absolute bottom-10 left-0 w-full px-6 md:px-10">
+        <div className="h-[2px] bg-white/10 w-full overflow-hidden">
+          <motion.div
+            className="h-full bg-[var(--gold)]"
+            style={{ width: `${progress * 100}%` }}
+          />
+        </div>
+      </div>
+
+      {/* INDICADORES */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3">
         {slides.map((_, i) => (
           <button
@@ -220,6 +270,7 @@ export default function HeroParallax() {
           </button>
         ))}
       </div>
+
     </section>
   );
 }
