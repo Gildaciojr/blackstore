@@ -169,6 +169,36 @@ export default function ProductsPage() {
     setImagePreview(resolveImage(product.image));
   }
 
+  async function handleDelete(id: string) {
+    const confirmed = confirm("Deseja excluir este produto?");
+    if (!confirmed) return;
+
+    try {
+      await apiFetch(`/admin/products/${id}`, {
+        method: "DELETE",
+      });
+
+      if (editingId === id) {
+        setEditingId(null);
+        setImagePreview(null);
+        setForm({
+          name: "",
+          slug: "",
+          description: "",
+          price: "",
+          oldPrice: "",
+          stock: "",
+          image: "",
+          categoryId: "",
+        });
+      }
+
+      await loadProducts();
+    } catch {
+      alert("Erro ao excluir produto");
+    }
+  }
+
   if (loading) return <p>Carregando...</p>;
 
   return (
@@ -372,6 +402,7 @@ export default function ProductsPage() {
             key={p.id}
             className="
             group
+            relative
             bg-white/[0.03]
             p-4 sm:p-5
             rounded-2xl
@@ -381,25 +412,44 @@ export default function ProductsPage() {
             hover:border-[var(--gold)]
             hover:bg-white/[0.05]
             hover:scale-[1.01]
+            hover:shadow-[0_0_30px_rgba(212,175,55,0.08)]
             "
           >
-            <div className="flex gap-4 items-center">
+            <div
+              className="
+              absolute inset-0 opacity-0 group-hover:opacity-100 transition
+              bg-[radial-gradient(circle_at_80%_20%,rgba(212,175,55,0.08),transparent_60%)]
+              pointer-events-none
+              "
+            />
+
+            <div className="flex gap-4 items-center relative">
               <img
                 src={resolveImage(p.image)}
-                className="w-16 h-16 object-cover rounded-lg border border-white/10"
+                className="
+                w-16 h-16 object-cover rounded-lg border border-white/10
+                group-hover:scale-[1.05]
+                transition
+                "
               />
               <div>
-                <p className="text-white">{p.name}</p>
+                <p className="text-white font-medium">{p.name}</p>
                 <p className="text-xs text-white/50">{p.slug}</p>
               </div>
             </div>
 
-            <div className="flex gap-6 text-sm text-white/80">
-              <span>R$ {p.price}</span>
+            <div className="flex gap-6 text-sm text-white/80 relative">
+              <span className="font-medium text-white">
+                R${" "}
+                {p.price.toLocaleString("pt-BR", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </span>
               <span>{p.stock} un</span>
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex gap-4 items-center relative">
               <button
                 onClick={() => handleEdit(p)}
                 className="
@@ -408,9 +458,24 @@ export default function ProductsPage() {
                 tracking-[0.2em]
                 text-[var(--gold)]
                 hover:opacity-80
+                transition
                 "
               >
                 Editar
+              </button>
+
+              <button
+                onClick={() => handleDelete(p.id)}
+                className="
+                text-xs
+                uppercase
+                tracking-[0.2em]
+                text-red-400
+                hover:text-red-300
+                transition
+                "
+              >
+                Excluir
               </button>
             </div>
           </div>
