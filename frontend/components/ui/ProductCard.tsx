@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { ShoppingBag, Eye, ChevronLeft, ChevronRight } from "lucide-react";
 import { useCart } from "@/store/cart";
 import { useRef, useState } from "react";
+import { API_URL } from "@/lib/api";
 
 type Props = {
   id: string;
@@ -27,6 +28,19 @@ function brl(v: number) {
   });
 }
 
+/**
+ * 🔥 RESOLVER IMAGEM (CRÍTICO)
+ */
+function resolveImage(url: string) {
+  if (!url) return "/images/placeholder.png";
+
+  if (url.startsWith("http")) return url;
+
+  if (url.startsWith("/images")) return url;
+
+  return `${API_URL}${url}`;
+}
+
 export default function ProductCard({
   id,
   slug,
@@ -44,9 +58,14 @@ export default function ProductCard({
 
   const [imgIndex, setImgIndex] = useState(0);
 
+  /**
+   * 🔥 AQUI FOI CORRIGIDO
+   */
   const imgs = [
-    image,
-    ...(images && images.length > 0 ? images : []),
+    resolveImage(image),
+    ...(images && images.length > 0
+      ? images.map((img) => resolveImage(img))
+      : []),
   ];
 
   const discount =

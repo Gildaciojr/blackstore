@@ -5,6 +5,7 @@ import { X, ShoppingBag, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { useCart } from "@/store/cart";
 import { motion, AnimatePresence } from "framer-motion";
+import { API_URL } from "@/lib/api";
 
 export type Product = {
   id: string;
@@ -20,13 +21,17 @@ type Props = {
   onClose: () => void;
 };
 
-function normalizeImage(url: string) {
-  if (!url) return "";
+/**
+ * 🔥 PADRÃO GLOBAL (MESMO DO ProductCard)
+ */
+function resolveImage(url: string) {
+  if (!url) return "/images/placeholder.png";
 
   if (url.startsWith("http")) return url;
-  if (url.startsWith("/")) return url;
 
-  return `/${url}`;
+  if (url.startsWith("/images")) return url;
+
+  return `${API_URL}${url}`;
 }
 
 export default function ProductQuickView({ product, onClose }: Props) {
@@ -37,12 +42,15 @@ export default function ProductQuickView({ product, onClose }: Props) {
 
   const sizes = ["PP", "P", "M", "G", "GG"];
 
+  /**
+   * 🔥 CORREÇÃO AQUI
+   */
   const images = [
-    normalizeImage(product.image),
-    ...(product.images?.map((img) => normalizeImage(img)) ?? []),
+    resolveImage(product.image),
+    ...(product.images?.map((img) => resolveImage(img)) ?? []),
   ].filter((img, i, arr) => !!img && arr.indexOf(img) === i);
 
-  const currentImage = images[index] ?? images[0] ?? product.image;
+  const currentImage = images[index] ?? images[0] ?? resolveImage(product.image);
 
   function next() {
     if (images.length <= 1) return;
@@ -94,7 +102,6 @@ export default function ProductQuickView({ product, onClose }: Props) {
 
           {/* ================= GALERIA ================= */}
           <div className="relative flex min-h-[320px] flex-col bg-black">
-            {/* imagem principal */}
             <div className="relative aspect-[3/4] md:flex-1 overflow-hidden">
               <Image
                 key={currentImage}
@@ -110,38 +117,28 @@ export default function ProductQuickView({ product, onClose }: Props) {
 
               {images.length > 1 && (
                 <>
-                  <button
-                    onClick={prev}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/60 backdrop-blur border border-white/20 flex items-center justify-center text-white hover:border-white/40 transition"
-                  >
+                  <button onClick={prev} className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/60 backdrop-blur border border-white/20 flex items-center justify-center text-white hover:border-white/40 transition">
                     <ChevronLeft size={18} />
                   </button>
 
-                  <button
-                    onClick={next}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/60 backdrop-blur border border-white/20 flex items-center justify-center text-white hover:border-white/40 transition"
-                  >
+                  <button onClick={next} className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/60 backdrop-blur border border-white/20 flex items-center justify-center text-white hover:border-white/40 transition">
                     <ChevronRight size={18} />
                   </button>
                 </>
               )}
             </div>
 
-            {/* thumbnails */}
             {images.length > 1 && (
               <div className="grid grid-cols-4 gap-2 p-3 bg-black/40">
                 {images.map((img, i) => (
                   <button
                     key={`${img}-${i}`}
                     onClick={() => setIndex(i)}
-                    className={`
-                      relative aspect-square rounded-lg overflow-hidden border transition
-                      ${
-                        index === i
-                          ? "border-[var(--gold)] scale-105"
-                          : "border-white/10 hover:border-white/30"
-                      }
-                    `}
+                    className={`relative aspect-square rounded-lg overflow-hidden border transition ${
+                      index === i
+                        ? "border-[var(--gold)] scale-105"
+                        : "border-white/10 hover:border-white/30"
+                    }`}
                   >
                     <Image
                       src={img}
@@ -171,7 +168,6 @@ export default function ProductQuickView({ product, onClose }: Props) {
               que valorizam presença e autenticidade.
             </p>
 
-            {/* preço */}
             <div className="mt-6 flex items-center gap-4">
               {product.oldPrice && (
                 <span className="text-white/40 line-through">
@@ -184,7 +180,6 @@ export default function ProductQuickView({ product, onClose }: Props) {
               </span>
             </div>
 
-            {/* sizes */}
             <div className="mt-8">
               <p className="text-[10px] uppercase tracking-[0.4em] text-white/50 mb-4">
                 Tamanho
@@ -195,14 +190,11 @@ export default function ProductQuickView({ product, onClose }: Props) {
                   <button
                     key={s}
                     onClick={() => setSize(s)}
-                    className={`
-                      w-10 h-10 rounded-full border text-sm flex items-center justify-center transition
-                      ${
-                        size === s
-                          ? "bg-[var(--gold)] text-black border-[var(--gold)]"
-                          : "border-white/20 text-white hover:border-white"
-                      }
-                    `}
+                    className={`w-10 h-10 rounded-full border text-sm flex items-center justify-center transition ${
+                      size === s
+                        ? "bg-[var(--gold)] text-black border-[var(--gold)]"
+                        : "border-white/20 text-white hover:border-white"
+                    }`}
                   >
                     {s}
                   </button>
@@ -210,7 +202,6 @@ export default function ProductQuickView({ product, onClose }: Props) {
               </div>
             </div>
 
-            {/* CTA */}
             <div className="mt-10 flex gap-4 flex-col sm:flex-row">
               <button
                 onClick={() =>
@@ -221,14 +212,7 @@ export default function ProductQuickView({ product, onClose }: Props) {
                     image: currentImage,
                   })
                 }
-                className="
-                  flex-1 inline-flex items-center justify-center gap-3
-                  px-10 py-4 rounded-full
-                  bg-[var(--gold)] text-black
-                  text-xs uppercase tracking-[0.35em]
-                  shadow-[0_10px_30px_rgba(212,175,55,0.25)]
-                  hover:scale-105 transition
-                "
+                className="flex-1 inline-flex items-center justify-center gap-3 px-10 py-4 rounded-full bg-[var(--gold)] text-black text-xs uppercase tracking-[0.35em] shadow-[0_10px_30px_rgba(212,175,55,0.25)] hover:scale-105 transition"
               >
                 <ShoppingBag size={18} />
                 Adicionar
@@ -236,12 +220,7 @@ export default function ProductQuickView({ product, onClose }: Props) {
 
               <button
                 onClick={onClose}
-                className="
-                  flex-1 px-10 py-4 rounded-full
-                  border border-white/20
-                  text-xs uppercase tracking-[0.35em]
-                  hover:border-white transition
-                "
+                className="flex-1 px-10 py-4 rounded-full border border-white/20 text-xs uppercase tracking-[0.35em] hover:border-white transition"
               >
                 Continuar
               </button>
