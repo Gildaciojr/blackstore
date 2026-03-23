@@ -116,7 +116,7 @@ export default function HeroParallax() {
       </AnimatePresence>
 
       {/* OVERLAY AJUSTADO (MENOS AGRESSIVO MOBILE) */}
-      <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent md:from-black/90 md:via-black/50 md:to-black/20" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent md:bg-gradient-to-r md:from-black/90 md:via-black/50 md:to-black/20" />
 
       {/* CONTENT */}
       <div className="relative z-10 flex items-center min-h-screen">
@@ -125,17 +125,18 @@ export default function HeroParallax() {
 
           <motion.div
             key={index}
-            initial={{ opacity: 0, y: 80 }}
+            initial={{ opacity: 0, y: 60 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1 }}
+            transition={{ duration: 0.9 }}
             className="
               w-full
-              max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl
-              p-4 sm:p-6 md:p-08
-              rounded-2xl
-              bs-glass
-              backdrop-blur-md
-              border border-white/10
+              max-w-[280px] sm:max-w-sm md:max-w-lg lg:max-w-xl
+              p-0 sm:p-6 md:p-8
+              rounded-none sm:rounded-2xl
+              bs-transparent sm:bg-black/30
+              sm:backdrop-blur-md
+
+              border-0 sm:border sm:border-white/10
             "
           >
 
@@ -147,21 +148,21 @@ export default function HeroParallax() {
                 : "Nova coleção"}
             </p>
 
-            <h1 className="mt-4 text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-light leading-tight">
+            <h1 className="mt-4 text-2xl sm:text-4xl md:text-6xl lg:text-7xl font-light leading-tight">
               <span className="block">{slide.title1}</span>
               <span className="block bs-title">{slide.title2}</span>
             </h1>
 
-            <p className="mt-5 text-white/70 text-sm md:text-lg max-w-lg">
+            <p className="mt-5 md:mt-6 text-white/70 text-sm md:text-lg max-w-lg">
               {slide.subtitle}
             </p>
 
-            <div className="mt-8 flex flex-col sm:flex-row gap-4">
+            <div className="mt-5 md:mt-8 flex flex-col sm:flex-row gap-4">
 
               <Link
                 href={slide.cta1}
                 className="
-                  px-8 py-3 rounded-full 
+                  px-6 md:px-8 py-3 rounded-full 
                   bg-[var(--gold)] text-black 
                   text-[10px] md:text-xs tracking-[0.35em] uppercase 
                 "
@@ -174,7 +175,7 @@ export default function HeroParallax() {
               <Link
                 href={slide.cta2}
                 className="
-                  px-8 py-3 rounded-full 
+                  px-6 md:px-8 py-3 rounded-full 
                   border border-white/20 
                   text-[10px] md:text-xs tracking-[0.35em] uppercase 
                   hover:bg-white/5
@@ -186,7 +187,7 @@ export default function HeroParallax() {
             </div>
 
             {/* INFO */}
-            <div className="mt-6 flex flex-wrap gap-4 text-[10px] md:text-xs text-white/60 tracking-widest uppercase">
+            <div className="mt-5 md:mt-6 flex flex-wrap gap-3 md:gap-4 text-[10px] md:text-xs text-white/60 tracking-widest uppercase">
               <span>✦ Frete rápido para todo Brasil</span>
               <span>✦ Peças exclusivas</span>
             </div>
