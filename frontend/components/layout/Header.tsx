@@ -5,9 +5,9 @@ import Link from "next/link";
 import { ShoppingBag, User } from "lucide-react";
 import { useCart } from "@/store/cart";
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 
 export default function Header() {
-
   const count = useCart((s) => s.count());
   const [scrolled, setScrolled] = useState(false);
 
@@ -25,103 +25,85 @@ export default function Header() {
           : "bg-transparent"
       }`}
     >
+      <div
+        className={`
+          max-w-7xl mx-auto px-4 md:px-6
+          flex items-center justify-between
+          ${scrolled ? "h-14 md:h-16" : "h-16 md:h-20"}
+        `}
+      >
+        {/* LOGO */}
+        <Link href="/" className="flex items-center">
+          <Image
+            src="/images/logo-v2.png"
+            alt="Blackstore"
+            width={120}
+            height={40}
+            className="object-contain h-[30px] md:h-[42px] w-auto"
+            priority
+          />
+        </Link>
 
-      <div className={`
-        max-w-7xl mx-auto px-4 md:px-8
-        flex flex-col md:flex-row items-center justify-between
-        ${scrolled ? "py-2 md:h-16" : "py-3 md:h-20"}
-      `}>
+        {/* NAV DESKTOP */}
+        <nav className="hidden md:flex items-center gap-10 text-[11px] tracking-[0.35em] uppercase">
 
-        {/* TOP LINE (LOGO + ICONS) */}
-        <div className="w-full flex items-center justify-between">
-
-          {/* LOGO */}
-          <Link href="/" className="flex items-center">
-            <Image
-              src="/images/logo-v2.png"
-              alt="Blackstore"
-              width={120}
-              height={40}
-              className="object-contain h-[32px] md:h-[40px] w-auto"
-              priority
-            />
-          </Link>
-
-          {/* RIGHT */}
-          <div className="flex items-center gap-3 md:gap-5">
-
-            {/* CONTA */}
-            <Link
-              href="/login"
-              className="
-              flex items-center gap-2
-              text-white/70 text-[10px] md:text-xs uppercase tracking-[0.3em]
-              hover:text-[var(--gold)]
-              transition
-              "
-            >
-              <User size={16} />
-              <span className="hidden sm:inline">Conta</span>
-            </Link>
-
-            {/* CARRINHO */}
-            <Link
-              href="/cart"
-              className="
-              relative w-10 h-10 
-              flex items-center justify-center 
-              rounded-full 
-              border border-white/10 
-              bg-black/40 backdrop-blur
-              hover:border-[var(--gold)]/40
-              transition
-              "
-            >
-              <ShoppingBag size={18} />
-
-              {count > 0 && (
-                <span className="
-                  absolute -top-1 -right-1 
-                  min-w-5 h-5 px-1 
-                  rounded-full 
-                  bg-[var(--gold)] text-black 
-                  text-[10px] flex items-center justify-center
-                ">
-                  {count}
-                </span>
-              )}
-            </Link>
-
-          </div>
-        </div>
-
-        {/* NAV (SEMPRE VISÍVEL, SEM HAMBURGER) */}
-        <nav className="
-          w-full flex justify-center gap-8 md:gap-12
-          text-[10px] md:text-[11px]
-          tracking-[0.35em] uppercase
-          mt-3 md:mt-0
-        ">
-
-          <Link href="/" className="text-white/60 hover:text-[var(--gold)] transition">
+          <Link
+            href="/"
+            className="relative group text-white/70 hover:text-white transition"
+          >
             Home
+            <span className="absolute left-0 -bottom-2 w-0 h-[1px] bg-[var(--gold)] transition-all group-hover:w-full" />
           </Link>
 
-          <Link href="/catalog" className="text-white/60 hover:text-[var(--gold)] transition">
+          <Link
+            href="/catalog"
+            className="relative group text-white/70 hover:text-white transition"
+          >
             Catálogo
-          </Link>
-
-          <Link href="/login" className="text-white/60 hover:text-[var(--gold)] transition sm:hidden">
-            Conta
+            <span className="absolute left-0 -bottom-2 w-0 h-[1px] bg-[var(--gold)] transition-all group-hover:w-full" />
           </Link>
 
         </nav>
 
+        {/* RIGHT */}
+        <div className="flex items-center gap-2 md:gap-5">
+
+          {/* CONTA */}
+          <Link
+            href="/login"
+            className="flex items-center justify-center w-10 h-10 md:w-auto md:h-auto md:px-3 md:py-2 rounded-full md:rounded-none border md:border-none border-white/10 bg-black/40 md:bg-transparent backdrop-blur md:backdrop-blur-none text-white/70 hover:text-[var(--gold)] transition"
+          >
+            <User size={18} />
+
+            <span className="hidden md:inline text-xs uppercase tracking-[0.3em] ml-2">
+              Conta
+            </span>
+          </Link>
+
+          {/* CART */}
+          <Link
+            href="/cart"
+            className="relative w-10 h-10 flex items-center justify-center rounded-full border border-white/10 bg-black/40 backdrop-blur hover:border-[var(--gold)]/40 transition"
+          >
+            <ShoppingBag size={18} />
+
+            {/* BADGE */}
+            {count > 0 && (
+              <motion.span
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="absolute -top-1 -right-1 text-[10px] bg-[var(--gold)] text-black w-5 h-5 flex items-center justify-center rounded-full font-medium"
+              >
+                {count}
+              </motion.span>
+            )}
+          </Link>
+
+        </div>
       </div>
 
-      {/* LINE */}
-      <div className="h-px w-full bg-gradient-to-r from-transparent via-[var(--gold)]/30 to-transparent" />
-
+      {/* PREMIUM LINE */}
+      <div className="h-px w-full bg-gradient-to-r from-transparent via-[var(--gold)]/40 to-transparent opacity-80" />
     </header>
   );
 }
