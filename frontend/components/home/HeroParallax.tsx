@@ -25,8 +25,7 @@ const slides = [
     focus: "center 20%",
     title1: "Elegância em",
     title2: "movimento",
-    subtitle:
-      "Peças criadas para performance e sofisticação em cada detalhe.",
+    subtitle: "Peças criadas para performance e sofisticação em cada detalhe.",
     cta1: "/catalog",
     cta2: "/catalog",
   },
@@ -36,8 +35,7 @@ const slides = [
     focus: "center 35%",
     title1: "Promoção da",
     title2: "semana",
-    subtitle:
-      "Condições exclusivas por tempo limitado. Não perca.",
+    subtitle: "Condições exclusivas por tempo limitado. Não perca.",
     cta1: "#promocao",
     cta2: "/catalog",
   },
@@ -53,7 +51,6 @@ export default function HeroParallax() {
   const frameRef = useRef<number | null>(null);
   const startRef = useRef<number | null>(null);
 
-  // ✅ AUTOPLAY ESTÁVEL (SEM TRAVAMENTO)
   useEffect(() => {
     const duration = 5200;
 
@@ -101,14 +98,17 @@ export default function HeroParallax() {
       onMouseLeave={() => setPaused(false)}
       className="relative min-h-screen w-full overflow-hidden"
     >
-      {/* BACKGROUND */}
+      {/* BACKGROUND CINEMÁTICO */}
       <AnimatePresence mode="wait">
         <motion.div
           key={slide.image}
-          initial={{ opacity: 0, scale: 1.04 }} // 🔥 menos zoom
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 1.2 }}
+          initial={{ opacity: 0, x: 80, scale: 1.06, filter: "blur(6px)" }}
+          animate={{ opacity: 1, x: 0, scale: 1, filter: "blur(0px)" }}
+          exit={{ opacity: 0, x: -80, scale: 1.04, filter: "blur(4px)" }}
+          transition={{
+            duration: 1.2,
+            ease: [0.22, 1, 0.36, 1], // 🔥 easing premium
+          }}
           className="absolute inset-0"
         >
           <motion.div
@@ -145,19 +145,21 @@ export default function HeroParallax() {
             className="
               w-full
               max-w-[280px] sm:max-w-sm md:max-w-lg lg:max-w-xl
-              p-0 sm:p-6 md:p-8
-              rounded-none sm:rounded-2xl
-              sm:bg-black/20   /* 🔥 MENOS ESCURO */
-              sm:backdrop-blur-sm
-              border-0 sm:border sm:border-white/10
+              p-4 sm:p-6 md:p-8
+              rounded-xl sm:rounded-2xl
+              bg-black/30 sm:bg-black/25 md:bg-black/20
+              backdrop-blur-md
+
+              border border-white/10
+              shadow-[0_10px_40px_rgba(0,0,0,0.35)]
             "
           >
             <p className="uppercase text-[10px] md:text-xs tracking-[0.4em] text-white/70">
               {slide.type === "promo"
                 ? "Últimas unidades"
                 : slide.type === "product"
-                ? "Alta performance"
-                : "Nova coleção"}
+                  ? "Alta performance"
+                  : "Nova coleção"}
             </p>
 
             <h1 className="mt-4 text-2xl sm:text-4xl md:text-6xl lg:text-7xl font-light leading-tight">
@@ -165,7 +167,7 @@ export default function HeroParallax() {
               <span className="block bs-title">{slide.title2}</span>
             </h1>
 
-            <p className="mt-5 md:mt-6 text-white/80 text-sm md:text-lg max-w-lg">
+            <p className="mt-5 md:mt-6 text-white/90 text-sm md:text-lg max-w-lg leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
               {slide.subtitle}
             </p>
 
@@ -187,7 +189,15 @@ export default function HeroParallax() {
               </Link>
             </div>
 
-            <div className="mt-5 md:mt-6 flex flex-wrap gap-3 md:gap-4 text-[10px] md:text-xs text-white/70 tracking-widest uppercase">
+            <div
+              className="
+                mt-6 md:mt-7
+                flex flex-wrap gap-3 md:gap-4
+                text-[10px] md:text-xs
+                text-white/80
+                tracking-widest uppercase
+                drop-shadow-[0_2px_6px_rgba(0,0,0,0.7)]"
+            >
               <span>✦ Frete rápido para todo Brasil</span>
               <span>✦ Peças exclusivas</span>
             </div>
@@ -198,48 +208,123 @@ export default function HeroParallax() {
       {/* BENEFÍCIOS */}
       <div className="absolute bottom-14 md:bottom-16 w-full z-20">
         <div className="max-w-7xl mx-auto px-4 md:px-10">
-          <div className="
-            bg-black/40 md:bg-black/30   /* 🔥 MAIS LEVE */
-            backdrop-blur-sm
-            border border-white/10
-            rounded-xl
-            grid grid-cols-2 md:grid-cols-4
-            gap-4
-            px-4 py-3
-            text-center md:text-left
-          ">
-            <div>
-              <p className="text-[12px] md:text-sm font-semibold text-white">
+          <div
+            className="
+        relative
+
+        bg-white/[0.06] md:bg-white/[0.05]
+        backdrop-blur-xl
+
+        border border-white/10
+        rounded-2xl
+
+        grid grid-cols-2 md:grid-cols-4
+        gap-4
+
+        px-4 py-4 md:px-6 md:py-5
+
+        text-center md:text-left
+
+        shadow-[0_20px_60px_rgba(0,0,0,0.45)]
+      "
+          >
+            {/* DIVISÓRIAS DESKTOP */}
+            <div className="hidden md:block absolute inset-y-4 left-1/4 w-px bg-white/10" />
+            <div className="hidden md:block absolute inset-y-4 left-2/4 w-px bg-white/10" />
+            <div className="hidden md:block absolute inset-y-4 left-3/4 w-px bg-white/10" />
+
+            {/* ITEM 1 */}
+            <div className="flex flex-col items-center md:items-start gap-1">
+              <p
+                className="
+          text-[12px] md:text-sm
+          font-semibold
+          text-white
+          tracking-wide
+        "
+              >
                 Compra segura
               </p>
-              <p className="text-[11px] text-white/80">
+
+              <p
+                className="
+          text-[11px]
+          text-white/70
+          leading-tight
+        "
+              >
                 dados protegidos
               </p>
             </div>
 
-            <div>
-              <p className="text-[12px] md:text-sm font-semibold text-white">
+            {/* ITEM 2 */}
+            <div className="flex flex-col items-center md:items-start gap-1">
+              <p
+                className="
+          text-[12px] md:text-sm
+          font-semibold
+          text-white
+          tracking-wide
+        "
+              >
                 Parcele em até 3x
               </p>
-              <p className="text-[11px] text-white/80">
-                sem juros
+
+              <p
+                className="
+          text-[11px]
+          text-white/70
+          leading-tight
+        "
+              >
+                no cartão
               </p>
             </div>
 
-            <div>
-              <p className="text-[12px] md:text-sm font-semibold text-white">
+            {/* ITEM 3 */}
+            <div className="flex flex-col items-center md:items-start gap-1">
+              <p
+                className="
+          text-[12px] md:text-sm
+          font-semibold
+          text-white
+          tracking-wide
+        "
+              >
                 Entrega rápida
               </p>
-              <p className="text-[11px] text-white/80">
+
+              <p
+                className="
+          text-[11px]
+          text-white/70
+          leading-tight
+        "
+              >
                 todo Brasil
               </p>
             </div>
 
-            <div>
-              <p className="text-[12px] md:text-sm font-semibold text-white">
+            {/* ITEM 4 */}
+            <div className="flex flex-col items-center md:items-start gap-1">
+              <p
+                className="
+          text-[12px] md:text-sm
+          font-semibold
+          text-white
+          tracking-wide
+        "
+              >
                 Qualidade garantida
               </p>
-              <p className="text-[11px] text-white/80">
+
+              <p
+                className="
+          text-[11px]
+          text-white/70
+          leading-tight
+        "
+              >
                 produtos premium
               </p>
             </div>
