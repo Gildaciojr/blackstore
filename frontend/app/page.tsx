@@ -210,6 +210,10 @@ export default function HomePage() {
         </Reveal>
       </section>
 
+            <Reveal>
+        <InstagramShowcase />
+      </Reveal>
+
       <section className="relative overflow-hidden bg-gradient-to-r from-black via-[#1a1408] to-black py-24 md:py-32">
         {/* GLOW DE FUNDO */}
         <div className="pointer-events-none absolute -top-40 left-1/2 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-[var(--gold)] opacity-10 blur-[120px]" />
@@ -381,10 +385,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      <Reveal>
-        <InstagramShowcase />
-      </Reveal>
 
       {/* ================= QUICK VIEW ================= */}
       {quickProduct && (
