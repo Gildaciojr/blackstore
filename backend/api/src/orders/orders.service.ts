@@ -68,6 +68,7 @@ export class OrdersService {
        * 🔥 CUPOM
        */
       let discountValue = 0;
+      let appliedCouponCode: string | null = null;
 
       if (data.couponCode) {
         const normalizedCode = data.couponCode.trim().toUpperCase();
@@ -115,6 +116,8 @@ export class OrdersService {
         if (discountValue > subtotal) {
           discountValue = subtotal;
         }
+
+        appliedCouponCode = normalizedCode;
       }
 
       let subtotalWithDiscount = Number((subtotal - discountValue).toFixed(2));
@@ -138,6 +141,9 @@ export class OrdersService {
           subtotal: subtotalWithDiscount,
           shippingPrice,
           total,
+
+          couponCode: appliedCouponCode,
+          discount: discountValue,
 
           shippingMethod: data.shippingMethod,
           shippingName: data.shippingName,

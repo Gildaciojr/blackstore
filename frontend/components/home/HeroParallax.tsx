@@ -62,6 +62,7 @@ export default function HeroParallax() {
   const [progress, setProgress] = useState(0);
   const [paused, setPaused] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
+  const [couponCopied, setCouponCopied] = useState(false);
 
   const startRef = useRef<number | null>(null);
 
@@ -352,9 +353,7 @@ export default function HeroParallax() {
               <p className="text-[12px] md:text-sm font-medium text-white">
                 Parcele em até 3x
               </p>
-              <p className="text-[10px] md:text-xs text-white/70">
-                sem juros
-              </p>
+              <p className="text-[10px] md:text-xs text-white/70">sem juros</p>
             </div>
 
             <div className="flex flex-col items-center md:items-start leading-tight">
@@ -399,6 +398,84 @@ export default function HeroParallax() {
             />
           </button>
         ))}
+      </div>
+
+      {/* 🔥 CUPOM FLOATING PREMIUM */}
+      <div className="absolute top-6 right-4 md:right-10 z-30">
+        <div
+          className="
+            relative
+            bg-black/60 backdrop-blur-xl
+            border border-[var(--gold)]/30
+            rounded-xl px-4 py-3
+            shadow-[0_10px_40px_rgba(0,0,0,0.6)]
+            flex items-center gap-3
+            transition-all duration-500
+          "
+        >
+          {/* brilho animado */}
+          <div className="absolute inset-0 rounded-xl bg-[radial-gradient(circle_at_top,rgba(212,175,55,0.15),transparent_60%)] pointer-events-none" />
+
+          <div className="flex flex-col leading-tight relative z-10">
+            <span className="text-[10px] uppercase tracking-widest text-white/50">
+              Cupom exclusivo
+            </span>
+
+            <span className="text-[13px] font-semibold text-[var(--gold)] tracking-widest">
+              BLACK10
+            </span>
+          </div>
+
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText("BLACK10");
+              setCouponCopied(true);
+
+              setTimeout(() => {
+                setCouponCopied(false);
+              }, 2000);
+            }}
+            className={`
+              relative z-10
+              text-[10px]
+              uppercase
+              tracking-widest
+              px-3 py-1.5
+              rounded-md
+              border transition-all duration-300
+
+              ${
+                couponCopied
+                  ? "border-green-400 text-green-400"
+                  : "border-white/20 hover:border-[var(--gold)] hover:text-[var(--gold)]"
+              }
+            `}
+          >
+            {couponCopied ? "Copiado!" : "Copiar"}
+          </button>
+        </div>
+
+        {/* 🔥 FEEDBACK FLUTUANTE */}
+        <AnimatePresence>
+          {couponCopied && (
+            <motion.div
+              initial={{ opacity: 0, y: 10, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.9 }}
+              transition={{ duration: 0.25 }}
+              className="
+                absolute right-0 mt-3
+                bg-green-500/10 border border-green-400/30
+                text-green-400 text-[10px]
+                px-3 py-2 rounded-md
+                shadow-[0_10px_30px_rgba(0,0,0,0.4)]
+                backdrop-blur-md
+              "
+            >
+              Cupom copiado ✦
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </section>
   );

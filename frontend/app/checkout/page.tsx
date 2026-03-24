@@ -178,8 +178,9 @@ export default function CheckoutPage() {
     try {
       setCouponLoading(true);
       await applyCoupon(couponCode);
-    } catch {
-      alert("Cupom inválido ou expirado");
+    } catch (err) {
+      setCouponCode("");
+      alert(err instanceof Error ? err.message : "Erro ao aplicar cupom");
     } finally {
       setCouponLoading(false);
     }
@@ -359,7 +360,17 @@ export default function CheckoutPage() {
 
       clear();
 
-      window.location.href = `/payment/${paymentData.orderId}`;
+      /**
+       * 🔥 FEEDBACK VISUAL PREMIUM
+       */
+      setLoading(true);
+
+      setTimeout(() => {
+        window.location.href = `/payment/${paymentData.orderId}`;
+      }, 1200);
+
+      return; // 🔥 CRÍTICO: impede o finally de desligar o loading
+
     } catch (err) {
       console.error(err);
 
@@ -367,9 +378,20 @@ export default function CheckoutPage() {
         err instanceof Error ? err.message : "Erro ao finalizar checkout";
 
       alert(message);
+
+      /**
+       * 🔥 LIBERA TRAVAS EM CASO DE ERRO
+       */
       setCheckoutLock(false);
-    } finally {
       setLoading(false);
+
+    } finally {
+      /**
+       * 🔥 SOMENTE DESLIGA LOADING SE NÃO ESTIVER EM REDIRECT
+       */
+      if (!checkoutLock) {
+        setLoading(false);
+      }
     }
   }
 
@@ -587,12 +609,23 @@ export default function CheckoutPage() {
             </h2>
 
             <div className="rounded-xl border border-white/10 p-4 sm:p-5 bg-black/30">
+              <p className="text-[10px] uppercase tracking-widest text-white/50 mb-2">
+                Possui um cupom?
+              </p>
+
               <div className="flex flex-col sm:flex-row gap-3">
                 <input
                   value={couponCode}
                   onChange={(e) => setCouponCode(e.target.value)}
                   placeholder="Digite seu cupom"
-                  className="flex-1 border border-white/10 p-3 bg-black rounded-md text-sm"
+                  className={`
+                    flex-1 px-4 py-3 text-sm rounded-md bg-black border transition
+                    ${
+                      appliedCouponCode
+                        ? "border-green-500 text-green-400"
+                        : "border-white/20 focus:border-[var(--gold)]"
+                    }
+                  `}
                   disabled={!!appliedCouponCode}
                 />
 
@@ -600,14 +633,22 @@ export default function CheckoutPage() {
                   <button
                     onClick={handleApplyCoupon}
                     disabled={couponLoading}
-                    className="px-6 py-3 bg-[var(--gold)] text-black rounded-md text-sm sm:text-base"
+                    className="
+                      px-6 py-3 text-xs uppercase tracking-widest
+                      bg-[var(--gold)] text-black rounded-md
+                      hover:scale-105 active:scale-95 transition
+                    "
                   >
                     {couponLoading ? "Aplicando..." : "Aplicar"}
                   </button>
                 ) : (
                   <button
                     onClick={removeCoupon}
-                    className="px-6 py-3 border border-white/20 text-white rounded-md text-sm sm:text-base"
+                    className="
+                      px-6 py-3 text-xs uppercase tracking-widest
+                      border border-white/20 rounded-md
+                      hover:border-red-400 hover:text-red-400 transition
+                    "
                   >
                     Remover
                   </button>
@@ -615,9 +656,15 @@ export default function CheckoutPage() {
               </div>
 
               {appliedCouponCode && (
-                <p className="mt-3 text-sm text-green-400">
-                  Cupom {appliedCouponCode} aplicado com sucesso.
-                </p>
+                <div className="mt-4 p-3 rounded-md border border-green-500/30 bg-green-500/10">
+                  <p className="text-green-400 text-sm">
+                    Cupom <strong>{appliedCouponCode}</strong> aplicado
+                  </p>
+
+                  <p className="text-xs text-green-300 mt-1">
+                    Você economizou R$ {discountValue.toFixed(2)}
+                  </p>
+                </div>
               )}
             </div>
           </div>
@@ -657,14 +704,49 @@ export default function CheckoutPage() {
 
             <button
               onClick={handleCheckout}
-              disabled={loading}
-              className="w-full mt-8 py-4 rounded-full bg-[var(--gold)] text-black text-xs tracking-[0.35em] uppercase"
+              disabled={loading || checkoutLock}
+              className={`
+    relative w-full mt-8 py-4 rounded-full text-xs tracking-[0.35em] uppercase
+    transition-all duration-300 overflow-hidden
+    ${
+      loading
+        ? "bg-[var(--gold)] opacity/70 cursor-not-allowed"
+        : "bg-[var(--gold)] hover:scale-[1.02] active:scale-[0.98]"
+    }
+  `}
             >
-              {loading ? "Processando..." : "Finalizar compra"}
+              <span
+                className={`
+      transition-opacity duration-200
+      ${loading ? "opacity-0" : "opacity-100"}
+    `}
+              >
+                Finalizar compra
+              </span>
+
+              {loading && (
+                <div className="absolute inset-0 flex items-center justify-center gap-2">
+                  <div className="w-2 h-2 bg-black rounded-full animate-bounce" />
+                  <div className="w-2 h-2 bg-black rounded-full animate-bounce delay-150" />
+                  <div className="w-2 h-2 bg-black rounded-full animate-bounce delay-300" />
+                </div>
+              )}
             </button>
           </div>
         </div>
       </div>
+
+      {loading && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xl flex items-center justify-center">
+          <div className="flex flex-col items-center gap-6">
+            <div className="w-14 h-14 border-2 border-[var(--gold)] border-t-transparent rounded-full animate-spin" />
+
+            <p className="text-xs uppercase tracking-[0.4em] text-white/60">
+              Processando pedido
+            </p>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

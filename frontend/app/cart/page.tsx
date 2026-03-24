@@ -48,8 +48,13 @@ export default function CartPage() {
     try {
       setCouponLoading(true);
       await applyCoupon(couponInput);
-    } catch {
-      alert("Cupom inválido ou expirado");
+    } catch (err) {
+      setCouponInput("");
+      alert(
+        err instanceof Error
+          ? err.message
+          : "Erro ao aplicar cupom"
+      );
     } finally {
       setCouponLoading(false);
     }
@@ -221,33 +226,63 @@ export default function CartPage() {
             Resumo do pedido
           </h2>
 
-          {/* 🔥 CUPOM (NOVO — SEM QUEBRAR LAYOUT) */}
           <div className="mb-6">
+            <p className="text-[10px] uppercase tracking-widest text-white/50 mb-2">
+              Cupom de desconto
+            </p>
+
             <div className="flex gap-2">
               <input
                 value={couponInput}
                 onChange={(e) => setCouponInput(e.target.value)}
-                placeholder="Cupom"
-                className="flex-1 bg-black border border-white/20 px-3 py-2 text-sm rounded-md"
+                placeholder="Digite seu cupom"
+                className={`
+                  flex-1 px-4 py-3 text-sm rounded-md bg-black border transition
+                  ${
+                    appliedCouponCode
+                      ? "border-green-500 text-green-400"
+                      : "border-white/20 focus:border-[var(--gold)]"
+                  }
+                `}
                 disabled={!!appliedCouponCode}
               />
 
               {!appliedCouponCode ? (
                 <button
                   onClick={handleApplyCoupon}
-                  className="px-4 bg-white text-black text-xs rounded-md"
+                  className="
+                    px-5 py-3 text-xs uppercase tracking-widest
+                    bg-[var(--gold)] text-black rounded-md
+                    hover:scale-105 active:scale-95 transition
+                  "
                 >
-                  {couponLoading ? "..." : "OK"}
+                  {couponLoading ? "Aplicando..." : "Aplicar"}
                 </button>
               ) : (
                 <button
                   onClick={removeCoupon}
-                  className="px-4 border border-white/20 text-xs rounded-md"
+                  className="
+                    px-5 py-3 text-xs uppercase tracking-widest
+                    border border-white/20 rounded-md
+                    hover:border-red-400 hover:text-red-400 transition
+                  "
                 >
-                  X
+                  Remover
                 </button>
               )}
             </div>
+
+            {appliedCouponCode && (
+              <div className="mt-3 p-3 rounded-md border border-green-500/30 bg-green-500/10">
+                <p className="text-green-400 text-sm">
+                  Cupom <strong>{appliedCouponCode}</strong> aplicado
+                </p>
+
+                <p className="text-xs text-green-300 mt-1">
+                  Você economizou R$ {discount().toFixed(2)}
+                </p>
+              </div>
+            )}
           </div>
 
           {/* CEP */}
