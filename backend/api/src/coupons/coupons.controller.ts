@@ -63,4 +63,12 @@ export class CouponsController {
 
     return coupon;
   }
+
+  /**
+   * 🔥 NOVO ENDPOINT HERO
+   */
+  @Get('coupons-featured')
+  getFeatured() {
+    return this.couponsService.getFeatured();
+  }
 }

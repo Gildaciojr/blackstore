@@ -14,6 +14,7 @@ export class CouponsService {
         discount: data.discount,
         maxUses: data.maxUses,
         expiresAt: new Date(data.expiresAt),
+        isFeatured: false,
       },
     });
   }
@@ -27,6 +28,16 @@ export class CouponsService {
   }
 
   async update(id: string, data: UpdateCouponDto) {
+    /**
+     * 🔥 GARANTE APENAS 1 CUPOM EM DESTAQUE
+     */
+    if (data.isFeatured) {
+      await this.prisma.coupon.updateMany({
+        where: { isFeatured: true },
+        data: { isFeatured: false },
+      });
+    }
+
     return this.prisma.coupon.update({
       where: { id },
       data: {
@@ -34,6 +45,7 @@ export class CouponsService {
         discount: data.discount,
         maxUses: data.maxUses,
         expiresAt: data.expiresAt ? new Date(data.expiresAt) : undefined,
+        isFeatured: data.isFeatured,
       },
     });
   }
@@ -50,5 +62,27 @@ export class CouponsService {
         code: code.toUpperCase(),
       },
     });
+  }
+
+  /**
+   * 🔥 NOVO: CUPOM EM DESTAQUE (PUBLIC)
+   */
+  async getFeatured() {
+    const coupon = await this.prisma.coupon.findFirst({
+      where: {
+        isFeatured: true,
+        expiresAt: {
+          gt: new Date(),
+        },
+        used: {
+          lt: this.prisma.coupon.fields.maxUses,
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    return coupon;
   }
 }
