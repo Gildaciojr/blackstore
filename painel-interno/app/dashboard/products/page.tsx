@@ -465,7 +465,7 @@ export default function ProductsPage() {
 
             <div className="flex gap-4 items-center relative">
               <img
-                src={resolveImage(p.image)}
+                src={'https://api.blackstore.cloud$(p.image)'}
                 className="
                 w-16 h-16 object-cover rounded-lg border border-white/10
                 group-hover:scale-[1.05]
