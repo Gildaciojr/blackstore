@@ -97,7 +97,6 @@ export default function HomePage() {
     });
   }
 
-  // ================= RESOLVER IMAGEM =================
   function resolveImage(url: string) {
     if (!url) return "";
 
@@ -139,68 +138,46 @@ export default function HomePage() {
             subtitle="Novidades que definem a temporada."
           >
             <div className="relative">
-              {/* GRADIENTE ESQUERDA */}
               <div className="pointer-events-none absolute left-0 top-0 z-10 h-full w-16 bg-gradient-to-r from-black via-black/80 to-transparent" />
-
-              {/* GRADIENTE DIREITA */}
               <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-16 bg-gradient-to-l from-black via-black/80 to-transparent" />
 
-              {/* BOTÃO ESQUERDA */}
               <button
                 onClick={() => scroll("left")}
-                className="
-                  absolute left-3 top-1/2 z-20 hidden h-11 w-11 -translate-y-1/2
-                  items-center justify-center rounded-full border border-white/10
-                  bg-black/70 backdrop-blur-xl transition hover:border-[var(--gold)] md:flex
-                "
+                className="absolute left-3 top-1/2 z-20 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/10 bg-black/70 backdrop-blur-xl transition hover:border-[var(--gold)] md:flex"
               >
                 <ChevronLeft size={18} />
               </button>
 
-              {/* BOTÃO DIREITA */}
               <button
                 onClick={() => scroll("right")}
-                className="
-                  absolute right-3 top-1/2 z-20 hidden h-11 w-11 -translate-y-1/2
-                  items-center justify-center rounded-full border border-white/10
-                  bg-black/70 backdrop-blur-xl transition hover:border-[var(--gold)] md:flex
-                "
+                className="absolute right-3 top-1/2 z-20 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/10 bg-black/70 backdrop-blur-xl transition hover:border-[var(--gold)] md:flex"
               >
                 <ChevronRight size={18} />
               </button>
 
-              {/* CAROUSEL */}
               <div
                 ref={scrollRef}
-                className="
-                  scrollbar-hide flex gap-5 overflow-x-auto px-4
-                  scroll-smooth snap-x snap-mandatory md:gap-8 md:px-6
-                "
+                className="scrollbar-hide flex gap-5 overflow-x-auto px-4 scroll-smooth snap-x snap-mandatory md:gap-8 md:px-6"
               >
                 {products.slice(0, 10).map((product, index) => (
                   <div
                     key={product.id}
-                    className="
-                      snap-start min-w-[80%] transition-transform duration-500
-                      sm:min-w-[48%] md:min-w-[32%] lg:min-w-[24%] xl:min-w-[22%]
-                    "
+                    className="snap-start min-w-[80%] sm:min-w-[48%] md:min-w-[32%] lg:min-w-[24%] xl:min-w-[22%]"
                   >
                     <Reveal delay={0.06 * (index + 1)}>
-                      <div className="group">
-                        <ProductCard
-                          id={product.id}
-                          slug={product.slug}
-                          image={getCover(product)}
-                          images={getImages(product)}
-                          name={product.name}
-                          price={product.price}
-                          oldPrice={product.oldPrice ?? undefined}
-                          stock={product.stock}
-                          onQuickView={() =>
-                            setQuickProduct(normalizeProduct(product))
-                          }
-                        />
-                      </div>
+                      <ProductCard
+                        id={product.id}
+                        slug={product.slug}
+                        image={getCover(product)}
+                        images={getImages(product)}
+                        name={product.name}
+                        price={product.price}
+                        oldPrice={product.oldPrice ?? undefined}
+                        stock={product.stock}
+                        onQuickView={() =>
+                          setQuickProduct(normalizeProduct(product))
+                        }
+                      />
                     </Reveal>
                   </div>
                 ))}
@@ -209,10 +186,6 @@ export default function HomePage() {
           </Section>
         </Reveal>
       </section>
-
-      <Reveal>
-        <InstagramShowcase />
-      </Reveal>
 
       {/* ================= MAIS VENDIDOS ================= */}
       <section className="relative bg-gradient-to-b from-[#0f0c06] via-[#0a0907] to-black py-24 md:py-32">
@@ -237,7 +210,74 @@ export default function HomePage() {
         <Lookbook />
       </Reveal>
 
-      {/* ================= PROMOÇÃO ================= */}
+      <section className="relative overflow-hidden bg-gradient-to-r from-black via-[#1a1408] to-black py-24 md:py-32">
+        <div className="pointer-events-none absolute -top-40 left-1/2 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-[var(--gold)] opacity-10 blur-[120px]" />
+
+        <div className="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-16 px-6 md:gap-24 md:px-8 lg:grid-cols-2">
+          <Reveal>
+            <div>
+              <p className="text-xs uppercase tracking-[0.4em] text-white/50">
+                Conecte-se
+              </p>
+
+              <h2 className="mt-6 text-4xl font-light leading-tight md:text-5xl lg:text-6xl">
+                <span className="block text-white">Muito além</span>
+                <span className="bs-title block">de uma loja online</span>
+              </h2>
+
+              <p className="mt-8 max-w-xl leading-relaxed text-white/65">
+                Mais do que vestir, é sobre presença, atitude e identidade.
+              </p>
+
+              <div className="mt-14 flex flex-col gap-5 sm:flex-row sm:gap-6">
+                <a
+                  href="https://instagram.com/blackstoreloja1"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group inline-flex items-center justify-center gap-4 rounded-full border border-white/20 px-8 py-4 text-xs uppercase tracking-[0.35em] text-white/80 transition-all duration-300 hover:border-[var(--gold)] hover:text-[var(--gold)] sm:px-10"
+                >
+                  Instagram Blackstore
+                </a>
+
+                <a
+                  href="https://wa.me/5562994694804"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group inline-flex items-center justify-center gap-4 rounded-full bg-[var(--gold)] px-10 py-4 text-xs font-medium uppercase tracking-[0.35em] text-black transition-all duration-300 hover:scale-[1.05] active:scale-[0.97] sm:px-12"
+                >
+                  Atendimento via WhatsApp
+                </a>
+              </div>
+            </div>
+          </Reveal>
+
+          <Reveal delay={0.2}>
+            <div className="bs-glass relative flex h-[420px] items-center justify-center overflow-hidden rounded-3xl md:h-[520px]">
+              <div className="absolute inset-0 bg-gradient-to-br from-black via-[#1a1408] to-black opacity-80" />
+              <div className="absolute left-0 top-0 h-[2px] w-full bg-gradient-to-r from-transparent via-[var(--gold)] to-transparent opacity-60" />
+
+              <div className="relative px-6 text-center">
+                <p className="text-xs uppercase tracking-[0.5em] text-white/40">
+                  Comunidade
+                </p>
+
+                <h3 className="mt-6 text-2xl font-light text-white md:text-3xl">
+                  Blackstore Experience
+                </h3>
+
+                <p className="mt-4 text-sm text-white/50">
+                  Faça parte. Vista atitude.
+                </p>
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      <Reveal>
+        <InstagramShowcase />
+      </Reveal>
+
       <section className="relative overflow-hidden py-24 md:py-32">
         <div className="absolute inset-0 bg-gradient-to-br from-black via-[#1a1408] to-black" />
 
@@ -284,109 +324,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="relative overflow-hidden bg-gradient-to-r from-black via-[#1a1408] to-black py-24 md:py-32">
-        {/* GLOW DE FUNDO */}
-        <div className="pointer-events-none absolute -top-40 left-1/2 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-[var(--gold)] opacity-10 blur-[120px]" />
-
-        <div
-          className="
-      relative
-      mx-auto grid max-w-7xl grid-cols-1 items-center gap-16
-      px-6 md:gap-24 md:px-8 lg:grid-cols-2
-    "
-        >
-          <Reveal>
-            <div>
-              <p className="text-xs uppercase tracking-[0.4em] text-white/50">
-                Conecte-se
-              </p>
-
-              <h2 className="mt-6 text-4xl font-light leading-tight md:text-5xl lg:text-6xl">
-                <span className="block text-white">Muito além</span>
-                <span className="bs-title block">de uma loja online</span>
-              </h2>
-
-              <p className="mt-8 max-w-xl leading-relaxed text-white/65">
-                Mais do que vestir, é sobre presença, atitude e identidade.
-              </p>
-
-              {/* BOTÕES */}
-              <div className="mt-14 flex flex-col gap-5 sm:flex-row sm:gap-6">
-                {/* INSTAGRAM */}
-                <a
-                  href="https://instagram.com/blackstoreloja1"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="
-              group inline-flex items-center justify-center gap-4 rounded-full
-              border border-white/20 px-8 py-4 text-xs uppercase
-              tracking-[0.35em] text-white/80
-              transition-all duration-300
-              hover:border-[var(--gold)] hover:text-[var(--gold)]
-              hover:shadow-[0_0_20px_rgba(212,175,55,0.15)]
-              sm:px-10
-            "
-                >
-                  Instagram Blackstore
-                </a>
-
-                {/* WHATSAPP */}
-                <a
-                  href="https://wa.me/5562994694804"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="
-              group inline-flex items-center justify-center gap-4 rounded-full
-              bg-[var(--gold)] px-10 py-4 text-xs font-medium uppercase
-              tracking-[0.35em] text-black
-              transition-all duration-300
-              hover:scale-[1.05]
-              hover:shadow-[0_10px_40px_rgba(212,175,55,0.35)]
-              active:scale-[0.97]
-              sm:px-12
-            "
-                >
-                  Atendimento via WhatsApp
-                </a>
-              </div>
-            </div>
-          </Reveal>
-
-          {/* CARD DIREITO */}
-          <Reveal delay={0.2}>
-            <div
-              className="
-          bs-glass relative flex h-[420px] md:h-[520px]
-          items-center justify-center rounded-3xl
-          overflow-hidden
-        "
-            >
-              {/* FUNDO INTERNO */}
-              <div className="absolute inset-0 bg-gradient-to-br from-black via-[#1a1408] to-black opacity-80" />
-
-              {/* LINHA PREMIUM */}
-              <div className="absolute top-0 left-0 h-[2px] w-full bg-gradient-to-r from-transparent via-[var(--gold)] to-transparent opacity-60" />
-
-              {/* TEXTO */}
-              <div className="relative text-center px-6">
-                <p className="text-xs tracking-[0.5em] uppercase text-white/40">
-                  Comunidade
-                </p>
-
-                <h3 className="mt-6 text-2xl md:text-3xl font-light text-white">
-                  Blackstore Experience
-                </h3>
-
-                <p className="mt-4 text-white/50 text-sm">
-                  Faça parte. Vista atitude.
-                </p>
-              </div>
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* ================= QUICK VIEW ================= */}
       {quickProduct && (
         <ProductQuickView
           product={quickProduct}
