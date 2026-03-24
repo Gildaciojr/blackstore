@@ -7,35 +7,51 @@ export class ProductsService {
   constructor(private prisma: PrismaService) {}
 
   async create(data: CreateProductDto) {
-    return await this.prisma.product.create({
+    const product = await this.prisma.product.create({
       data,
     });
+
+    console.log('✅ [PRODUCT CREATED - SERVICE]');
+    console.dir(product, { depth: null });
+
+    return product;
   }
 
   async findAll() {
-    return await this.prisma.product.findMany({
+    const products = await this.prisma.product.findMany({
       include: {
         category: true,
-        medias: true, // 🔥 ESSENCIAL
+        medias: true,
       },
       orderBy: {
         createdAt: 'desc',
       },
     });
+
+    console.log('📦 [GET PRODUCTS]');
+    console.dir(products, { depth: 2 });
+
+    return products;
   }
 
   async findBySlug(slug: string) {
-    return await this.prisma.product.findUnique({
+    const product = await this.prisma.product.findUnique({
       where: { slug },
       include: {
         category: true,
-        medias: true, // 🔥 ESSENCIAL
+        medias: true,
       },
     });
+
+    console.log('🔎 [GET PRODUCT BY SLUG]');
+    console.log('SLUG:', slug);
+    console.dir(product, { depth: 2 });
+
+    return product;
   }
 
   async findByCategory(slug: string) {
-    return await this.prisma.product.findMany({
+    const products = await this.prisma.product.findMany({
       where: {
         category: {
           slug,
@@ -43,14 +59,25 @@ export class ProductsService {
       },
       include: {
         category: true,
-        medias: true, // 🔥 IMPORTANTE
+        medias: true,
       },
     });
+
+    console.log('📂 [GET PRODUCTS BY CATEGORY]');
+    console.log('CATEGORY SLUG:', slug);
+    console.dir(products, { depth: 2 });
+
+    return products;
   }
 
   async delete(id: string) {
-    return await this.prisma.product.delete({
+    const deleted = await this.prisma.product.delete({
       where: { id },
     });
+
+    console.log('🗑️ [PRODUCT DELETED]');
+    console.log('ID:', id);
+
+    return deleted;
   }
 }

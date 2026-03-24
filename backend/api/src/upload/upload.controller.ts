@@ -33,6 +33,14 @@ export class UploadController {
       throw new BadRequestException('Nenhum arquivo enviado.');
     }
 
-    return this.uploadService.getProductImageUrl(file.filename);
+    console.log('📦 [UPLOAD]');
+    console.log('FILENAME:', file.filename);
+    console.log('PATH:', file.path);
+
+    const result = this.uploadService.getProductImageUrl(file.filename);
+
+    console.log('🌐 URL GERADA:', result);
+
+    return result;
   }
 }

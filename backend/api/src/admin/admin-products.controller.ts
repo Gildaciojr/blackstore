@@ -55,6 +55,9 @@ export class AdminProductsController {
 
   @Post()
   async create(@Body() dto: CreateAdminProductDto) {
+    console.log('🔥 [CREATE PRODUCT] DTO RECEBIDO:');
+    console.dir(dto, { depth: null });
+
     if (!dto.name?.trim()) {
       throw new BadRequestException('Nome obrigatório');
     }
@@ -69,13 +72,18 @@ export class AdminProductsController {
 
     const slug = await this.getUniqueSlug(dto.slug || dto.name);
 
-    return this.prisma.product.create({
+    const product = await this.prisma.product.create({
       data: {
         ...dto,
         name: dto.name.trim(),
         slug,
       },
     });
+
+    console.log('✅ [PRODUCT CREATED]');
+    console.dir(product, { depth: null });
+
+    return product;
   }
 
   @Patch(':id')
