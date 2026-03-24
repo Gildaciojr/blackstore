@@ -124,14 +124,15 @@ export default function LoginPage() {
   }
 
   return (
-    <section className="min-h-screen flex items-center justify-center px-6 py-28 bg-[#0b0b0d]">
+    <section className="relative min-h-screen flex items-center justify-center px-6 py-28 bg-[#b0b0d] overflow-hidden">
+      <div className="pointer-events-none absolute top-[-200px] left-1/2 -translate-x-1/2  w-[700px] h-[700px] bg-[var(--gold)] opacity-10 blur-[180px]" />
       <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-20 items-center">
         <div className="w-full max-w-md">
           <p className="uppercase text-xs tracking-[0.35em] text-white/40">
             Blackstore
           </p>
 
-          <h1 className="mt-4 text-4xl md:text-5xl font-light">
+          <h1 className="mt-4 text-4xl md:text-5xl font-light bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent">
             {isAdmin ? "Acesso restrito" : "Entrar"}
           </h1>
 
@@ -141,7 +142,7 @@ export default function LoginPage() {
               : "Entre em sua conta para acompanhar pedidos e acessar benefícios exclusivos."}
           </p>
 
-          <div className="mt-10 border border-white/10 bg-black/40 backdrop-blur-md p-8 rounded-xl">
+          <div className="mt-10 border border-white/10 bg-white/[0.03] backdrop-blur-xl p-8 rounded-2xl shadow-[0_20px_80px_rgba(0,0,0,0.6)]">
             <div className="mb-6">
               <label className="text-xs uppercase tracking-[0.3em] text-white/40">
                 E-mail
@@ -181,7 +182,7 @@ export default function LoginPage() {
             <button
               onClick={handleLogin}
               disabled={loading}
-              className="w-full mt-8 py-4 rounded-full bg-[var(--gold)] text-black text-xs tracking-[0.35em] uppercase font-medium hover:scale-[1.03] transition"
+              className="w-full mt-8 py-4 rounded-full bg-[var(--gold)] text-black text-xs tracking-[0.35em] uppercase font-medium hover:scale-[1.03] hover:shadow-[0_10px_40px_rgba(212,175,55,0.35)] active:scale-[0.97] transition"
             >
               {loading ? "Entrando..." : "Entrar"}
             </button>
@@ -201,7 +202,7 @@ export default function LoginPage() {
         </div>
 
         <div className="hidden lg:block">
-          <div className="border border-white/10 rounded-xl p-12 bg-gradient-to-b from-black/40 to-black/10">
+          <div className="border border-white/10 rounded-xl p-12 bg-gradient-to-br from-black/60 via-[#1a1408] to-black">
             <h2 className="text-lg uppercase tracking-[0.35em] text-white/80">
               Experiência Blackstore
             </h2>
@@ -222,7 +223,7 @@ export default function LoginPage() {
       </div>
 
       {showRegister && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xl overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-2xl overflow-y-auto">
           <div className="min-h-screen flex md:items-center justify-center px-4 py-10">
             <div className="w-full max-w-lg rounded-2xl bs-glass p-6 md:p-10">
               {/* HEADER */}

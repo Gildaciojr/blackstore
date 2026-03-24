@@ -329,7 +329,7 @@ export default function Lookbook() {
                   onClick={() => handleSelectItem(item)}
                   className="
                     absolute z-20
-                    w-7 h-7 rounded-full
+                    w-8 h-8 rounded-full
                     border-2 border-[var(--gold)]
                     bg-black/75 backdrop-blur
                     shadow-[0_0_18px_rgba(212,175,55,0.25)]
