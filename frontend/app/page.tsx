@@ -210,9 +210,79 @@ export default function HomePage() {
         </Reveal>
       </section>
 
-            <Reveal>
+      <Reveal>
         <InstagramShowcase />
       </Reveal>
+
+      {/* ================= MAIS VENDIDOS ================= */}
+      <section className="relative bg-gradient-to-b from-[#0f0c06] via-[#0a0907] to-black py-24 md:py-32">
+        <Reveal>
+          <Section
+            title={<span className="bs-title">Mais vendidos da semana</span>}
+            subtitle="As peças que mais conquistaram nossas clientes."
+          >
+            <WeeklyBestSellers
+              items={weekly}
+              getCover={getCover}
+              getImages={getImages}
+              onQuickView={(product: Product) =>
+                setQuickProduct(normalizeProduct(product))
+              }
+            />
+          </Section>
+        </Reveal>
+      </section>
+
+      <Reveal>
+        <Lookbook />
+      </Reveal>
+
+      {/* ================= PROMOÇÃO ================= */}
+      <section className="relative overflow-hidden py-24 md:py-32">
+        <div className="absolute inset-0 bg-gradient-to-br from-black via-[#1a1408] to-black" />
+
+        <div className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 items-center gap-14 px-6 md:gap-20 md:px-8 lg:grid-cols-2">
+          <div>
+            <p className="text-xs uppercase tracking-[0.4em] text-white/50">
+              Oferta especial
+            </p>
+
+            <h2 className="mt-6 text-4xl font-light leading-tight md:text-5xl lg:text-6xl">
+              <span className="block">Promoção</span>
+              <span className="bs-title block">da semana</span>
+            </h2>
+
+            {products[0] && (
+              <div className="mt-10 max-w-sm md:mt-12">
+                <ProductCard
+                  id={products[0].id}
+                  slug={products[0].slug}
+                  image={getCover(products[0])}
+                  images={getImages(products[0])}
+                  name={products[0].name}
+                  price={products[0].price}
+                  oldPrice={products[0].oldPrice ?? undefined}
+                  stock={products[0].stock}
+                  highlight
+                  badge="OFERTA"
+                  onQuickView={() =>
+                    setQuickProduct(normalizeProduct(products[0]))
+                  }
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="relative h-[420px] overflow-hidden rounded-3xl md:h-[520px] lg:h-[600px]">
+            <Image
+              src="/images/product-3.jpg"
+              alt="Promoção"
+              fill
+              className="object-cover"
+            />
+          </div>
+        </div>
+      </section>
 
       <section className="relative overflow-hidden bg-gradient-to-r from-black via-[#1a1408] to-black py-24 md:py-32">
         {/* GLOW DE FUNDO */}
@@ -313,76 +383,6 @@ export default function HomePage() {
               </div>
             </div>
           </Reveal>
-        </div>
-      </section>
-
-      {/* ================= MAIS VENDIDOS ================= */}
-      <section className="relative bg-gradient-to-b from-[#0f0c06] via-[#0a0907] to-black py-24 md:py-32">
-        <Reveal>
-          <Section
-            title={<span className="bs-title">Mais vendidos da semana</span>}
-            subtitle="As peças que mais conquistaram nossas clientes."
-          >
-            <WeeklyBestSellers
-              items={weekly}
-              getCover={getCover}
-              getImages={getImages}
-              onQuickView={(product: Product) =>
-                setQuickProduct(normalizeProduct(product))
-              }
-            />
-          </Section>
-        </Reveal>
-      </section>
-
-      <Reveal>
-        <Lookbook />
-      </Reveal>
-
-      {/* ================= PROMOÇÃO ================= */}
-      <section className="relative overflow-hidden py-24 md:py-32">
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-[#1a1408] to-black" />
-
-        <div className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 items-center gap-14 px-6 md:gap-20 md:px-8 lg:grid-cols-2">
-          <div>
-            <p className="text-xs uppercase tracking-[0.4em] text-white/50">
-              Oferta especial
-            </p>
-
-            <h2 className="mt-6 text-4xl font-light leading-tight md:text-5xl lg:text-6xl">
-              <span className="block">Promoção</span>
-              <span className="bs-title block">da semana</span>
-            </h2>
-
-            {products[0] && (
-              <div className="mt-10 max-w-sm md:mt-12">
-                <ProductCard
-                  id={products[0].id}
-                  slug={products[0].slug}
-                  image={getCover(products[0])}
-                  images={getImages(products[0])}
-                  name={products[0].name}
-                  price={products[0].price}
-                  oldPrice={products[0].oldPrice ?? undefined}
-                  stock={products[0].stock}
-                  highlight
-                  badge="OFERTA"
-                  onQuickView={() =>
-                    setQuickProduct(normalizeProduct(products[0]))
-                  }
-                />
-              </div>
-            )}
-          </div>
-
-          <div className="relative h-[420px] overflow-hidden rounded-3xl md:h-[520px] lg:h-[600px]">
-            <Image
-              src="/images/product-3.jpg"
-              alt="Promoção"
-              fill
-              className="object-cover"
-            />
-          </div>
         </div>
       </section>
 
