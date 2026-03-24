@@ -76,6 +76,9 @@ model Order {
   shippingPrice Float @default(0)
   total         Float
 
+  couponCode String?
+  discount   Float @default(0)
+
   shippingName     String?
   shippingMethod   String?
   shippingDeadline String?
