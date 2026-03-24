@@ -130,98 +130,98 @@ export default function HomePage() {
     <>
       <HeroParallax />
 
-{/* ================= LANÇAMENTOS ================= */}
-<section className="relative bg-gradient-to-b from-black via-[#0b0906] to-[#0f0c06] py-20 md:py-28">
-  <Reveal>
-    <Section
-      id="lancamentos"
-      title={<span className="bs-title">Lançamentos</span>}
-      subtitle="Novidades que definem a temporada."
-    >
-      <div className="relative">
+      {/* ================= LANÇAMENTOS ================= */}
+      <section className="relative bg-gradient-to-b from-black via-[#0b0906] to-[#0f0c06] py-20 md:py-28">
+        <Reveal>
+          <Section
+            id="lancamentos"
+            title={<span className="bs-title">Lançamentos</span>}
+            subtitle="Novidades que definem a temporada."
+          >
+            <div className="relative">
+              {/* GRADIENTE ESQUERDA */}
+              <div className="pointer-events-none absolute left-0 top-0 z-10 h-full w-16 bg-gradient-to-r from-black via-black/80 to-transparent" />
 
-        {/* GRADIENTE ESQUERDA */}
-        <div className="pointer-events-none absolute left-0 top-0 h-full w-16 bg-gradient-to-r from-black via-black/80 to-transparent z-10" />
+              {/* GRADIENTE DIREITA */}
+              <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-16 bg-gradient-to-l from-black via-black/80 to-transparent" />
 
-        {/* GRADIENTE DIREITA */}
-        <div className="pointer-events-none absolute right-0 top-0 h-full w-16 bg-gradient-to-l from-black via-black/80 to-transparent z-10" />
+              {/* BOTÃO ESQUERDA */}
+              <button
+                onClick={() => scroll("left")}
+                className="
+                  absolute left-3 top-1/2 z-20 hidden h-11 w-11 -translate-y-1/2
+                  items-center justify-center rounded-full border border-white/10
+                  bg-black/70 backdrop-blur-xl transition hover:border-[var(--gold)] md:flex
+                "
+              >
+                <ChevronLeft size={18} />
+              </button>
 
-        {/* BOTÃO ESQUERDA */}
-        <button
-          onClick={() => scroll("left")}
-          className="
-            hidden md:flex absolute left-3 top-1/2 -translate-y-1/2 z-20
-            w-11 h-11 items-center justify-center
-            rounded-full bg-black/70 backdrop-blur-xl border border-white/10
-            hover:border-[var(--gold)] transition
-          "
-        >
-          <ChevronLeft size={18} />
-        </button>
+              {/* BOTÃO DIREITA */}
+              <button
+                onClick={() => scroll("right")}
+                className="
+                  absolute right-3 top-1/2 z-20 hidden h-11 w-11 -translate-y-1/2
+                  items-center justify-center rounded-full border border-white/10
+                  bg-black/70 backdrop-blur-xl transition hover:border-[var(--gold)] md:flex
+                "
+              >
+                <ChevronRight size={18} />
+              </button>
 
-        {/* BOTÃO DIREITA */}
-        <button
-          onClick={() => scroll("right")}
-          className="
-            hidden md:flex absolute right-3 top-1/2 -translate-y-1/2 z-20
-            w-11 h-11 items-center justify-center
-            rounded-full bg-black/70 backdrop-blur-xl border border-white/10
-            hover:border-[var(--gold)] transition
-          "
-        >
-          <ChevronRight size={18} />
-        </button>
-
-        {/* CAROUSEL */}
-        <div
-          ref={scrollRef}
-          className="
-            flex gap-5 md:gap-8
-            overflow-x-auto
-            scroll-smooth
-            snap-x snap-mandatory
-            px-4 md:px-6
-            scrollbar-hide
-          "
-        >
-          {products.slice(0, 10).map((product, index) => (
-            <div
-              key={product.id}
-              className="
-                snap-start
-                min-w-[80%]
-                sm:min-w-[48%]
-                md:min-w-[32%]
-                lg:min-w-[24%]
-                xl:min-w-[22%]
-                transition-transform duration-500
-              "
-            >
-              <Reveal delay={0.06 * (index + 1)}>
-                <div className="group">
-                  <ProductCard
-                    id={product.id}
-                    slug={product.slug}
-                    image={getCover(product)}
-                    images={getImages(product)}
-                    name={product.name}
-                    price={product.price}
-                    oldPrice={product.oldPrice ?? undefined}
-                    stock={product.stock}
-                    onQuickView={() =>
-                      setQuickProduct(normalizeProduct(product))
-                    }
-                  />
-                </div>
-              </Reveal>
+              {/* CAROUSEL */}
+              <div
+                ref={scrollRef}
+                className="
+                  scrollbar-hide flex gap-5 overflow-x-auto px-4
+                  scroll-smooth snap-x snap-mandatory md:gap-8 md:px-6
+                "
+              >
+                {products.slice(0, 10).map((product, index) => (
+                  <div
+                    key={product.id}
+                    className="
+                      snap-start min-w-[80%] transition-transform duration-500
+                      sm:min-w-[48%] md:min-w-[32%] lg:min-w-[24%] xl:min-w-[22%]
+                    "
+                  >
+                    <Reveal delay={0.06 * (index + 1)}>
+                      <div className="group">
+                        <ProductCard
+                          id={product.id}
+                          slug={product.slug}
+                          image={getCover(product)}
+                          images={getImages(product)}
+                          name={product.name}
+                          price={product.price}
+                          oldPrice={product.oldPrice ?? undefined}
+                          stock={product.stock}
+                          onQuickView={() =>
+                            setQuickProduct(normalizeProduct(product))
+                          }
+                        />
+                      </div>
+                    </Reveal>
+                  </div>
+                ))}
+              </div>
             </div>
-          ))}
-        </div>
+          </Section>
+        </Reveal>
+      </section>
 
-      </div>
-    </Section>
-  </Reveal>
-</section>
+      {/* ================= BLACKSTORE EXPERIENCE (MOVIDO) ================= */}
+      <section className="bg-black py-16 md:py-20">
+        <Reveal delay={0.2}>
+          <div className="mx-auto max-w-7xl px-6 md:px-8">
+            <div className="bs-glass relative flex h-[420px] items-center justify-center rounded-3xl md:h-[520px]">
+              <p className="text-center text-lg uppercase tracking-widest text-white/60">
+                Blackstore Experience
+              </p>
+            </div>
+          </div>
+        </Reveal>
+      </section>
 
       {/* ================= MAIS VENDIDOS ================= */}
       <section className="relative bg-gradient-to-b from-[#0f0c06] via-[#0a0907] to-black py-24 md:py-32">
@@ -247,22 +247,22 @@ export default function HomePage() {
       </Reveal>
 
       {/* ================= PROMOÇÃO ================= */}
-      <section className="relative py-24 md:py-32 overflow-hidden">
+      <section className="relative overflow-hidden py-24 md:py-32">
         <div className="absolute inset-0 bg-gradient-to-br from-black via-[#1a1408] to-black" />
 
-        <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-8 grid grid-cols-1 lg:grid-cols-2 gap-14 md:gap-20 items-center">
+        <div className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 items-center gap-14 px-6 md:gap-20 md:px-8 lg:grid-cols-2">
           <div>
-            <p className="uppercase text-xs tracking-[0.4em] text-white/50">
+            <p className="text-xs uppercase tracking-[0.4em] text-white/50">
               Oferta especial
             </p>
 
-            <h2 className="mt-6 text-4xl md:text-5xl lg:text-6xl font-light leading-tight">
+            <h2 className="mt-6 text-4xl font-light leading-tight md:text-5xl lg:text-6xl">
               <span className="block">Promoção</span>
-              <span className="block bs-title">da semana</span>
+              <span className="bs-title block">da semana</span>
             </h2>
 
             {products[0] && (
-              <div className="mt-10 md:mt-12 max-w-sm">
+              <div className="mt-10 max-w-sm md:mt-12">
                 <ProductCard
                   id={products[0].id}
                   slug={products[0].slug}
@@ -282,7 +282,7 @@ export default function HomePage() {
             )}
           </div>
 
-          <div className="relative h-[420px] md:h-[520px] lg:h-[600px] rounded-3xl overflow-hidden">
+          <div className="relative h-[420px] overflow-hidden rounded-3xl md:h-[520px] lg:h-[600px]">
             <Image
               src="/images/product-3.jpg"
               alt="Promoção"
@@ -298,35 +298,39 @@ export default function HomePage() {
       </Reveal>
 
       {/* ================= SOCIAL ================= */}
-      <section className="py-24 md:py-32 bg-gradient-to-r from-black via-[#1a1408] to-black">
+      <section className="bg-gradient-to-r from-black via-[#1a1408] to-black py-24 md:py-32">
         <div
-          className="max-w-7xl mx-auto px-6 md:px-8 
-    grid grid-cols-1 lg:grid-cols-2 gap-16 md:gap-24 items-center"
+          className="
+            mx-auto grid max-w-7xl grid-cols-1 items-center gap-16
+            px-6 md:gap-24 md:px-8 lg:grid-cols-2
+          "
         >
           <Reveal>
             <div>
-              <p className="text-xs tracking-[0.4em] uppercase text-white/50">
+              <p className="text-xs uppercase tracking-[0.4em] text-white/50">
                 Conecte-se
               </p>
 
-              <h2 className="mt-6 text-4xl md:text-5xl lg:text-6xl font-light leading-tight">
+              <h2 className="mt-6 text-4xl font-light leading-tight md:text-5xl lg:text-6xl">
                 <span className="block text-white">Muito além</span>
-                <span className="block bs-title">de uma loja online</span>
+                <span className="bs-title block">de uma loja online</span>
               </h2>
 
-              <p className="mt-8 text-white/65 max-w-xl leading-relaxed">
+              <p className="mt-8 max-w-xl leading-relaxed text-white/65">
                 A Blackstore é presença, atitude e relacionamento.
               </p>
 
-              <div className="mt-14 flex flex-col sm:flex-row gap-5 sm:gap-6">
+              <div className="mt-14 flex flex-col gap-5 sm:flex-row sm:gap-6">
                 <a
                   href="https://instagram.com/blackstoreloja1"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-4 px-8 sm:px-10 py-4 
-            rounded-full border border-white/20 text-xs tracking-[0.35em] uppercase 
-            text-white/80 hover:border-[var(--gold)] hover:text-[var(--gold)] 
-            transition-all duration-300"
+                  className="
+                    inline-flex items-center justify-center gap-4 rounded-full
+                    border border-white/20 px-8 py-4 text-xs uppercase
+                    tracking-[0.35em] text-white/80 transition-all duration-300
+                    hover:border-[var(--gold)] hover:text-[var(--gold)] sm:px-10
+                  "
                 >
                   Instagram Blackstore
                 </a>
@@ -335,10 +339,12 @@ export default function HomePage() {
                   href="https://wa.me/5562994694804"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-4 px-10 sm:px-12 py-4 
-            rounded-full bg-[var(--gold)] text-black text-xs tracking-[0.35em] uppercase 
-            font-medium hover:scale-[1.04] active:scale-[0.98] 
-            transition-all duration-300"
+                  className="
+                    inline-flex items-center justify-center gap-4 rounded-full
+                    bg-[var(--gold)] px-10 py-4 text-xs font-medium uppercase
+                    tracking-[0.35em] text-black transition-all duration-300
+                    hover:scale-[1.04] active:scale-[0.98] sm:px-12
+                  "
                 >
                   Atendimento via WhatsApp
                 </a>
@@ -347,12 +353,9 @@ export default function HomePage() {
           </Reveal>
 
           <Reveal delay={0.2}>
-            <div
-              className="relative h-[420px] md:h-[520px] 
-        rounded-3xl bs-glass flex items-center justify-center"
-            >
-              <p className="text-center text-lg text-white/60 tracking-widest uppercase">
-                Blackstore Experience
+            <div className="bs-glass relative flex h-[420px] items-center justify-center rounded-3xl md:h-[520px]">
+              <p className="text-center text-lg uppercase tracking-widest text-white/60">
+                Comunidade Blackstore
               </p>
             </div>
           </Reveal>

@@ -24,13 +24,14 @@ export default function InstagramShowcase() {
             Comunidade
           </p>
 
-          <h2 className="mt-6 text-4xl md:text-5xl font-light">
-            <span className="block">Clientes usando</span>
-            <span className="block bs-title">Blackstore</span>
+          <h2 className="mt-6 text-4xl md:text-5xl font-light leading-tight">
+            <span className="block">Quem veste Blackstore,</span>
+            <span className="block bs-title">vive o estilo</span>
           </h2>
 
-          <p className="mt-6 text-white/60 max-w-xl mx-auto">
-            Veja como nossas clientes usam Blackstore no dia a dia.
+          <p className="mt-6 text-white/60 max-w-xl mx-auto leading-relaxed">
+            Junte-se à nossa comunidade e mostre seu look.
+            Marque <span className="text-white">@blackstoreloja1</span> e apareça aqui.
           </p>
 
         </div>
@@ -42,11 +43,11 @@ export default function InstagramShowcase() {
             <div
               key={post.id}
               className="
-              relative
-              aspect-square
-              overflow-hidden
-              rounded-xl
-              group
+                relative
+                aspect-square
+                overflow-hidden
+                rounded-xl
+                group
               "
             >
 
@@ -55,26 +56,36 @@ export default function InstagramShowcase() {
                 alt="Cliente Blackstore"
                 fill
                 className="
-                object-cover
-                transition
-                duration-700
-                group-hover:scale-110
+                  object-cover
+                  transition
+                  duration-700
+                  group-hover:scale-110
                 "
               />
 
+              {/* OVERLAY */}
               <div
                 className="
-                absolute inset-0
-                bg-black/40
-                opacity-0
-                group-hover:opacity-100
-                transition
-                flex items-center justify-center
+                  absolute inset-0
+                  bg-black/50
+                  opacity-0
+                  group-hover:opacity-100
+                  transition
+                  flex flex-col items-center justify-center
+                  gap-2
                 "
               >
 
-                <span className="text-xs uppercase tracking-[0.3em]">
+                <span className="text-[10px] tracking-[0.3em] uppercase text-white/60">
+                  @cliente
+                </span>
+
+                <span className="text-xs uppercase tracking-[0.35em] text-white">
                   Ver look
+                </span>
+
+                <span className="text-[10px] text-white/50">
+                  Inspire-se
                 </span>
 
               </div>
@@ -85,28 +96,55 @@ export default function InstagramShowcase() {
         </div>
 
         {/* CTA */}
-        <div className="mt-16 text-center">
+        <div className="mt-16 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
 
           <a
             href="https://instagram.com/blackstoreloja1"
             target="_blank"
             rel="noopener noreferrer"
             className="
-            inline-flex items-center
-            px-12 py-4
-            rounded-full
-            border border-white/20
-            text-xs tracking-[0.35em]
-            uppercase
-            hover:border-[var(--gold)]
-            hover:text-[var(--gold)]
-            transition
+              inline-flex items-center justify-center
+              px-10 py-4
+              rounded-full
+              border border-white/20
+              text-xs tracking-[0.35em]
+              uppercase
+              text-white/80
+              hover:border-[var(--gold)]
+              hover:text-[var(--gold)]
+              transition-all duration-300
             "
           >
-            Seguir no Instagram
+            Marcar no Instagram
+          </a>
+
+          <a
+            href="https://wa.me/5562994694804"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="
+              inline-flex items-center justify-center
+              px-10 py-4
+              rounded-full
+              bg-[var(--gold)]
+              text-black
+              text-xs tracking-[0.35em]
+              uppercase
+              font-medium
+              hover:scale-[1.04]
+              active:scale-[0.98]
+              transition-all duration-300
+            "
+          >
+            Montar meu look
           </a>
 
         </div>
+
+        {/* MICRO COPY FINAL */}
+        <p className="mt-8 text-center text-white/40 text-xs tracking-wider">
+          Inspire-se em quem já vive o estilo Blackstore.
+        </p>
 
       </div>
 
