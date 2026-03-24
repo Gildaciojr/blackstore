@@ -400,62 +400,94 @@ export default function HeroParallax() {
         ))}
       </div>
 
-      {/* 🔥 CUPOM FLOATING PREMIUM */}
       <div className="absolute top-6 right-4 md:right-10 z-30">
-        <div
+        <motion.div
+          initial={{ opacity: 0, y: -30, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.5 }}
           className="
-            relative
-            bg-black/60 backdrop-blur-xl
-            border border-[var(--gold)]/30
-            rounded-xl px-4 py-3
-            shadow-[0_10px_40px_rgba(0,0,0,0.6)]
-            flex items-center gap-3
-            transition-all duration-500
-          "
+      relative
+      bg-black/60 backdrop-blur-xl
+      border border-[var(--gold)]/30
+      rounded-xl px-5 py-4
+      shadow-[0_15px_50px_rgba(0,0,0,0.7)]
+      flex flex-col gap-3
+      overflow-hidden
+    "
         >
-          {/* brilho animado */}
-          <div className="absolute inset-0 rounded-xl bg-[radial-gradient(circle_at_top,rgba(212,175,55,0.15),transparent_60%)] pointer-events-none" />
+          {/* 🔥 GLOW ANIMADO */}
+          <motion.div
+            animate={{ opacity: [0.2, 0.5, 0.2] }}
+            transition={{ duration: 3, repeat: Infinity }}
+            className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(212,175,55,0.2),transparent_60%)] pointer-events-none"
+          />
 
-          <div className="flex flex-col leading-tight relative z-10">
-            <span className="text-[10px] uppercase tracking-widest text-white/50">
-              Cupom exclusivo
+          {/* 🔥 HEADLINE */}
+          <div className="relative z-10 leading-tight">
+            <span className="text-[10px] uppercase tracking-widest text-white/40">
+              Ganhe agora
             </span>
 
-            <span className="text-[13px] font-semibold text-[var(--gold)] tracking-widest">
-              BLACK10
-            </span>
+            <div className="text-[16px] font-semibold text-[var(--gold)]">
+              10% OFF
+            </div>
           </div>
 
-          <button
-            onClick={() => {
-              navigator.clipboard.writeText("BLACK10");
-              setCouponCopied(true);
+          {/* 🔥 CÓDIGO */}
+          <div className="relative z-10 flex items-center justify-between gap-3">
+            <span className="text-[13px] tracking-widest text-white">
+              BLACK10
+            </span>
 
-              setTimeout(() => {
-                setCouponCopied(false);
-              }, 2000);
-            }}
-            className={`
-              relative z-10
-              text-[10px]
-              uppercase
-              tracking-widest
-              px-3 py-1.5
-              rounded-md
-              border transition-all duration-300
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText("BLACK10");
+                setCouponCopied(true);
 
-              ${
-                couponCopied
-                  ? "border-green-400 text-green-400"
-                  : "border-white/20 hover:border-[var(--gold)] hover:text-[var(--gold)]"
-              }
-            `}
+                // 🔥 PRÓXIMO NÍVEL: salvar no localStorage
+                localStorage.setItem("applied_coupon", "BLACK10");
+
+                setTimeout(() => {
+                  setCouponCopied(false);
+                }, 2000);
+              }}
+              className={`
+          text-[10px]
+          uppercase
+          tracking-widest
+          px-3 py-1.5
+          rounded-md
+          border transition-all duration-300
+
+          ${
+            couponCopied
+              ? "border-green-400 text-green-400"
+              : "border-white/20 hover:border-[var(--gold)] hover:text-[var(--gold)]"
+          }
+        `}
+            >
+              {couponCopied ? "Aplicado ✓" : "Aplicar"}
+            </button>
+          </div>
+
+          {/* 🔥 CTA EXTRA */}
+          <Link
+            href="/catalog"
+            className="
+        relative z-10
+        text-[10px]
+        uppercase
+        tracking-widest
+        text-white/60
+        hover:text-[var(--gold)]
+        transition
+      "
           >
-            {couponCopied ? "Copiado!" : "Copiar"}
-          </button>
-        </div>
+            Usar no catálogo →
+          </Link>
+        </motion.div>
 
-        {/* 🔥 FEEDBACK FLUTUANTE */}
+        {/* 🔥 FEEDBACK FLOAT */}
         <AnimatePresence>
           {couponCopied && (
             <motion.div
@@ -464,15 +496,15 @@ export default function HeroParallax() {
               exit={{ opacity: 0, y: 10, scale: 0.9 }}
               transition={{ duration: 0.25 }}
               className="
-                absolute right-0 mt-3
-                bg-green-500/10 border border-green-400/30
-                text-green-400 text-[10px]
-                px-3 py-2 rounded-md
-                shadow-[0_10px_30px_rgba(0,0,0,0.4)]
-                backdrop-blur-md
-              "
+          absolute right-0 mt-3
+          bg-green-500/10 border border-green-400/30
+          text-green-400 text-[10px]
+          px-3 py-2 rounded-md
+          shadow-[0_10px_30px_rgba(0,0,0,0.4)]
+          backdrop-blur-md
+        "
             >
-              Cupom copiado ✦
+              Cupom aplicado ✦
             </motion.div>
           )}
         </AnimatePresence>

@@ -13,63 +13,85 @@ export default function CouponTable({
   onEdit,
   onDelete,
 }: Props) {
+
+  function isExpired(date: string) {
+    return new Date(date) < new Date();
+  }
+
   return (
-    <table className="w-full border border-white/10">
+    <div className="border border-white/10 rounded-2xl overflow-hidden">
 
-      <thead>
-        <tr className="border-b border-white/10">
+      <table className="w-full text-sm">
 
-          <th className="p-4 text-left">Código</th>
-          <th className="p-4 text-left">Desconto</th>
-          <th className="p-4 text-left">Usado</th>
-          <th className="p-4 text-left">Validade</th>
-          <th className="p-4 text-left">Ações</th>
-
-        </tr>
-      </thead>
-
-      <tbody>
-
-        {coupons.map((coupon) => (
-
-          <tr key={coupon.id} className="border-b border-white/10">
-
-            <td className="p-4">{coupon.code}</td>
-
-            <td className="p-4">{coupon.discount}%</td>
-
-            <td className="p-4">
-              {coupon.used}/{coupon.maxUses}
-            </td>
-
-            <td className="p-4">
-              {new Date(coupon.expiresAt).toLocaleDateString()}
-            </td>
-
-            <td className="p-4 flex gap-4">
-
-              <button
-                onClick={() => onEdit(coupon)}
-                className="text-blue-400"
-              >
-                Editar
-              </button>
-
-              <button
-                onClick={() => onDelete(coupon.id)}
-                className="text-red-400"
-              >
-                Excluir
-              </button>
-
-            </td>
-
+        <thead className="bg-white/[0.03]">
+          <tr>
+            <th className="p-4 text-left">Código</th>
+            <th className="p-4 text-left">Desconto</th>
+            <th className="p-4 text-left">Uso</th>
+            <th className="p-4 text-left">Status</th>
+            <th className="p-4 text-left">Ações</th>
           </tr>
+        </thead>
 
-        ))}
+        <tbody>
 
-      </tbody>
+          {coupons.map((coupon) => {
 
-    </table>
+            const expired = isExpired(coupon.expiresAt);
+
+            return (
+              <tr key={coupon.id} className="border-t border-white/10">
+
+                <td className="p-4 font-medium">
+                  {coupon.code}
+                  {coupon.isFeatured && (
+                    <span className="ml-2 text-xs text-[var(--gold)]">
+                      ★
+                    </span>
+                  )}
+                </td>
+
+                <td className="p-4">{coupon.discount}%</td>
+
+                <td className="p-4">
+                  {coupon.used}/{coupon.maxUses}
+                </td>
+
+                <td className="p-4">
+                  {expired ? (
+                    <span className="text-red-400 text-xs">Expirado</span>
+                  ) : !coupon.active ? (
+                    <span className="text-white/40 text-xs">Inativo</span>
+                  ) : (
+                    <span className="text-green-400 text-xs">Ativo</span>
+                  )}
+                </td>
+
+                <td className="p-4 flex gap-4">
+
+                  <button
+                    onClick={() => onEdit(coupon)}
+                    className="text-blue-400 hover:underline"
+                  >
+                    Editar
+                  </button>
+
+                  <button
+                    onClick={() => onDelete(coupon.id)}
+                    className="text-red-400 hover:underline"
+                  >
+                    Excluir
+                  </button>
+
+                </td>
+
+              </tr>
+            );
+          })}
+
+        </tbody>
+
+      </table>
+    </div>
   );
 }

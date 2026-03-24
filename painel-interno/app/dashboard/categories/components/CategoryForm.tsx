@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import { Category } from "../types/types";
 
 type CategoryFormData = {
@@ -12,6 +12,11 @@ type Props = {
   editing: Category | null;
   onSave: (data: CategoryFormData) => Promise<void>;
   onCancel: () => void;
+};
+
+type FormState = {
+  name: string;
+  slug: string;
 };
 
 function generateSlug(value: string): string {
@@ -30,30 +35,41 @@ export default function CategoryForm({
   onSave,
   onCancel,
 }: Props) {
-  const [name, setName] = useState<string>(editing?.name ?? "");
-  const [slug, setSlug] = useState<string>(editing?.slug ?? "");
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-
-  useEffect(() => {
-    setName(editing?.name ?? "");
-    setSlug(editing?.slug ?? "");
-  }, [editing]);
-
   const isEditing = useMemo(() => Boolean(editing), [editing]);
 
-  function handleNameChange(value: string): void {
-    setName(value);
+  const [form, setForm] = useState<FormState>(() => ({
+    name: editing?.name ?? "",
+    slug: editing?.slug ?? "",
+  }));
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-    if (!isEditing) {
-      setSlug(generateSlug(value));
-    }
+  function handleNameChange(value: string): void {
+    setForm((prev) => ({
+      ...prev,
+      name: value,
+      slug: isEditing ? prev.slug : generateSlug(value),
+    }));
+  }
+
+  function handleSlugChange(value: string): void {
+    setForm((prev) => ({
+      ...prev,
+      slug: generateSlug(value),
+    }));
+  }
+
+  function resetForm(): void {
+    setForm({
+      name: "",
+      slug: "",
+    });
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
 
-    const trimmedName = name.trim();
-    const trimmedSlug = slug.trim();
+    const trimmedName = form.name.trim();
+    const trimmedSlug = form.slug.trim();
 
     if (!trimmedName) {
       alert("O nome da categoria é obrigatório.");
@@ -74,8 +90,7 @@ export default function CategoryForm({
       });
 
       if (!isEditing) {
-        setName("");
-        setSlug("");
+        resetForm();
       }
     } finally {
       setIsSubmitting(false);
@@ -133,7 +148,7 @@ export default function CategoryForm({
             </span>
 
             <input
-              value={name}
+              value={form.name}
               onChange={(e) => handleNameChange(e.target.value)}
               placeholder="Ex.: Moda Fitness"
               disabled={isSubmitting}
@@ -155,8 +170,8 @@ export default function CategoryForm({
             </span>
 
             <input
-              value={slug}
-              onChange={(e) => setSlug(generateSlug(e.target.value))}
+              value={form.slug}
+              onChange={(e) => handleSlugChange(e.target.value)}
               placeholder="moda-fitness"
               disabled={isSubmitting}
               className="

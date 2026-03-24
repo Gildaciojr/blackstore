@@ -5,4 +5,6 @@ export type Coupon = {
   maxUses: number;
   used: number;
   expiresAt: string;
+  active: boolean;
+  isFeatured: boolean;
 };

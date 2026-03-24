@@ -35,9 +35,19 @@ export default function ProductsPage() {
 
   function resolveImage(url: string) {
     if (!url) return "";
-    if (url.startsWith("/images")) return url;
+
+    // já é absoluta
     if (url.startsWith("http")) return url;
-    return `${process.env.NEXT_PUBLIC_API_URL}${url}`;
+
+    // upload backend
+    if (url.startsWith("/uploads")) {
+      return `${process.env.NEXT_PUBLIC_API_URL}${url}`;
+    }
+
+    // imagens locais
+    if (url.startsWith("/images")) return url;
+
+    return `${process.env.NEXT_PUBLIC_API_URL}/${url}`;
   }
 
   async function loadProducts() {
@@ -68,10 +78,38 @@ export default function ProductsPage() {
   ) {
     const { name, value } = e.target;
 
-    setForm((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setForm((prev) => {
+      if (name === "name") {
+        return {
+          ...prev,
+          name: value,
+          slug: editingId ? prev.slug : generateSlug(value),
+        };
+      }
+
+      if (name === "slug") {
+        return {
+          ...prev,
+          slug: generateSlug(value),
+        };
+      }
+
+      return {
+        ...prev,
+        [name]: value,
+      };
+    });
+  }
+
+  function generateSlug(value: string) {
+    return value
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, "-")
+      .replace(/[^\w-]+/g, "")
+      .replace(/--+/g, "-");
   }
 
   async function uploadImage(file: File) {
@@ -106,7 +144,7 @@ export default function ProductsPage() {
 
       const payload = {
         name: form.name,
-        slug: form.slug,
+        slug: form.slug || generateSlug(form.name),
         description: form.description || undefined,
         price: parseFloat(form.price),
         oldPrice:
@@ -345,6 +383,8 @@ export default function ProductsPage() {
                   setUploading(true);
 
                   const url = await uploadImage(file);
+
+                  console.log("URL DO BACKEND", url);
 
                   setForm((prev) => ({
                     ...prev,

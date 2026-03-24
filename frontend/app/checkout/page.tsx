@@ -370,7 +370,6 @@ export default function CheckoutPage() {
       }, 1200);
 
       return; // 🔥 CRÍTICO: impede o finally de desligar o loading
-
     } catch (err) {
       console.error(err);
 
@@ -384,7 +383,6 @@ export default function CheckoutPage() {
        */
       setCheckoutLock(false);
       setLoading(false);
-
     } finally {
       /**
        * 🔥 SOMENTE DESLIGA LOADING SE NÃO ESTIVER EM REDIRECT
@@ -639,7 +637,7 @@ export default function CheckoutPage() {
                       hover:scale-105 active:scale-95 transition
                     "
                   >
-                    {couponLoading ? "Aplicando..." : "Aplicar"}
+                    {couponLoading ? "Validando..." : "Aplicar"}
                   </button>
                 ) : (
                   <button
@@ -688,9 +686,16 @@ export default function CheckoutPage() {
               </div>
 
               {discountValue > 0 && (
-                <div className="flex justify-between text-green-400">
-                  <span>Desconto ({appliedCouponCode})</span>
-                  <span>- R$ {discountValue.toFixed(2)}</span>
+                <div className="flex flex-col gap-1 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+                  <div className="flex justify-between text-green-400 text-sm">
+                    <span>Desconto aplicado</span>
+                    <span>- R$ {discountValue.toFixed(2)}</span>
+                  </div>
+
+                  <div className="flex justify-between text-[10px] uppercase tracking-widest text-green-300/80">
+                    <span>Cupom</span>
+                    <span>{appliedCouponCode}</span>
+                  </div>
                 </div>
               )}
 

@@ -226,9 +226,7 @@ export const useCart = create<CartState>((set, get) => ({
   },
 
   selectShipping: (method: string) => {
-    const option = get().shippingOptions.find(
-      (s) => s.method === method
-    );
+    const option = get().shippingOptions.find((s) => s.method === method);
 
     if (!option) return;
 
@@ -244,9 +242,7 @@ export const useCart = create<CartState>((set, get) => ({
       throw new Error("Cupom inválido");
     }
 
-    const coupon = await apiFetch<CouponResponse>(
-      `/coupons/${normalizedCode}`
-    );
+    const coupon = await apiFetch<CouponResponse>(`/coupons/${normalizedCode}`);
 
     set({
       appliedCouponCode: coupon.code,
@@ -272,8 +268,7 @@ export const useCart = create<CartState>((set, get) => ({
 
   count: () => get().items.reduce((sum, i) => sum + i.quantity, 0),
 
-  subtotal: () =>
-    get().items.reduce((sum, i) => sum + i.price * i.quantity, 0),
+  subtotal: () => get().items.reduce((sum, i) => sum + i.price * i.quantity, 0),
 
   discount: () => {
     const subtotal = get().subtotal();
@@ -281,7 +276,9 @@ export const useCart = create<CartState>((set, get) => ({
 
     if (subtotal <= 0 || percent <= 0) return 0;
 
-    const value = subtotal * (percent / 100);
+    const raw = subtotal * (percent / 100);
+
+    const value = Number(raw.toFixed(2));
 
     if (value > subtotal) return subtotal;
 

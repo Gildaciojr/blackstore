@@ -256,7 +256,7 @@ export default function CartPage() {
                     hover:scale-105 active:scale-95 transition
                   "
                 >
-                  {couponLoading ? "Aplicando..." : "Aplicar"}
+                  {couponLoading ? "Validando..." : "Aplicar"}
                 </button>
               ) : (
                 <button
