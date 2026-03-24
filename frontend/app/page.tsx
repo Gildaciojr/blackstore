@@ -210,17 +210,106 @@ export default function HomePage() {
         </Reveal>
       </section>
 
-      {/* ================= BLACKSTORE EXPERIENCE (MOVIDO) ================= */}
-      <section className="bg-black py-16 md:py-20">
-        <Reveal delay={0.2}>
-          <div className="mx-auto max-w-7xl px-6 md:px-8">
-            <div className="bs-glass relative flex h-[420px] items-center justify-center rounded-3xl md:h-[520px]">
-              <p className="text-center text-lg uppercase tracking-widest text-white/60">
-                Blackstore Experience
+      <section className="relative overflow-hidden bg-gradient-to-r from-black via-[#1a1408] to-black py-24 md:py-32">
+        {/* GLOW DE FUNDO */}
+        <div className="pointer-events-none absolute -top-40 left-1/2 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-[var(--gold)] opacity-10 blur-[120px]" />
+
+        <div
+          className="
+      relative
+      mx-auto grid max-w-7xl grid-cols-1 items-center gap-16
+      px-6 md:gap-24 md:px-8 lg:grid-cols-2
+    "
+        >
+          <Reveal>
+            <div>
+              <p className="text-xs uppercase tracking-[0.4em] text-white/50">
+                Conecte-se
               </p>
+
+              <h2 className="mt-6 text-4xl font-light leading-tight md:text-5xl lg:text-6xl">
+                <span className="block text-white">Muito além</span>
+                <span className="bs-title block">de uma loja online</span>
+              </h2>
+
+              <p className="mt-8 max-w-xl leading-relaxed text-white/65">
+                Mais do que vestir, é sobre presença, atitude e identidade.
+              </p>
+
+              {/* BOTÕES */}
+              <div className="mt-14 flex flex-col gap-5 sm:flex-row sm:gap-6">
+                {/* INSTAGRAM */}
+                <a
+                  href="https://instagram.com/blackstoreloja1"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="
+              group inline-flex items-center justify-center gap-4 rounded-full
+              border border-white/20 px-8 py-4 text-xs uppercase
+              tracking-[0.35em] text-white/80
+              transition-all duration-300
+              hover:border-[var(--gold)] hover:text-[var(--gold)]
+              hover:shadow-[0_0_20px_rgba(212,175,55,0.15)]
+              sm:px-10
+            "
+                >
+                  Instagram Blackstore
+                </a>
+
+                {/* WHATSAPP */}
+                <a
+                  href="https://wa.me/5562994694804"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="
+              group inline-flex items-center justify-center gap-4 rounded-full
+              bg-[var(--gold)] px-10 py-4 text-xs font-medium uppercase
+              tracking-[0.35em] text-black
+              transition-all duration-300
+              hover:scale-[1.05]
+              hover:shadow-[0_10px_40px_rgba(212,175,55,0.35)]
+              active:scale-[0.97]
+              sm:px-12
+            "
+                >
+                  Atendimento via WhatsApp
+                </a>
+              </div>
             </div>
-          </div>
-        </Reveal>
+          </Reveal>
+
+          {/* CARD DIREITO */}
+          <Reveal delay={0.2}>
+            <div
+              className="
+          bs-glass relative flex h-[420px] md:h-[520px]
+          items-center justify-center rounded-3xl
+          overflow-hidden
+        "
+            >
+              {/* FUNDO INTERNO */}
+              <div className="absolute inset-0 bg-gradient-to-br from-black via-[#1a1408] to-black opacity-80" />
+
+              {/* LINHA PREMIUM */}
+              <div className="absolute top-0 left-0 h-[2px] w-full bg-gradient-to-r from-transparent via-[var(--gold)] to-transparent opacity-60" />
+
+              {/* TEXTO */}
+              <div className="relative text-center px-6">
+                <p className="text-xs tracking-[0.5em] uppercase text-white/40">
+                  Comunidade
+                </p>
+
+                <h3 className="mt-6 text-2xl md:text-3xl font-light text-white">
+                  Blackstore Experience
+                </h3>
+
+                <p className="mt-4 text-white/50 text-sm">
+                  Faça parte. Vista atitude.
+                </p>
+              </div>
+            </div>
+          </Reveal>
+        </div>
       </section>
 
       {/* ================= MAIS VENDIDOS ================= */}
@@ -296,71 +385,6 @@ export default function HomePage() {
       <Reveal>
         <InstagramShowcase />
       </Reveal>
-
-      {/* ================= SOCIAL ================= */}
-      <section className="bg-gradient-to-r from-black via-[#1a1408] to-black py-24 md:py-32">
-        <div
-          className="
-            mx-auto grid max-w-7xl grid-cols-1 items-center gap-16
-            px-6 md:gap-24 md:px-8 lg:grid-cols-2
-          "
-        >
-          <Reveal>
-            <div>
-              <p className="text-xs uppercase tracking-[0.4em] text-white/50">
-                Conecte-se
-              </p>
-
-              <h2 className="mt-6 text-4xl font-light leading-tight md:text-5xl lg:text-6xl">
-                <span className="block text-white">Muito além</span>
-                <span className="bs-title block">de uma loja online</span>
-              </h2>
-
-              <p className="mt-8 max-w-xl leading-relaxed text-white/65">
-                A Blackstore é presença, atitude e relacionamento.
-              </p>
-
-              <div className="mt-14 flex flex-col gap-5 sm:flex-row sm:gap-6">
-                <a
-                  href="https://instagram.com/blackstoreloja1"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="
-                    inline-flex items-center justify-center gap-4 rounded-full
-                    border border-white/20 px-8 py-4 text-xs uppercase
-                    tracking-[0.35em] text-white/80 transition-all duration-300
-                    hover:border-[var(--gold)] hover:text-[var(--gold)] sm:px-10
-                  "
-                >
-                  Instagram Blackstore
-                </a>
-
-                <a
-                  href="https://wa.me/5562994694804"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="
-                    inline-flex items-center justify-center gap-4 rounded-full
-                    bg-[var(--gold)] px-10 py-4 text-xs font-medium uppercase
-                    tracking-[0.35em] text-black transition-all duration-300
-                    hover:scale-[1.04] active:scale-[0.98] sm:px-12
-                  "
-                >
-                  Atendimento via WhatsApp
-                </a>
-              </div>
-            </div>
-          </Reveal>
-
-          <Reveal delay={0.2}>
-            <div className="bs-glass relative flex h-[420px] items-center justify-center rounded-3xl md:h-[520px]">
-              <p className="text-center text-lg uppercase tracking-widest text-white/60">
-                Comunidade Blackstore
-              </p>
-            </div>
-          </Reveal>
-        </div>
-      </section>
 
       {/* ================= QUICK VIEW ================= */}
       {quickProduct && (
