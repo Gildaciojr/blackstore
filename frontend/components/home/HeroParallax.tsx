@@ -391,7 +391,7 @@ export default function HeroParallax() {
         ))}
       </div>
 
-      <div className="absolute bottom-36 md:bottom-auto top-auto md:top-6 left-1/2 md:left-auto -translate-x-1/2 md:translate-x-0 md:right-10 z-30">
+      <div className="absolute top-16 md:top-6 right-3 md:right-10 z-30">
         <motion.div
           initial={{ opacity: 0, y: -30, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -400,7 +400,7 @@ export default function HeroParallax() {
       relative
       bg-black/60 backdrop-blur-xl
       border border-[var(--gold)]/30
-      rounded-xl px-5 py-4
+      rounded-xl px-4 py-3 md:px-5 md:py-4
       shadow-[0_15px_50px_rgba(0,0,0,0.7)]
       flex flex-col gap-3
       overflow-hidden
@@ -419,14 +419,14 @@ export default function HeroParallax() {
               Ganhe agora
             </span>
 
-            <div className="text-[16px] font-semibold text-[var(--gold)]">
+            <div className="text-[14px] md:text-[16px] font-semibold text-[var(--gold)]">
               10% OFF
             </div>
           </div>
 
           {/* 🔥 CÓDIGO */}
           <div className="relative z-10 flex items-center justify-between gap-3">
-            <span className="text-[13px] tracking-widest text-white">
+            <span className="text-[12px] md:text-[13px] tracking-widest text-white">
               BLACK10
             </span>
 
