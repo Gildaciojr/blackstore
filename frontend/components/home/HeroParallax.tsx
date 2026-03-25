@@ -334,7 +334,7 @@ export default function HeroParallax() {
               border border-white/10
               rounded-lg md:rounded-xl
               grid grid-cols-3 md:grid-cols-3
-              gap-2 md:gap-4
+              gap-2 md:gap-3
               px-3 py-2.5 md:px-5 md:py-3.5
               text-center md:text-left
               shadow-[0_10px_30px_rgba(0,0,0,0.35)]
@@ -400,7 +400,7 @@ export default function HeroParallax() {
       relative
       bg-black/60 backdrop-blur-xl
       border border-[var(--gold)]/30
-      rounded-xl px-4 py-3 md:px-5 md:py-4
+      rounded-xl px-3 py-2 md:px-5 md:py-4
       shadow-[0_15px_50px_rgba(0,0,0,0.7)]
       flex flex-col gap-3
       overflow-hidden
@@ -427,7 +427,7 @@ export default function HeroParallax() {
 
             <div
               className="
-                text-[13px] md:text-[16px]
+                text-[12px] md:text-[14px]
                 font-semibold
                 text-[var(--gold)]
                 mt-[2px]
@@ -447,7 +447,7 @@ export default function HeroParallax() {
           >
             <span
               className="
-                text-[11px] md:text-[13px]
+                text-[10px] md:text-[12px]
                 tracking-[0.25em] md:tracking-widest
                 text-white
               "
