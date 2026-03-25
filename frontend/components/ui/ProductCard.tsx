@@ -114,7 +114,26 @@ export default function ProductCard({
       className="group relative"
     >
       {/* CARD */}
-      <div className="relative overflow-hidden rounded-2xl">
+      <div
+        className="relative overflow-hidden rounded-2xl
+                      bg-black border border-white/5
+                      transition-all duration-500
+                      
+                      group-hover:border-white/10
+                      group-hover:shadow-[0_20px_60px_rgba(0,0,0,0.6)]"
+      >
+        {/* 🔥 GLOW DINÂMICO PREMIUM */}
+        <div
+          className="
+    pointer-events-none absolute inset-0 z-10
+    opacity-0 group-hover:opacity-100
+    transition duration-700
+  "
+          style={{
+            background:
+              "radial-gradient(circle at var(--x) var(--y), rgba(212,175,55,0.18), transparent 60%)",
+          }}
+        />
 
         {/* IMAGE */}
         <Link href={productUrl}>
@@ -134,14 +153,14 @@ export default function ProductCard({
                 className="
                   object-cover
                   object-center
-                  transition-transform duration-700
-                  group-hover:scale-[1.06]
+                  transition-transform duration-[1200ms] ease-out
+                  group-hover:scale-[1.08]
                 "
               />
             </motion.div>
 
             {/* GRADIENT */}
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-500 pointer-events-none bg-[radial-gradient(circle_at_30%_20%,rgba(212,175,55,0.12),transparent_60%)]" />
+            <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-80 group-hover:opacity-100 transition duration-500" />
           </div>
         </Link>
 
@@ -244,17 +263,17 @@ export default function ProductCard({
         )}
 
         {/* CTA */}
-        <div className="
+        <div
+          className="
           absolute inset-0 flex items-end justify-center
           opacity-0 group-hover:opacity-100
-          transition duration-300
+          transition duration-500
           pointer-events-none group-hover:pointer-events-auto
-        ">
+        "
+        >
           <div className="w-full p-3">
             <button
-              onClick={() =>
-                addItem({ id, name, price, oldPrice, image })
-              }
+              onClick={() => addItem({ id, name, price, oldPrice, image })}
               className="
                 w-full py-2.5 rounded-full
                 bg-[var(--gold)] text-black
@@ -272,27 +291,27 @@ export default function ProductCard({
       </div>
 
       {/* CONTENT */}
-      <div className="mt-3 px-1">
-
+      <div className="mt-4 px-1">
         <p className="text-[9px] uppercase tracking-[0.35em] text-white/40">
           Blackstore
         </p>
 
         <Link href={productUrl}>
-          <h3 className="
+          <h3
+            className="
             mt-1 text-xs md:text-sm
             tracking-widest uppercase
             text-white
             line-clamp-2
             group-hover:text-[var(--gold)]
             transition
-          ">
+          "
+          >
             {name}
           </h3>
         </Link>
 
         <div className="mt-1.5 flex items-center gap-2">
-
           {oldPrice && oldPrice > price && (
             <p className="text-[10px] text-white/40 line-through">
               {brl(oldPrice)}
@@ -302,9 +321,7 @@ export default function ProductCard({
           <p className="text-sm md:text-base font-medium text-[var(--gold)]">
             {brl(price)}
           </p>
-
         </div>
-
       </div>
     </motion.div>
   );
