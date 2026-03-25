@@ -434,27 +434,32 @@ export default function ProductsPage() {
 
                 if (!files || files.length === 0) return;
 
-                try {
-                  setUploading(true);
+                setUploading(true);
 
-                  const uploadedUrls: string[] = [];
+                try {
+                  const newUrls: string[] = [];
 
                   for (const file of Array.from(files)) {
                     const url = await uploadImage(file);
-                    uploadedUrls.push(url);
+                    newUrls.push(url);
                   }
 
-                  // 🔥 CORREÇÃO DEFINITIVA
+                  // 🔥 FORÇA ACÚMULO REAL
                   uploadedImagesRef.current = [
                     ...uploadedImagesRef.current,
-                    ...uploadedUrls,
+                    ...newUrls,
                   ];
 
-                  setForm((prev) => ({
-                    ...prev,
+                  // 🔥 LOG CRÍTICO
+                  console.log("🧠 REF ATUAL:", uploadedImagesRef.current);
+
+                  setForm({
+                    ...form,
                     image: uploadedImagesRef.current[0] || "",
                     images: [...uploadedImagesRef.current],
-                  }));
+                  });
+                } catch (err) {
+                  console.error(err);
                 } finally {
                   setUploading(false);
                   input.value = "";
