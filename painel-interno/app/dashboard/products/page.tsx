@@ -428,7 +428,9 @@ export default function ProductsPage() {
               hover:file:opacity-90
               "
               onChange={async (e) => {
-                const files = e.target.files;
+                const input = e.target;
+                const files = input.files;
+
                 if (!files || files.length === 0) return;
 
                 try {
@@ -446,14 +448,17 @@ export default function ProductsPage() {
 
                     return {
                       ...prev,
-                      image: mergedImages[0], // mantém a primeira como principal
-                      images: mergedImages, // 🔥 agora NÃO perde imagens antigas
+                      image: mergedImages[0], // principal
+                      images: mergedImages,
                     };
                   });
 
                   setImagePreview(resolveImage(uploadedUrls[0]));
                 } finally {
                   setUploading(false);
+
+                  // 🔥 CORREÇÃO CRÍTICA
+                  input.value = ""; // reset input (permite selecionar novamente)
                 }
               }}
             />
