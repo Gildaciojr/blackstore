@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ShoppingBag } from "lucide-react";
 import { useCart } from "@/store/cart";
 import { motion } from "framer-motion";
+import { apiFetch } from "@/lib/api";
 
 type Media = {
   id: string;
@@ -45,30 +46,32 @@ export default function ProductPage({ params }: Props) {
   const sizes = ["PP", "P", "M", "G", "GG"];
 
   function resolveImage(url: string) {
-    if (!url) return "";
+    if (!url) return "/images/placeholder.png";
 
-    if (url.startsWith("/images")) return url;
     if (url.startsWith("http")) return url;
+    if (url.startsWith("/images")) return url;
 
     return `${process.env.NEXT_PUBLIC_API_URL}${url}`;
   }
 
   useEffect(() => {
     async function loadProduct() {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/products/${params.slug}`
-      );
+      try {
+        const data = await apiFetch<Product>(`/products/${params.slug}`);
 
-      if (!res.ok) return;
+        setProduct(data);
 
-      const data: Product = await res.json();
-      setProduct(data);
+        const mainImage = resolveImage(data.image);
 
-      const mainImage = resolveImage(data.image);
-      const mediaImages =
-        data.medias?.map((media) => resolveImage(media.url)).filter(Boolean) ?? [];
+        const mediaImages =
+          data.medias
+            ?.map((media) => resolveImage(media.url))
+            .filter(Boolean) ?? [];
 
-      setSelectedImage(mediaImages[0] || mainImage);
+        setSelectedImage(mediaImages[0] || mainImage);
+      } catch (error) {
+        console.error("Erro ao carregar produto:", error);
+      }
     }
 
     loadProduct();
@@ -80,7 +83,8 @@ export default function ProductPage({ params }: Props) {
     const mainImage = resolveImage(product.image);
 
     const mediaImages =
-      product.medias?.map((media) => resolveImage(media.url)).filter(Boolean) ?? [];
+      product.medias?.map((media) => resolveImage(media.url)).filter(Boolean) ??
+      [];
 
     const merged = [mainImage, ...mediaImages].filter(Boolean);
 
@@ -99,23 +103,19 @@ export default function ProductPage({ params }: Props) {
 
   return (
     <section className="relative min-h-screen bg-black text-white">
-
       {/* BACKGROUND PREMIUM */}
       <div className="absolute inset-0 bg-gradient-to-b from-black via-[#0b0906] to-black" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(212,175,55,0.08),transparent_60%)]" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-8 py-20 grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
-
         {/* ================= GALERIA ================= */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-col gap-6"
         >
-
           {/* imagem principal */}
           <div className="relative aspect-[3/4] w-full rounded-2xl overflow-hidden border border-white/10">
-
             <Image
               src={imageUrl}
               alt={product.name}
@@ -125,30 +125,36 @@ export default function ProductPage({ params }: Props) {
             />
 
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-
           </div>
 
           {/* thumbs */}
           <div className="grid grid-cols-4 gap-3">
-
-            {(galleryImages.length ? galleryImages : [imageUrl, imageUrl, imageUrl, imageUrl]).map((img, i) => (
+            {(galleryImages.length
+              ? galleryImages
+              : [imageUrl, imageUrl, imageUrl, imageUrl]
+            ).map((img, i) => (
               <button
                 key={`${img}-${i}`}
                 type="button"
                 onClick={() => setSelectedImage(img)}
                 className={`
                   relative aspect-square rounded-xl overflow-hidden border transition cursor-pointer
-                  ${imageUrl === img
-                    ? "border-[var(--gold)]"
-                    : "border-white/10 hover:border-[var(--gold)]"}
+                  ${
+                    imageUrl === img
+                      ? "border-[var(--gold)]"
+                      : "border-white/10 hover:border-[var(--gold)]"
+                  }
                 `}
               >
-                <Image src={img} alt={`${product.name} ${i + 1}`} fill className="object-cover" />
+                <Image
+                  src={img}
+                  alt={`${product.name} ${i + 1}`}
+                  fill
+                  className="object-cover"
+                />
               </button>
             ))}
-
           </div>
-
         </motion.div>
 
         {/* ================= CONTEÚDO ================= */}
@@ -157,7 +163,6 @@ export default function ProductPage({ params }: Props) {
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-col"
         >
-
           {/* marca */}
           <p className="uppercase text-[10px] tracking-[0.45em] text-white/40">
             Blackstore Collection
@@ -177,7 +182,6 @@ export default function ProductPage({ params }: Props) {
 
           {/* preço */}
           <div className="mt-10 flex items-center gap-4">
-
             {product.oldPrice && product.oldPrice > product.price && (
               <span className="text-white/40 line-through text-lg">
                 R$ {product.oldPrice.toLocaleString("pt-BR")}
@@ -187,18 +191,15 @@ export default function ProductPage({ params }: Props) {
             <span className="text-3xl md:text-4xl font-semibold text-[var(--gold)]">
               R$ {product.price.toLocaleString("pt-BR")}
             </span>
-
           </div>
 
           {/* TAMANHOS */}
           <div className="mt-10">
-
             <p className="text-[10px] uppercase tracking-[0.4em] text-white/50 mb-4">
               Escolha o tamanho
             </p>
 
             <div className="flex gap-3 flex-wrap">
-
               {sizes.map((s) => (
                 <button
                   key={s}
@@ -217,14 +218,11 @@ export default function ProductPage({ params }: Props) {
                   {s}
                 </button>
               ))}
-
             </div>
-
           </div>
 
           {/* CTA */}
           <div className="mt-12 flex flex-col sm:flex-row gap-4">
-
             <button
               onClick={() =>
                 addItem({
@@ -265,20 +263,15 @@ export default function ProductPage({ params }: Props) {
             >
               Comprar via WhatsApp
             </a>
-
           </div>
 
           {/* BENEFÍCIOS */}
           <div className="mt-14 border-t border-white/10 pt-6 space-y-2 text-sm text-white/60">
-
             <p>✓ Envio rápido para todo o Brasil</p>
             <p>✓ Troca fácil em até 7 dias</p>
             <p>✓ Atendimento premium Blackstore</p>
-
           </div>
-
         </motion.div>
-
       </div>
     </section>
   );
