@@ -6,6 +6,14 @@ datasource db {
   provider = "postgresql"
 }
 
+enum ProductSize {
+  PP
+  P
+  M
+  G
+  GG
+}
+
 model Admin {
   id        String   @id @default(uuid())
   email     String   @unique
@@ -55,7 +63,26 @@ model Product {
   orderItems OrderItem[]
 
   medias           Media[]
+  variants         ProductVariant[]
   weeklyBestSeller WeeklyBestSeller?
+}
+
+model ProductVariant {
+  id String @id @default(uuid())
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  size  ProductSize
+  stock Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+
+  @@unique([productId, size])
 }
 
 model CartItem {
@@ -64,6 +91,11 @@ model CartItem {
 
   productId String
   product   Product @relation(fields: [productId], references: [id])
+
+  variantId String?
+  variant   ProductVariant? @relation(fields: [variantId], references: [id])
+
+  size ProductSize?
 
   customerId String
   customer   Customer @relation(fields: [customerId], references: [id])
@@ -104,6 +136,11 @@ model OrderItem {
 
   productId String
   product   Product @relation(fields: [productId], references: [id])
+
+  variantId String?
+  variant   ProductVariant? @relation(fields: [variantId], references: [id])
+
+  size ProductSize?
 
   quantity Int
   price    Float
@@ -147,15 +184,9 @@ model Payment {
   providerId  String?
   providerRef String?
 
-  // =========================
-  // PIX
-  // =========================
   qrCode      String?
   qrCodeText  String?
 
-  // =========================
-  // CARTÃO (PROFISSIONAL)
-  // =========================
   cardLast4      String?
   cardBrand      String?
   cardHolderName String?
@@ -187,7 +218,7 @@ model ShippingRate {
   id String @id @default(uuid())
 
   name    String
-  method  String // ex: "standard", "express"
+  method  String
   price   Float
   minDays Int
   maxDays Int
