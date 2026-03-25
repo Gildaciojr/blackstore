@@ -413,116 +413,128 @@ export default function HeroParallax() {
             className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(212,175,55,0.2),transparent_60%)] pointer-events-none"
           />
 
-          {/* 🔥 HEADLINE */}
-          <div className="relative z-10 leading-tight">
-            <span
-              className="
-                text-[9px] md:text-[10px]
-                uppercase tracking-[0.25em] md:tracking-widest
-                text-white/40
-              "
-            >
-              Ganhe agora
-            </span>
-
-            <div
-              className="
-                text-[12px] md:text-[14px]
-                font-semibold
-                text-[var(--gold)]
-                mt-[2px]
-              "
-            >
-              10% OFF
-            </div>
-          </div>
-
-          {/* 🔥 CÓDIGO */}
+          {/* 🔥 CONTAINER INTERNO OTIMIZADO */}
           <div
             className="
               relative z-10
-              flex items-center justify-between
-              gap-2 md:gap-3
+
+              flex flex-col md:flex-col
+              gap-1.5 md:gap-3
+
+              md:gap-3
             "
           >
-            <span
+            {/* 🔥 HEADLINE */}
+            <div className="leading-tight">
+              <span
+                className="
+                  text-[8px] md:text-[10px]
+                  uppercase tracking-[0.2em] md:tracking-widest
+                  text-white/35
+                "
+              >
+                Ganhe agora
+              </span>
+
+              <div
+                className="
+                  text-[11px] md:text-[14px]
+                  font-semibold
+                  text-[var(--gold)]
+                  mt-[1px]
+                "
+              >
+                10% OFF
+              </div>
+            </div>
+
+            {/* 🔥 LINHA PRINCIPAL (compacta no mobile) */}
+            <div
               className="
-                text-[10px] md:text-[12px]
-                tracking-[0.25em] md:tracking-widest
-                text-white
+                flex items-center justify-between
+                gap-2
               "
             >
-              BLACK10
-            </span>
+              <span
+                className="
+                  text-[10px] md:text-[12px]
+                  tracking-[0.2em] md:tracking-widest
+                  text-white
+                "
+              >
+                BLACK10
+              </span>
 
-            <button
-              onClick={() => {
-                navigator.clipboard.writeText("BLACK10");
-                setCouponCopied(true);
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText("BLACK10");
+                  setCouponCopied(true);
 
-                localStorage.setItem("applied_coupon", "BLACK10");
+                  localStorage.setItem("applied_coupon", "BLACK10");
 
-                setTimeout(() => {
-                  setCouponCopied(false);
-                }, 2000);
-              }}
-              className={`
-                text-[9px] md:text-[10px]
-                uppercase tracking-[0.25em] md:tracking-widest
+                  setTimeout(() => {
+                    setCouponCopied(false);
+                  }, 2000);
+                }}
+                className={`
+                  text-[8px] md:text-[10px]
+                  uppercase tracking-[0.2em] md:tracking-widest
 
-                px-2.5 py-1 md:px-3 md:py-1.5
+                  px-2 py-1 md:px-3 md:py-1.5
 
-                rounded-md
-                border
-                transition-all duration-300
+                  rounded-md
+                  border
+                  transition-all duration-300
 
-                ${
-                  couponCopied
-                    ? "border-green-400 text-green-400"
-                    : "border-white/20 hover:border-[var(--gold)] hover:text-[var(--gold)]"
-                }
-              `}
+                  ${
+                    couponCopied
+                      ? "border-green-400 text-green-400"
+                      : "border-white/20 hover:border-[var(--gold)] hover:text-[var(--gold)]"
+                  }
+                `}
+              >
+                {couponCopied ? "Aplicado ✓" : "Aplicar"}
+              </button>
+            </div>
+
+            {/* 🔥 CTA (ESCONDIDO NO MOBILE — CRÍTICO PARA LIMPEZA) */}
+            <Link
+              href="/catalog"
+              className="
+                hidden md:block
+
+                text-[10px]
+                uppercase
+                tracking-widest
+                text-white/60
+                hover:text-[var(--gold)]
+                transition
+              "
             >
-              {couponCopied ? "Aplicado ✓" : "Aplicar"}
-            </button>
+              Usar no catálogo →
+            </Link>
           </div>
-
-          {/* 🔥 CTA EXTRA */}
-          <Link
-            href="/catalog"
-            className="
-              relative z-10
-              text-[9px] md:text-[10px]
-              uppercase
-              tracking-[0.25em] md:tracking-widest
-              text-white/50 md:text-white/60
-              hover:text-[var(--gold)]
-              transition
-            "
-          >
-            Usar no catálogo →
-          </Link>
 
           {/* 🔥 FEEDBACK FLOAT */}
           <AnimatePresence>
             {couponCopied && (
               <motion.div
-                initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                initial={{ opacity: 0, y: 8, scale: 0.9 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 10, scale: 0.9 }}
+                exit={{ opacity: 0, y: 8, scale: 0.9 }}
                 transition={{ duration: 0.25 }}
                 className="
                   absolute
                   right-0
-                  mt-2 md:mt-3
+                  mt-1.5 md:mt-3
 
                   bg-green-500/10
                   border border-green-400/30
                   text-green-400
 
-                  text-[9px] md:text-[10px]
+                  text-[8px] md:text-[10px]
 
-                  px-2.5 py-1.5 md:px-3 md:py-2
+                  px-2 py-1 md:px-3 md:py-2
 
                   rounded-md
                   shadow-[0_10px_30px_rgba(0,0,0,0.4)]
