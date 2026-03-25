@@ -26,7 +26,7 @@ services:
     ports:
       - "4000:4000"
     volumes:
-      - ./uploads:/app/uploads   # 🔥 PERSISTÊNCIA REAL DOS UPLOADS
+      - ./uploads:/app/uploads
     networks:
       - blackstore_network
 
