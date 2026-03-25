@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { apiFetch } from "@/lib/api";
 import { Product } from "./types/types";
 
@@ -19,6 +19,8 @@ export default function ProductsPage() {
 
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+
+  const uploadedImagesRef = useRef<string[]>([]);
 
   const [form, setForm] = useState({
     name: "",
@@ -138,29 +140,26 @@ export default function ProductsPage() {
         return;
       }
 
-      if (form.images.length === 0) {
+      if (uploadedImagesRef.current.length === 0) {
         alert("Envie ao menos uma imagem antes de salvar");
         return;
       }
 
       setSaving(true);
 
-      // 🔥 GARANTE ESTADO ATUAL (evita atraso do React)
-      const currentForm = { ...form };
-
       const payload = {
-        name: currentForm.name,
-        slug: currentForm.slug || generateSlug(currentForm.name),
-        description: currentForm.description || undefined,
-        price: parseFloat(currentForm.price),
+        name: form.name,
+        slug: form.slug || generateSlug(form.name),
+        description: form.description || undefined,
+        price: parseFloat(form.price),
         oldPrice:
-          currentForm.oldPrice && parseFloat(currentForm.oldPrice) > 0
-            ? parseFloat(currentForm.oldPrice)
+          form.oldPrice && parseFloat(form.oldPrice) > 0
+            ? parseFloat(form.oldPrice)
             : undefined,
-        image: currentForm.image,
-        stock: Number(currentForm.stock),
-        categoryId: currentForm.categoryId,
-        medias: currentForm.images,
+        image: uploadedImagesRef.current[0],
+        stock: Number(form.stock),
+        categoryId: form.categoryId,
+        medias: [...uploadedImagesRef.current],
       };
 
       console.log("🔥 PAYLOAD FINAL:", payload);
@@ -177,6 +176,9 @@ export default function ProductsPage() {
         });
       }
 
+      // 🔥 LIMPEZA CORRETA
+      uploadedImagesRef.current = [];
+
       setForm({
         name: "",
         slug: "",
@@ -190,7 +192,6 @@ export default function ProductsPage() {
       });
 
       setEditingId(null);
-      setImagePreview(null);
 
       await loadProducts();
     } catch {
@@ -443,19 +444,19 @@ export default function ProductsPage() {
                     uploadedUrls.push(url);
                   }
 
-                  setForm((prev) => {
-                    const mergedImages = [...prev.images, ...uploadedUrls];
+                  // 🔥 CORREÇÃO DEFINITIVA
+                  uploadedImagesRef.current = [
+                    ...uploadedImagesRef.current,
+                    ...uploadedUrls,
+                  ];
 
-                    return {
-                      ...prev,
-                      image: mergedImages[0], // imagem principal sempre garantida
-                      images: mergedImages,
-                    };
-                  });
+                  setForm((prev) => ({
+                    ...prev,
+                    image: uploadedImagesRef.current[0] || "",
+                    images: [...uploadedImagesRef.current],
+                  }));
                 } finally {
                   setUploading(false);
-
-                  // 🔥 CRÍTICO: permite selecionar novamente os mesmos arquivos
                   input.value = "";
                 }
               }}
@@ -487,28 +488,29 @@ export default function ProductsPage() {
                     <button
                       type="button"
                       onClick={() => {
-                        setForm((prev) => {
-                          const updatedImages = prev.images.filter(
+                        // 🔥 REMOVE DO REF (FONTE REAL)
+                        uploadedImagesRef.current =
+                          uploadedImagesRef.current.filter(
                             (_, index) => index !== i,
                           );
 
-                          return {
-                            ...prev,
-                            images: updatedImages,
-                            image: updatedImages[0] || "",
-                          };
-                        });
+                        // 🔥 SINCRONIZA COM O STATE
+                        setForm((prev) => ({
+                          ...prev,
+                          images: [...uploadedImagesRef.current],
+                          image: uploadedImagesRef.current[0] || "",
+                        }));
                       }}
                       className="
-              absolute -top-2 -right-2
-              bg-red-500 text-white
-              text-xs
-              rounded-full
-              w-5 h-5
-              flex items-center justify-center
-              hover:bg-red-600
-              transition
-            "
+  absolute -top-2 -right-2
+  bg-red-500 text-white
+  text-xs
+  rounded-full
+  w-5 h-5
+  flex items-center justify-center
+  hover:bg-red-600
+  transition
+  "
                     >
                       ×
                     </button>
