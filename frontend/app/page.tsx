@@ -130,7 +130,7 @@ export default function HomePage() {
       <HeroParallax />
 
       {/* ================= LANÇAMENTOS ================= */}
-      <section className="relative py-14 md:py-20 overflow-hidden">
+      <section className="relative py-14 md:py-20 overflow-hidden bg-black pb-20">
         <Reveal>
           <Section
             id="lancamentos"

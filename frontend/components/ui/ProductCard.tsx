@@ -136,33 +136,69 @@ export default function ProductCard({
         />
 
         {/* IMAGE */}
-        <Link href={productUrl}>
-          <div className="relative aspect-[3/4] bg-black overflow-hidden">
-            <motion.div
-              key={imgIndex}
-              initial={{ opacity: 0.6 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.4 }}
-              className="absolute inset-0"
-            >
-              <Image
-                src={imgs[imgIndex]}
-                alt={name}
-                fill
-                sizes="(max-width:768px) 50vw, 20vw"
-                className="
-                  object-cover
-                  object-center
-                  transition-transform duration-[1200ms] ease-out
-                  group-hover:scale-[1.08]
-                "
-              />
-            </motion.div>
+        {onQuickView ? (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onQuickView();
+            }}
+            className="block w-full"
+          >
+            <div className="relative aspect-[4/5] bg-black overflow-hidden">
+              <motion.div
+                key={imgIndex}
+                initial={{ opacity: 0.6 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.4 }}
+                className="absolute inset-0"
+              >
+                <Image
+                  src={imgs[imgIndex]}
+                  alt={name}
+                  fill
+                  sizes="(max-width:768px) 50vw, 20vw"
+                  className="
+            object-cover
+            object-center
+            transition-transform duration-[1200ms] ease-out
+            group-hover:scale-[1.08]
+          "
+                />
+              </motion.div>
 
-            {/* GRADIENT */}
-            <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-80 group-hover:opacity-100 transition duration-500" />
-          </div>
-        </Link>
+              <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-80 group-hover:opacity-100 transition duration-500" />
+            </div>
+          </button>
+        ) : (
+          <Link href={productUrl}>
+            <div className="relative aspect-[4/5] bg-black overflow-hidden">
+              <motion.div
+                key={imgIndex}
+                initial={{ opacity: 0.6 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.4 }}
+                className="absolute inset-0"
+              >
+                <Image
+                  src={imgs[imgIndex]}
+                  alt={name}
+                  fill
+                  sizes="(max-width:768px) 50vw, 20vw"
+                  className="
+            object-cover
+            object-center
+            transition-transform duration-[1200ms] ease-out
+            group-hover:scale-[1.08]
+          "
+                />
+              </motion.div>
+
+              <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-80 group-hover:opacity-100 transition duration-500" />
+            </div>
+          </Link>
+        )}
 
         {/* 🔥 ÚLTIMAS UNIDADES */}
         {stock !== undefined && stock <= 2 && (

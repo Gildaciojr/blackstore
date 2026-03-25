@@ -46,7 +46,7 @@ export default function ProductPage({ params }: Props) {
   const sizes = ["PP", "P", "M", "G", "GG"];
 
   function resolveImage(url: string) {
-    if (!url) return "/images/placeholder.png";
+    if (!url) return "";
 
     if (url.startsWith("http")) return url;
     if (url.startsWith("/images")) return url;
@@ -55,6 +55,8 @@ export default function ProductPage({ params }: Props) {
   }
 
   useEffect(() => {
+    if (!params?.slug) return;
+
     async function loadProduct() {
       try {
         const data = await apiFetch<Product>(`/products/${params.slug}`);
@@ -75,7 +77,7 @@ export default function ProductPage({ params }: Props) {
     }
 
     loadProduct();
-  }, [params.slug]);
+  }, [params?.slug]);
 
   const galleryImages = useMemo(() => {
     if (!product) return [];
@@ -115,8 +117,9 @@ export default function ProductPage({ params }: Props) {
           className="flex flex-col gap-6"
         >
           {/* imagem principal */}
-          <div className="relative aspect-[3/4] w-full rounded-2xl overflow-hidden border border-white/10">
+          <div className="relative aspect-[4/5] w-full rounded-2xl overflow-hidden border border-white/10">
             <Image
+              key={imageUrl}
               src={imageUrl}
               alt={product.name}
               fill
