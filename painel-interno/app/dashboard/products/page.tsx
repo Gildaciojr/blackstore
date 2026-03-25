@@ -138,22 +138,32 @@ export default function ProductsPage() {
         return;
       }
 
+      if (!form.image || form.images.length === 0) {
+        alert("Envie ao menos uma imagem antes de salvar");
+        return;
+      }
+
       setSaving(true);
 
+      // 🔥 GARANTE ESTADO ATUAL (evita atraso do React)
+      const currentForm = { ...form };
+
       const payload = {
-        name: form.name,
-        slug: form.slug || generateSlug(form.name),
-        description: form.description || undefined,
-        price: parseFloat(form.price),
+        name: currentForm.name,
+        slug: currentForm.slug || generateSlug(currentForm.name),
+        description: currentForm.description || undefined,
+        price: parseFloat(currentForm.price),
         oldPrice:
-          form.oldPrice && parseFloat(form.oldPrice) > 0
-            ? parseFloat(form.oldPrice)
+          currentForm.oldPrice && parseFloat(currentForm.oldPrice) > 0
+            ? parseFloat(currentForm.oldPrice)
             : undefined,
-        image: form.image,
-        stock: Number(form.stock),
-        categoryId: form.categoryId,
-        medias: form.images, // 🔥 NOVO
+        image: currentForm.image,
+        stock: Number(currentForm.stock),
+        categoryId: currentForm.categoryId,
+        medias: currentForm.images,
       };
+
+      console.log("🔥 PAYLOAD FINAL:", payload);
 
       if (editingId) {
         await apiFetch(`/admin/products/${editingId}`, {
@@ -175,7 +185,7 @@ export default function ProductsPage() {
         oldPrice: "",
         stock: "",
         image: "",
-        images: [], // 🔥 NOVO
+        images: [],
         categoryId: "",
       });
 
