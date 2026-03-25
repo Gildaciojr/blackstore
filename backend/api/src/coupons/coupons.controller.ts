@@ -18,7 +18,9 @@ export class CouponsController {
   constructor(private couponsService: CouponsService) {}
 
   /**
+   * =========================
    * ADMIN
+   * =========================
    */
 
   @Post('admin/coupons')
@@ -42,7 +44,9 @@ export class CouponsController {
   }
 
   /**
+   * =========================
    * PUBLIC
+   * =========================
    */
 
   @Get('coupons/:code')
@@ -51,6 +55,14 @@ export class CouponsController {
 
     if (!coupon) {
       throw new BadRequestException('Cupom inválido');
+    }
+
+    /**
+     * 🔥 VALIDAÇÃO COMPLETA (PRODUÇÃO)
+     */
+
+    if (!coupon.active) {
+      throw new BadRequestException('Cupom desativado');
     }
 
     if (coupon.expiresAt < new Date()) {
@@ -65,7 +77,9 @@ export class CouponsController {
   }
 
   /**
-   * 🔥 NOVO ENDPOINT HERO
+   * =========================
+   * CUPOM EM DESTAQUE (HERO)
+   * =========================
    */
   @Get('coupons-featured')
   getFeatured() {

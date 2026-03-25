@@ -7,6 +7,11 @@ import { UpdateCouponDto } from './dto/update-coupon.dto';
 export class CouponsService {
   constructor(private prisma: PrismaService) {}
 
+  /**
+   * =========================
+   * CREATE
+   * =========================
+   */
   async create(data: CreateCouponDto) {
     return this.prisma.coupon.create({
       data: {
@@ -14,11 +19,19 @@ export class CouponsService {
         discount: data.discount,
         maxUses: data.maxUses,
         expiresAt: new Date(data.expiresAt),
-        isFeatured: false,
+
+        isFeatured: data.isFeatured ?? false,
+        active: data.active ?? true,
+        used: 0,
       },
     });
   }
 
+  /**
+   * =========================
+   * LIST
+   * =========================
+   */
   async findAll() {
     return this.prisma.coupon.findMany({
       orderBy: {
@@ -27,10 +40,13 @@ export class CouponsService {
     });
   }
 
+  /**
+   * =========================
+   * UPDATE
+   * =========================
+   */
   async update(id: string, data: UpdateCouponDto) {
-    /**
-     * 🔥 GARANTE APENAS 1 CUPOM EM DESTAQUE
-     */
+    // 🔥 garante apenas 1 destaque
     if (data.isFeatured) {
       await this.prisma.coupon.updateMany({
         where: { isFeatured: true },
@@ -46,16 +62,27 @@ export class CouponsService {
         maxUses: data.maxUses,
         expiresAt: data.expiresAt ? new Date(data.expiresAt) : undefined,
         isFeatured: data.isFeatured,
+        active: data.active,
       },
     });
   }
 
+  /**
+   * =========================
+   * DELETE
+   * =========================
+   */
   async delete(id: string) {
     return this.prisma.coupon.delete({
       where: { id },
     });
   }
 
+  /**
+   * =========================
+   * VALIDATE (FRONTEND)
+   * =========================
+   */
   async findByCode(code: string) {
     return this.prisma.coupon.findUnique({
       where: {
@@ -65,12 +92,15 @@ export class CouponsService {
   }
 
   /**
-   * 🔥 NOVO: CUPOM EM DESTAQUE (PUBLIC)
+   * =========================
+   * CUPOM EM DESTAQUE
+   * =========================
    */
   async getFeatured() {
-    const coupon = await this.prisma.coupon.findFirst({
+    return this.prisma.coupon.findFirst({
       where: {
         isFeatured: true,
+        active: true,
         expiresAt: {
           gt: new Date(),
         },
@@ -82,7 +112,5 @@ export class CouponsService {
         createdAt: 'desc',
       },
     });
-
-    return coupon;
   }
 }

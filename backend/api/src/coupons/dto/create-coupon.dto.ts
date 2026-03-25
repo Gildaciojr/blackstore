@@ -3,4 +3,7 @@ export class CreateCouponDto {
   discount: number;
   maxUses: number;
   expiresAt: string;
+
+  isFeatured?: boolean;
+  active?: boolean;
 }

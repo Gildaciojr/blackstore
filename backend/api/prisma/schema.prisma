@@ -222,6 +222,7 @@ model Coupon {
   expiresAt DateTime
 
   isFeatured Boolean @default(false)
+  active     Boolean @default(true)
 
   createdAt DateTime @default(now())
 }
