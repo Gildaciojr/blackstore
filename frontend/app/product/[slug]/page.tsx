@@ -51,7 +51,8 @@ export default function ProductPage({ params }: Props) {
     if (url.startsWith("http")) return url;
     if (url.startsWith("/images")) return url;
 
-    return `${process.env.NEXT_PUBLIC_API_URL}${url}`;
+    const normalizedPath = url.startsWith("/") ? url : `/${url}`;
+    return `${process.env.NEXT_PUBLIC_API_URL}${normalizedPath}`;
   }
 
   useEffect(() => {

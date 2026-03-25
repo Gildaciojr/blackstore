@@ -33,13 +33,13 @@ function brl(v: number) {
  * 🔥 RESOLVER IMAGEM (CRÍTICO)
  */
 function resolveImage(url: string) {
-  if (!url) return "/images/placeholder.png";
+  if (!url) return "";
 
   if (url.startsWith("http")) return url;
-
   if (url.startsWith("/images")) return url;
 
-  return `${API_URL}${url}`;
+  const normalizedPath = url.startsWith("/") ? url : `/${url}`;
+  return `${API_URL}${normalizedPath}`;
 }
 
 export default function ProductCard({
