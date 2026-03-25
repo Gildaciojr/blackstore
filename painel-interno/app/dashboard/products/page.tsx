@@ -138,7 +138,7 @@ export default function ProductsPage() {
         return;
       }
 
-      if (!form.image || form.images.length === 0) {
+      if (form.images.length === 0) {
         alert("Envie ao menos uma imagem antes de salvar");
         return;
       }
@@ -410,23 +410,23 @@ export default function ProductsPage() {
               type="file"
               multiple
               className="
-              w-full
-              text-sm
-              bg-black/40
-              border border-white/20
-              rounded-lg
-              p-2
-              file:mr-4
-              file:py-2
-              file:px-4
-              file:rounded-full
-              file:border-0
-              file:text-xs
-              file:font-semibold
-              file:bg-[var(--gold)]
-              file:text-black
-              hover:file:opacity-90
-              "
+    w-full
+    text-sm
+    bg-black/40
+    border border-white/20
+    rounded-lg
+    p-2
+    file:mr-4
+    file:py-2
+    file:px-4
+    file:rounded-full
+    file:border-0
+    file:text-xs
+    file:font-semibold
+    file:bg-[var(--gold)]
+    file:text-black
+    hover:file:opacity-90
+    "
               onChange={async (e) => {
                 const input = e.target;
                 const files = input.files;
@@ -448,17 +448,15 @@ export default function ProductsPage() {
 
                     return {
                       ...prev,
-                      image: mergedImages[0], // principal
+                      image: mergedImages[0], // imagem principal sempre garantida
                       images: mergedImages,
                     };
                   });
-
-                  setImagePreview(resolveImage(uploadedUrls[0]));
                 } finally {
                   setUploading(false);
 
-                  // 🔥 CORREÇÃO CRÍTICA
-                  input.value = ""; // reset input (permite selecionar novamente)
+                  // 🔥 CRÍTICO: permite selecionar novamente os mesmos arquivos
+                  input.value = "";
                 }
               }}
             />
@@ -467,21 +465,54 @@ export default function ProductsPage() {
               <p className="text-xs text-white/50 mt-2">Enviando imagens...</p>
             )}
 
-            {imagePreview && (
+            {/* PREVIEW PRINCIPAL */}
+            {form.images.length > 0 && (
               <img
-                src={imagePreview}
+                src={resolveImage(form.images[0])}
                 className="mt-4 w-32 h-32 object-cover rounded-lg border border-white/10"
               />
             )}
 
+            {/* GALERIA DE IMAGENS */}
             {form.images.length > 0 && (
               <div className="flex gap-2 mt-4 flex-wrap">
                 {form.images.map((img, i) => (
-                  <img
-                    key={i}
-                    src={resolveImage(img)}
-                    className="w-20 h-20 object-cover rounded-lg border border-white/10"
-                  />
+                  <div key={i} className="relative">
+                    <img
+                      src={resolveImage(img)}
+                      className="w-20 h-20 object-cover rounded-lg border border-white/10"
+                    />
+
+                    {/* BOTÃO REMOVER */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setForm((prev) => {
+                          const updatedImages = prev.images.filter(
+                            (_, index) => index !== i,
+                          );
+
+                          return {
+                            ...prev,
+                            images: updatedImages,
+                            image: updatedImages[0] || "",
+                          };
+                        });
+                      }}
+                      className="
+              absolute -top-2 -right-2
+              bg-red-500 text-white
+              text-xs
+              rounded-full
+              w-5 h-5
+              flex items-center justify-center
+              hover:bg-red-600
+              transition
+            "
+                    >
+                      ×
+                    </button>
+                  </div>
                 ))}
               </div>
             )}
@@ -492,17 +523,17 @@ export default function ProductsPage() {
           onClick={handleSubmit}
           disabled={saving}
           className="
-          w-full sm:w-auto
-          bg-[var(--gold)]
-          text-black
-          px-6 py-3
-          rounded-full
-          font-medium
-          hover:scale-[1.02]
-          transition
-          disabled:opacity-50
-          disabled:cursor-not-allowed
-          "
+  w-full sm:w-auto
+  bg-[var(--gold)]
+  text-black
+  px-6 py-3
+  rounded-full
+  font-medium
+  hover:scale-[1.02]
+  transition
+  disabled:opacity-50
+  disabled:cursor-not-allowed
+  "
         >
           {saving
             ? "Salvando..."
