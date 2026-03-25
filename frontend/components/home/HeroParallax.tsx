@@ -329,11 +329,11 @@ export default function HeroParallax() {
         <div className="max-w-7xl mx-auto px-4 md:px-10">
           <div
             className="
-              bg-black/10
+              bg-black/30
               backdrop-blur-md
               border border-white/10
               rounded-lg md:rounded-xl
-              grid grid-cols-2 md:grid-cols-4
+              grid grid-cols-3 md:grid-cols-3
               gap-2 md:gap-4
               px-3 py-2.5 md:px-5 md:py-3.5
               text-center md:text-left
@@ -354,15 +354,6 @@ export default function HeroParallax() {
                 Parcele em até 3x
               </p>
               <p className="text-[10px] md:text-xs text-white/70">sem juros</p>
-            </div>
-
-            <div className="flex flex-col items-center md:items-start leading-tight">
-              <p className="text-[12px] md:text-sm font-medium text-white">
-                Entrega rápida
-              </p>
-              <p className="text-[10px] md:text-xs text-white/70">
-                todo Brasil
-              </p>
             </div>
 
             <div className="flex flex-col items-center md:items-start leading-tight">
@@ -400,7 +391,7 @@ export default function HeroParallax() {
         ))}
       </div>
 
-      <div className="absolute top-6 right-4 md:right-10 z-30">
+      <div className="absolute bottom-36 md:bottom-auto top-auto md:top-6 left-1/2 md:left-auto -translate-x-1/2 md:translate-x-0 md:right-10 z-30">
         <motion.div
           initial={{ opacity: 0, y: -30, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
