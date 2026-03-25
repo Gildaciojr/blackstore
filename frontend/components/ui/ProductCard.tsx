@@ -68,7 +68,7 @@ export default function ProductCard({
     ...(images && images.length > 0
       ? images.map((img) => resolveImage(img))
       : []),
-  ];
+  ].filter((img, index, arr) => Boolean(img) && arr.indexOf(img) === index);
 
   const discount =
     oldPrice && oldPrice > price

@@ -48,7 +48,7 @@ export default function ProductQuickView({ product, onClose }: Props) {
   const images = [
     resolveImage(product.image),
     ...(product.images?.map((img) => resolveImage(img)) ?? []),
-  ].filter((img, i, arr) => !!img && arr.indexOf(img) === i);
+  ].filter((img, i, arr) => Boolean(img) && arr.indexOf(img) === i);
 
   const currentImage =
     images[index] ?? images[0] ?? resolveImage(product.image);
