@@ -415,18 +415,43 @@ export default function HeroParallax() {
 
           {/* 🔥 HEADLINE */}
           <div className="relative z-10 leading-tight">
-            <span className="text-[10px] uppercase tracking-widest text-white/40">
+            <span
+              className="
+                text-[9px] md:text-[10px]
+                uppercase tracking-[0.25em] md:tracking-widest
+                text-white/40
+              "
+            >
               Ganhe agora
             </span>
 
-            <div className="text-[14px] md:text-[16px] font-semibold text-[var(--gold)]">
+            <div
+              className="
+                text-[13px] md:text-[16px]
+                font-semibold
+                text-[var(--gold)]
+                mt-[2px]
+              "
+            >
               10% OFF
             </div>
           </div>
 
           {/* 🔥 CÓDIGO */}
-          <div className="relative z-10 flex items-center justify-between gap-3">
-            <span className="text-[12px] md:text-[13px] tracking-widest text-white">
+          <div
+            className="
+              relative z-10
+              flex items-center justify-between
+              gap-2 md:gap-3
+            "
+          >
+            <span
+              className="
+                text-[11px] md:text-[13px]
+                tracking-[0.25em] md:tracking-widest
+                text-white
+              "
+            >
               BLACK10
             </span>
 
@@ -435,7 +460,6 @@ export default function HeroParallax() {
                 navigator.clipboard.writeText("BLACK10");
                 setCouponCopied(true);
 
-                // 🔥 PRÓXIMO NÍVEL: salvar no localStorage
                 localStorage.setItem("applied_coupon", "BLACK10");
 
                 setTimeout(() => {
@@ -443,19 +467,21 @@ export default function HeroParallax() {
                 }, 2000);
               }}
               className={`
-          text-[10px]
-          uppercase
-          tracking-widest
-          px-3 py-1.5
-          rounded-md
-          border transition-all duration-300
+                text-[9px] md:text-[10px]
+                uppercase tracking-[0.25em] md:tracking-widest
 
-          ${
-            couponCopied
-              ? "border-green-400 text-green-400"
-              : "border-white/20 hover:border-[var(--gold)] hover:text-[var(--gold)]"
-          }
-        `}
+                px-2.5 py-1 md:px-3 md:py-1.5
+
+                rounded-md
+                border
+                transition-all duration-300
+
+                ${
+                  couponCopied
+                    ? "border-green-400 text-green-400"
+                    : "border-white/20 hover:border-[var(--gold)] hover:text-[var(--gold)]"
+                }
+              `}
             >
               {couponCopied ? "Aplicado ✓" : "Aplicar"}
             </button>
@@ -465,40 +491,49 @@ export default function HeroParallax() {
           <Link
             href="/catalog"
             className="
-        relative z-10
-        text-[10px]
-        uppercase
-        tracking-widest
-        text-white/60
-        hover:text-[var(--gold)]
-        transition
-      "
+              relative z-10
+              text-[9px] md:text-[10px]
+              uppercase
+              tracking-[0.25em] md:tracking-widest
+              text-white/50 md:text-white/60
+              hover:text-[var(--gold)]
+              transition
+            "
           >
             Usar no catálogo →
           </Link>
-        </motion.div>
 
-        {/* 🔥 FEEDBACK FLOAT */}
-        <AnimatePresence>
-          {couponCopied && (
-            <motion.div
-              initial={{ opacity: 0, y: 10, scale: 0.9 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 10, scale: 0.9 }}
-              transition={{ duration: 0.25 }}
-              className="
-          absolute right-0 mt-3
-          bg-green-500/10 border border-green-400/30
-          text-green-400 text-[10px]
-          px-3 py-2 rounded-md
-          shadow-[0_10px_30px_rgba(0,0,0,0.4)]
-          backdrop-blur-md
-        "
-            >
-              Cupom aplicado ✦
-            </motion.div>
-          )}
-        </AnimatePresence>
+          {/* 🔥 FEEDBACK FLOAT */}
+          <AnimatePresence>
+            {couponCopied && (
+              <motion.div
+                initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 10, scale: 0.9 }}
+                transition={{ duration: 0.25 }}
+                className="
+                  absolute
+                  right-0
+                  mt-2 md:mt-3
+
+                  bg-green-500/10
+                  border border-green-400/30
+                  text-green-400
+
+                  text-[9px] md:text-[10px]
+
+                  px-2.5 py-1.5 md:px-3 md:py-2
+
+                  rounded-md
+                  shadow-[0_10px_30px_rgba(0,0,0,0.4)]
+                  backdrop-blur-md
+                "
+              >
+                Cupom aplicado ✦
+              </motion.div>
+            )}
+          </AnimatePresence>
+           </motion.div>
       </div>
     </section>
   );
