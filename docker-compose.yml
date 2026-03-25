@@ -1,0 +1,63 @@
+version: "3.9"
+
+services:
+
+  postgres:
+    image: postgres:15
+    container_name: blackstore_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: blackstore
+      POSTGRES_PASSWORD: blackstore123
+      POSTGRES_DB: blackstore
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - blackstore_network
+
+  backend:
+    build: ./backend
+    container_name: blackstore_backend
+    restart: always
+    depends_on:
+      - postgres
+    env_file:
+      - ./backend/api/.env
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./uploads:/app/uploads   # 🔥 PERSISTÊNCIA REAL DOS UPLOADS
+    networks:
+      - blackstore_network
+
+  frontend:
+    build: ./frontend
+    container_name: blackstore_frontend
+    restart: always
+    depends_on:
+      - backend
+    env_file:
+      - ./frontend/.env.local
+    ports:
+      - "3000:3000"
+    networks:
+      - blackstore_network
+
+  painel:
+    build: ./painel-interno
+    container_name: blackstore_painel
+    restart: always
+    depends_on:
+      - backend
+    env_file:
+      - ./painel-interno/.env.local
+    ports:
+      - "3001:3000"
+    networks:
+      - blackstore_network
+
+volumes:
+  postgres_data:
+
+networks:
+  blackstore_network:
