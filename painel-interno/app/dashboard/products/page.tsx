@@ -16,6 +16,7 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(true);
 
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [inputKey, setInputKey] = useState(0);
 
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -408,6 +409,7 @@ export default function ProductsPage() {
             </label>
 
             <input
+              key={inputKey}
               type="file"
               multiple
               className="
@@ -429,8 +431,7 @@ export default function ProductsPage() {
     hover:file:opacity-90
     "
               onChange={async (e) => {
-                const input = e.target;
-                const files = input.files;
+                const files = e.target.files;
 
                 if (!files || files.length === 0) return;
 
@@ -444,25 +445,25 @@ export default function ProductsPage() {
                     newUrls.push(url);
                   }
 
-                  // 🔥 FORÇA ACÚMULO REAL
                   uploadedImagesRef.current = [
                     ...uploadedImagesRef.current,
                     ...newUrls,
                   ];
 
-                  // 🔥 LOG CRÍTICO
                   console.log("🧠 REF ATUAL:", uploadedImagesRef.current);
 
-                  setForm({
-                    ...form,
+                  setForm((prev) => ({
+                    ...prev,
                     image: uploadedImagesRef.current[0] || "",
                     images: [...uploadedImagesRef.current],
-                  });
+                  }));
                 } catch (err) {
                   console.error(err);
                 } finally {
                   setUploading(false);
-                  input.value = "";
+
+                  // 🔥 RESET REAL DO INPUT (FUNCIONA 100%)
+                  setInputKey((prev) => prev + 1);
                 }
               }}
             />
