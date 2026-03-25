@@ -72,15 +72,31 @@ export class AdminProductsController {
 
     const slug = await this.getUniqueSlug(dto.slug || dto.name);
 
+    const { medias, ...productData } = dto;
+
     const product = await this.prisma.product.create({
       data: {
-        ...dto,
+        ...productData,
         name: dto.name.trim(),
         slug,
+
+        // 🔥 GALERIA
+        medias:
+          medias && medias.length > 0
+            ? {
+                create: medias.map((url) => ({
+                  url,
+                  type: 'image',
+                })),
+              }
+            : undefined,
+      },
+      include: {
+        medias: true,
       },
     });
 
-    console.log('✅ [PRODUCT CREATED]');
+    console.log('✅ [PRODUCT CREATED WITH GALLERY]');
     console.dir(product, { depth: null });
 
     return product;
@@ -90,6 +106,7 @@ export class AdminProductsController {
   async update(@Param('id') id: string, @Body() dto: UpdateAdminProductDto) {
     const current = await this.prisma.product.findUnique({
       where: { id },
+      include: { medias: true },
     });
 
     if (!current) {
@@ -98,13 +115,41 @@ export class AdminProductsController {
 
     const slug = await this.getUniqueSlug(dto.slug || dto.name || current.slug, id);
 
-    return this.prisma.product.update({
+    const { medias, ...productData } = dto as any;
+
+    // 🔥 remove antigas se vier nova galeria
+    if (medias) {
+      await this.prisma.media.deleteMany({
+        where: { productId: id },
+      });
+    }
+
+    const updated = await this.prisma.product.update({
       where: { id },
       data: {
-        ...dto,
+        ...productData,
         slug,
+
+        // 🔥 recria galeria
+        medias:
+          medias && medias.length > 0
+            ? {
+                create: medias.map((url: string) => ({
+                  url,
+                  type: 'image',
+                })),
+              }
+            : undefined,
+      },
+      include: {
+        medias: true,
       },
     });
+
+    console.log('♻️ [PRODUCT UPDATED WITH GALLERY]');
+    console.dir(updated, { depth: null });
+
+    return updated;
   }
 
   @Delete(':id')

@@ -26,4 +26,8 @@ export class CreateAdminProductDto {
 
   @IsUUID()
   categoryId: string;
+
+  // 🔥 NOVO (galeria)
+  @IsOptional()
+  medias?: string[];
 }

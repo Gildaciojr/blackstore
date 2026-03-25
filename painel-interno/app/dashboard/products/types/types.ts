@@ -1,3 +1,7 @@
+export type ProductMedia = {
+  url: string;
+};
+
 export type Product = {
   id: string;
   name: string;
@@ -8,6 +12,9 @@ export type Product = {
   stock: number;
   image: string;
   categoryId: string;
+
+  // 🔥 NOVO (OBRIGATÓRIO)
+  medias?: ProductMedia[];
 };
 
 export type Category = {
