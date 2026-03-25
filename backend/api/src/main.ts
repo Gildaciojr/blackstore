@@ -28,7 +28,7 @@ async function bootstrap() {
    * =========================
    */
   app.useStaticAssets(uploadsPath, {
-    prefix: '/uploads',
+    prefix: '/uploads/',
   });
 
   /**
