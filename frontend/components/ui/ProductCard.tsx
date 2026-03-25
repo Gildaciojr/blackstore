@@ -77,17 +77,30 @@ export default function ProductCard({
 
   const productUrl = slug ? `/product/${slug}` : "#";
 
+  /**
+   * 🔥 THROTTLE DE PERFORMANCE (CRÍTICO)
+   */
+  const frameRef = useRef<number | null>(null);
+
   function handleMove(e: React.MouseEvent) {
-    const card = cardRef.current;
-    if (!card) return;
+    if (typeof window !== "undefined" && window.innerWidth < 768) return;
 
-    const rect = card.getBoundingClientRect();
+    if (frameRef.current) return;
 
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    frameRef.current = requestAnimationFrame(() => {
+      const card = cardRef.current;
+      if (!card) return;
 
-    card.style.setProperty("--x", `${x}px`);
-    card.style.setProperty("--y", `${y}px`);
+      const rect = card.getBoundingClientRect();
+
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      card.style.setProperty("--x", `${x}px`);
+      card.style.setProperty("--y", `${y}px`);
+
+      frameRef.current = null;
+    });
   }
 
   function nextImage(e: React.MouseEvent) {
@@ -105,10 +118,18 @@ export default function ProductCard({
   return (
     <motion.div
       ref={cardRef}
-      onMouseMove={handleMove}
+      onMouseMove={(e) => {
+        if (typeof window !== "undefined" && window.innerWidth >= 768) {
+          handleMove(e);
+        }
+      }}
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -4, scale: 1.02 }}
+      whileHover={{
+        y: -4,
+        scale:
+          typeof window !== "undefined" && window.innerWidth >= 768 ? 1.02 : 1,
+      }}
       transition={{ duration: 0.4 }}
       viewport={{ once: true }}
       className="group relative"
@@ -158,7 +179,10 @@ export default function ProductCard({
                   src={imgs[imgIndex]}
                   alt={name}
                   fill
-                  sizes="(max-width:768px) 50vw, 20vw"
+                  sizes="(max-width:768px) 60vw, (max-width:1200px) 30vw, 20vw"
+                  loading="lazy"
+                  decoding="async"
+                  draggable={false}
                   className="
             object-cover
             object-center
@@ -185,7 +209,10 @@ export default function ProductCard({
                   src={imgs[imgIndex]}
                   alt={name}
                   fill
-                  sizes="(max-width:768px) 50vw, 20vw"
+                  sizes="(max-width:768px) 60vw, (max-width:1200px) 30vw, 20vw"
+                  loading="lazy"
+                  decoding="async"
+                  draggable={false}
                   className="
             object-cover
             object-center

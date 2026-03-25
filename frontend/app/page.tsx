@@ -172,7 +172,7 @@ export default function HomePage() {
             px-4 sm:px-6 md:px-8 lg:px-10
           "
               >
-                {products.slice(0, 10).map((product, index) => (
+                {products.slice(0, 8).map((product, index) => (
                   <div
                     key={product.id}
                     className="
