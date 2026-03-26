@@ -18,6 +18,7 @@ import { SearchModule } from './search/search.module';
 import { MediaModule } from './media/media.module';
 import { CouponsModule } from './coupons/coupons.module';
 import { WeeklyBestSellersModule } from './weekly-best-sellers/weekly-best-sellers.module';
+import { HomeSectionsModule } from './home-sections/home-sections.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { WeeklyBestSellersModule } from './weekly-best-sellers/weekly-best-selle
     MediaModule,
     CouponsModule,
     WeeklyBestSellersModule,
+    HomeSectionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
