@@ -14,6 +14,23 @@ enum ProductSize {
   GG
 }
 
+enum HomeSectionType {
+  HERO
+  LAUNCHES
+  PROMOTIONS
+}
+
+enum HeroSlideType {
+  COLLECTION
+  PRODUCT
+  PROMO
+}
+
+enum LookbookItemType {
+  TOP
+  BOTTOM
+}
+
 model Admin {
   id        String   @id @default(uuid())
   email     String   @unique
@@ -65,6 +82,9 @@ model Product {
   medias           Media[]
   variants         ProductVariant[]
   weeklyBestSeller WeeklyBestSeller?
+
+  homeSectionItems HomeSectionItem[]
+  lookbookItems    LookbookItem[]
 }
 
 model ProductVariant {
@@ -267,4 +287,61 @@ model WeeklyBestSeller {
   createdAt DateTime @default(now())
 
   @@unique([position])
+}
+
+model HomeSectionItem {
+  id        String          @id @default(uuid())
+  type      HomeSectionType
+  position  Int
+
+  productId String
+  product   Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  /**
+   * HERO ONLY
+   * Campos opcionais para permitir controlar o Hero com produto real,
+   * mas sem depender apenas dos dados fixos do Product.
+   */
+  heroSlideType  HeroSlideType?
+  imageOverride  String?
+  focus          String?
+  focusDesktop   String?
+  title1         String?
+  title2         String?
+  subtitle       String?
+  cta1           String?
+  cta2           String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([type, position])
+  @@unique([type, productId])
+  @@index([type])
+}
+
+model LookbookItem {
+  id       String           @id @default(uuid())
+  type     LookbookItemType
+  position Int
+
+  productId String
+  product   Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  /**
+   * Campos opcionais de apoio ao componente interativo.
+   * Mantém flexibilidade sem depender de heurística por categoria/nome.
+   */
+  label   String?
+  top     String?
+  left    String?
+  fabric  String?
+  active  Boolean           @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([type, position])
+  @@unique([type, productId])
+  @@index([type])
 }

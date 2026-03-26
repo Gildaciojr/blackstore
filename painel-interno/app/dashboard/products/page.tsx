@@ -164,7 +164,7 @@ export default function ProductsPage() {
         return;
       }
 
-      if (uploadedImagesRef.current.length === 0) {
+      if (!editingId && uploadedImagesRef.current.length === 0) {
         alert("Envie ao menos uma imagem antes de salvar");
         return;
       }
@@ -176,6 +176,12 @@ export default function ProductsPage() {
           ? variants.reduce((sum, v) => sum + v.stock, 0)
           : Number(form.stock);
 
+      // 🔥 GARANTIA DE CONSISTÊNCIA
+      const finalImages =
+        uploadedImagesRef.current.length > 0
+          ? uploadedImagesRef.current
+          : form.images || [];
+
       const payload = {
         name: form.name,
         slug: form.slug || generateSlug(form.name),
@@ -185,10 +191,16 @@ export default function ProductsPage() {
           form.oldPrice && parseFloat(form.oldPrice) > 0
             ? parseFloat(form.oldPrice)
             : undefined,
-        image: uploadedImagesRef.current[0],
-        stock: totalStock, // 🔥 CORREÇÃO AQUI
+
+        // 🔥 NUNCA DEIXA QUEBRAR
+        image: finalImages[0],
+
+        stock: totalStock,
         categoryId: form.categoryId,
-        medias: [...uploadedImagesRef.current],
+
+        // 🔥 SÓ ENVIA SE EXISTIR
+        medias: finalImages.length > 0 ? finalImages : undefined,
+
         variants: variants.length > 0 ? variants : undefined,
       };
 
@@ -206,7 +218,6 @@ export default function ProductsPage() {
         });
       }
 
-      // 🔥 LIMPEZA CORRETA
       uploadedImagesRef.current = [];
 
       setForm({
@@ -222,7 +233,6 @@ export default function ProductsPage() {
       });
 
       setVariants([]);
-
       setEditingId(null);
 
       await loadProducts();
@@ -236,6 +246,12 @@ export default function ProductsPage() {
   function handleEdit(product: Product) {
     setEditingId(product.id);
 
+    const existingImages =
+      product.medias?.map((m: { url: string }) => m.url) || [];
+
+    // 🔥 CRÍTICO
+    uploadedImagesRef.current = existingImages;
+
     setForm({
       name: product.name,
       slug: product.slug,
@@ -244,10 +260,7 @@ export default function ProductsPage() {
       oldPrice: product.oldPrice ? String(product.oldPrice) : "",
       stock: String(product.stock),
       image: product.image,
-
-      // 🔥 CORREÇÃO REAL
-      images: product.medias?.map((m: { url: string }) => m.url) || [],
-
+      images: existingImages,
       categoryId: product.categoryId ?? "",
     });
 
