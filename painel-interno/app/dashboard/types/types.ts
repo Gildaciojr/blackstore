@@ -4,5 +4,6 @@ export type DashboardStats = {
   customers: number;
   revenue: number;
   categories: number;
+  coupons: number;
   growth: number;
 };

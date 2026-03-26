@@ -11,6 +11,8 @@ export type CartItem = {
   oldPrice?: number;
   image: string;
   quantity: number;
+  variantId?: string | null;
+  size?: string | null;
 };
 
 export type ShippingOption = {
@@ -30,6 +32,8 @@ type CartApiItem = {
   quantity: number;
   productId: string;
   customerId: string;
+  variantId?: string | null;
+  size?: string | null;
   product: {
     id: string;
     name: string;
@@ -37,6 +41,10 @@ type CartApiItem = {
     oldPrice?: number | null;
     image: string;
   };
+  variant?: {
+    id: string;
+    size: string;
+  } | null;
 };
 
 type CartState = {
@@ -114,6 +122,8 @@ export const useCart = create<CartState>((set, get) => ({
         oldPrice: i.product.oldPrice ?? undefined,
         image: resolveImage(i.product.image),
         quantity: i.quantity,
+        variantId: i.variantId ?? null,
+        size: i.variant?.size ?? null
       }));
 
       set({ items });
@@ -126,14 +136,32 @@ export const useCart = create<CartState>((set, get) => ({
     try {
       const customerId = getCustomerId();
 
-      await apiFetch("/cart/add", {
-        method: "POST",
-        body: JSON.stringify({
-          productId: item.id,
-          quantity: 1,
-          customerId,
-        }),
-      });
+      const existing = get().items.find(
+        (i) =>
+          i.id === item.id &&
+          (i.variantId ?? null) === (item.variantId ?? null),
+      );
+
+      if (existing) {
+        await apiFetch("/cart/update", {
+          method: "PATCH",
+          body: JSON.stringify({
+            cartItemId: existing.cartItemId,
+            quantity: existing.quantity + 1,
+          }),
+        });
+      } else {
+        await apiFetch("/cart/add", {
+          method: "POST",
+          body: JSON.stringify({
+            productId: item.id,
+            quantity: 1,
+            customerId,
+            variantId: item.variantId ?? null,
+            size: item.size ?? null,
+          }),
+        });
+      }
 
       await get().loadCart();
     } catch (err) {
@@ -144,7 +172,8 @@ export const useCart = create<CartState>((set, get) => ({
 
   removeItem: async (id) => {
     try {
-      const item = get().items.find((i) => i.id === id);
+      const item = get().items.find((i) => i.cartItemId === id);
+
       if (!item) return;
 
       await apiFetch(`/cart/${item.cartItemId}`, {
@@ -160,7 +189,8 @@ export const useCart = create<CartState>((set, get) => ({
 
   increase: async (id) => {
     try {
-      const item = get().items.find((i) => i.id === id);
+      const item = get().items.find((i) => i.cartItemId === id);
+
       if (!item) return;
 
       await apiFetch("/cart/update", {
@@ -180,7 +210,8 @@ export const useCart = create<CartState>((set, get) => ({
 
   decrease: async (id) => {
     try {
-      const item = get().items.find((i) => i.id === id);
+      const item = get().items.find((i) => i.cartItemId === id);
+
       if (!item) return;
 
       const qty = item.quantity - 1;
@@ -277,7 +308,6 @@ export const useCart = create<CartState>((set, get) => ({
     if (subtotal <= 0 || percent <= 0) return 0;
 
     const raw = subtotal * (percent / 100);
-
     const value = Number(raw.toFixed(2));
 
     if (value > subtotal) return subtotal;

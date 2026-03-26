@@ -210,7 +210,7 @@ export default function ProductForm({
           <input
             type="number"
             value={oldPrice ?? ""}
-            onChange={(e) => setOldPrice(Number(e.target.value))}
+            onChange={(e) => setOldPrice(e.target.value ? Number(e.target.value) : undefined)}
             placeholder="Preço antigo"
             className="input"
           />

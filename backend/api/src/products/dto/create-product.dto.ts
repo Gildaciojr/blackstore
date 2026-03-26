@@ -1,4 +1,24 @@
-import { IsString, IsNumber, IsOptional, IsUUID, Min, IsNotEmpty } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsOptional,
+  IsUUID,
+  Min,
+  IsNotEmpty,
+  IsEnum,
+  ValidateNested,
+} from 'class-validator';
+import { Type } from 'class-transformer';
+import { ProductSize } from '@prisma/client';
+
+export class ProductVariantDto {
+  @IsEnum(ProductSize)
+  size: ProductSize;
+
+  @IsNumber()
+  @Min(0)
+  stock: number;
+}
 
 export class CreateProductDto {
   @IsString()
@@ -23,6 +43,7 @@ export class CreateProductDto {
   oldPrice?: number;
 
   @IsString()
+  @IsNotEmpty()
   image: string;
 
   @IsNumber()
@@ -31,4 +52,9 @@ export class CreateProductDto {
 
   @IsUUID()
   categoryId: string;
+
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => ProductVariantDto)
+  variants?: ProductVariantDto[];
 }

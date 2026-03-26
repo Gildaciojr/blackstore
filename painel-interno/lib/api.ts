@@ -6,13 +6,10 @@ if (!API_URL) {
 
 export async function apiFetch<T>(
   path: string,
-  options?: RequestInit
+  options?: RequestInit,
 ): Promise<T> {
-
   const token =
-    typeof window !== "undefined"
-      ? localStorage.getItem("admin_token")
-      : null;
+    typeof window !== "undefined" ? localStorage.getItem("admin_token") : null;
 
   /**
    * usamos Record<string,string>
@@ -25,8 +22,13 @@ export async function apiFetch<T>(
   /**
    * headers adicionais
    */
-  if (options?.headers && typeof options.headers === "object") {
-    Object.assign(headers, options.headers as Record<string, string>);
+  if (options?.headers) {
+    const extraHeaders =
+      options.headers instanceof Headers
+        ? Object.fromEntries(options.headers.entries())
+        : (options.headers as Record<string, string>);
+
+    Object.assign(headers, extraHeaders);
   }
 
   /**
@@ -43,7 +45,6 @@ export async function apiFetch<T>(
   });
 
   if (!response.ok) {
-
     if (response.status === 401 && typeof window !== "undefined") {
       window.location.href = "/login";
     }
@@ -60,7 +61,6 @@ export async function apiFetch<T>(
       ) {
         message = String((errorData as { message: unknown }).message);
       }
-
     } catch {
       // fallback silencioso
     }

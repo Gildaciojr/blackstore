@@ -2,6 +2,12 @@ export type ProductMedia = {
   url: string;
 };
 
+export type ProductVariant = {
+  id?: string;
+  size: "PP" | "P" | "M" | "G" | "GG";
+  stock: number;
+};
+
 export type Product = {
   id: string;
   name: string;
@@ -15,6 +21,7 @@ export type Product = {
 
   // 🔥 NOVO (OBRIGATÓRIO)
   medias?: ProductMedia[];
+  variants?: ProductVariant[];
 };
 
 export type Category = {

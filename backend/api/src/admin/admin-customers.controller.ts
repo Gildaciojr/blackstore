@@ -46,6 +46,7 @@ export class AdminCustomersController {
             items: {
               include: {
                 product: true,
+                variant: true, // 🔥 CORREÇÃO CRÍTICA
               },
             },
           },

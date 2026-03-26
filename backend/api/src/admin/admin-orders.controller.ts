@@ -14,6 +14,7 @@ export class AdminOrdersController {
         items: {
           include: {
             product: true,
+            variant: true,
           },
         },
         customer: true,
@@ -34,6 +35,7 @@ export class AdminOrdersController {
         items: {
           include: {
             product: true,
+            variant: true,
           },
         },
         customer: true,

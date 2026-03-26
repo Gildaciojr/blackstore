@@ -30,23 +30,38 @@ type Props = {
   };
 };
 
+function resolveImage(url: string) {
+  if (!url) return "/images/placeholder.png";
+
+  if (url.startsWith("http")) return url;
+  if (url.startsWith("/images")) return url;
+
+  return `${process.env.NEXT_PUBLIC_API_URL}${url}`;
+}
+
 export default function OrderSuccessPage({ params }: Props) {
   const [order, setOrder] = useState<Order | null>(null);
 
   useEffect(() => {
-    async function loadOrder() {
-      const data = await apiFetch<Order>(`/orders/order/${params.id}`);
+    if (!params?.id) return;
 
-      setOrder({
-        ...data,
-        items: data.items.map((item: OrderItem) => ({
-          ...item,
-          product: {
-            ...item.product,
-            image: `${process.env.NEXT_PUBLIC_API_URL}${item.product.image}`,
-          },
-        })),
-      });
+    async function loadOrder() {
+      try {
+        const data = await apiFetch<Order>(`/orders/order/${params.id}`);
+
+        setOrder({
+          ...data,
+          items: (data.items ?? []).map((item: OrderItem) => ({
+            ...item,
+            product: {
+              ...item.product,
+              image: resolveImage(item.product?.image),
+            },
+          })),
+        });
+      } catch (err) {
+        console.error("Erro ao carregar pedido:", err);
+      }
     }
 
     loadOrder();
@@ -60,6 +75,8 @@ export default function OrderSuccessPage({ params }: Props) {
     );
   }
 
+  const statusLabel = order.status || "Processando";
+
   return (
     <section className="max-w-5xl mx-auto px-6 md:px-8 pt-32 pb-32">
       <p className="text-white/50 uppercase text-xs tracking-[0.4em] mb-4">
@@ -71,7 +88,8 @@ export default function OrderSuccessPage({ params }: Props) {
       </h1>
 
       <p className="text-white/60 mb-10 max-w-xl">
-        Seu pedido foi criado com sucesso. Você poderá acompanhar o status de envio a qualquer momento.
+        Seu pedido foi criado com sucesso. Você poderá acompanhar o status de
+        envio a qualquer momento.
       </p>
 
       {/* STATUS */}
@@ -79,22 +97,20 @@ export default function OrderSuccessPage({ params }: Props) {
         <p className="text-xs uppercase tracking-widest text-white/50 mb-2">
           Status atual
         </p>
-        <p className="text-[var(--gold)] text-sm">
-          Pedido confirmado
-        </p>
+        <p className="text-[var(--gold)] text-sm">{statusLabel}</p>
       </div>
 
       {/* ITENS */}
       <div className="space-y-8">
-        {order.items.map((item: OrderItem) => (
+        {(order.items ?? []).map((item: OrderItem) => (
           <div
             key={item.id}
             className="flex gap-6 md:gap-8 pb-6 border-b border-white/10"
           >
             <div className="relative w-24 md:w-28 aspect-[3/4] overflow-hidden rounded-lg">
               <Image
-                src={item.product.image}
-                alt={item.product.name}
+                src={item.product?.image || "/images/placeholder.png"}
+                alt={item.product?.name || "Produto"}
                 fill
                 className="object-cover"
               />
@@ -102,7 +118,7 @@ export default function OrderSuccessPage({ params }: Props) {
 
             <div className="flex-1">
               <h3 className="uppercase tracking-widest text-xs md:text-sm">
-                {item.product.name}
+                {item.product?.name || "Produto"}
               </h3>
 
               <p className="text-white/60 mt-2 text-sm">

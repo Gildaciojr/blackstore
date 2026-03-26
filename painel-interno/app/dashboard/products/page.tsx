@@ -37,6 +37,29 @@ export default function ProductsPage() {
 
   const [editingId, setEditingId] = useState<string | null>(null);
 
+  const [variants, setVariants] = useState<
+    { size: "PP" | "P" | "M" | "G" | "GG"; stock: number }[]
+  >([]);
+
+  function addVariant(size: "PP" | "P" | "M" | "G" | "GG") {
+    setVariants((prev) => {
+      if (prev.some((v) => v.size === size)) return prev;
+      return [...prev, { size, stock: 0 }];
+    });
+  }
+
+  type Size = "PP" | "P" | "M" | "G" | "GG";
+
+  function updateVariant(size: Size, stock: number) {
+    setVariants((prev) =>
+      prev.map((v) => (v.size === size ? { ...v, stock } : v)),
+    );
+  }
+
+  function removeVariant(size: Size) {
+    setVariants((prev) => prev.filter((v) => v.size !== size));
+  }
+
   function resolveImage(url: string) {
     if (!url) return "";
 
@@ -148,6 +171,11 @@ export default function ProductsPage() {
 
       setSaving(true);
 
+      const totalStock =
+        variants.length > 0
+          ? variants.reduce((sum, v) => sum + v.stock, 0)
+          : Number(form.stock);
+
       const payload = {
         name: form.name,
         slug: form.slug || generateSlug(form.name),
@@ -158,9 +186,10 @@ export default function ProductsPage() {
             ? parseFloat(form.oldPrice)
             : undefined,
         image: uploadedImagesRef.current[0],
-        stock: Number(form.stock),
+        stock: totalStock, // 🔥 CORREÇÃO AQUI
         categoryId: form.categoryId,
         medias: [...uploadedImagesRef.current],
+        variants: variants.length > 0 ? variants : undefined,
       };
 
       console.log("🔥 PAYLOAD FINAL:", payload);
@@ -192,6 +221,8 @@ export default function ProductsPage() {
         categoryId: "",
       });
 
+      setVariants([]);
+
       setEditingId(null);
 
       await loadProducts();
@@ -220,6 +251,13 @@ export default function ProductsPage() {
       categoryId: product.categoryId ?? "",
     });
 
+    setVariants(
+      product.variants?.map((v) => ({
+        size: v.size,
+        stock: v.stock,
+      })) || [],
+    );
+
     setImagePreview(resolveImage(product.image));
   }
 
@@ -246,6 +284,8 @@ export default function ProductsPage() {
           images: [], // 🔥 OK aqui
           categoryId: "",
         });
+
+        setVariants([]);
       }
 
       await loadProducts();
@@ -403,6 +443,67 @@ export default function ProductsPage() {
             </select>
           </div>
 
+          {/* 🔥 VARIANTS (INSERIDO NO LOCAL CORRETO) */}
+          <div className="md:col-span-2">
+            <label className="text-xs uppercase tracking-[0.2em] text-white/50 mb-2 block">
+              Tamanhos
+            </label>
+
+            <div className="flex gap-2 flex-wrap mb-4">
+              {(["PP", "P", "M", "G", "GG"] as const).map((size) => (
+                <button
+                  key={size}
+                  type="button"
+                  onClick={() => addVariant(size)}
+                  className="
+          px-3 py-1 text-xs
+          border border-white/20
+          rounded-full
+          hover:border-[var(--gold)]
+          transition
+        "
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
+
+            {variants.length > 0 && (
+              <div className="space-y-2">
+                {variants.map((v) => (
+                  <div key={v.size} className="flex items-center gap-3">
+                    <span className="w-10 text-sm">{v.size}</span>
+
+                    <input
+                      type="number"
+                      min={0}
+                      step={1}
+                      value={v.stock}
+                      onChange={(e) => {
+                        const value = Number(e.target.value);
+
+                        updateVariant(
+                          v.size,
+                          Number.isNaN(value) || value < 0 ? 0 : value,
+                        );
+                      }}
+                      className="input w-32"
+                      placeholder="Estoque"
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => removeVariant(v.size)}
+                      className="text-red-400 text-xs"
+                    >
+                      Remover
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           <div className="md:col-span-2">
             <label className="text-xs uppercase tracking-[0.2em] text-white/50 mb-2 block">
               Imagens
@@ -413,23 +514,23 @@ export default function ProductsPage() {
               type="file"
               multiple
               className="
-    w-full
-    text-sm
-    bg-black/40
-    border border-white/20
-    rounded-lg
-    p-2
-    file:mr-4
-    file:py-2
-    file:px-4
-    file:rounded-full
-    file:border-0
-    file:text-xs
-    file:font-semibold
-    file:bg-[var(--gold)]
-    file:text-black
-    hover:file:opacity-90
-    "
+          w-full
+          text-sm
+          bg-black/40
+          border border-white/20
+          rounded-lg
+          p-2
+          file:mr-4
+          file:py-2
+          file:px-4
+          file:rounded-full
+          file:border-0
+          file:text-xs
+          file:font-semibold
+          file:bg-[var(--gold)]
+          file:text-black
+          hover:file:opacity-90
+        "
               onChange={async (e) => {
                 const files = e.target.files;
 
@@ -461,8 +562,6 @@ export default function ProductsPage() {
                   console.error(err);
                 } finally {
                   setUploading(false);
-
-                  // 🔥 RESET REAL DO INPUT (FUNCIONA 100%)
                   setInputKey((prev) => prev + 1);
                 }
               }}
@@ -480,7 +579,7 @@ export default function ProductsPage() {
               />
             )}
 
-            {/* GALERIA DE IMAGENS */}
+            {/* GALERIA */}
             {form.images.length > 0 && (
               <div className="flex gap-2 mt-4 flex-wrap">
                 {form.images.map((img, i) => (
@@ -490,17 +589,14 @@ export default function ProductsPage() {
                       className="w-20 h-20 object-cover rounded-lg border border-white/10"
                     />
 
-                    {/* BOTÃO REMOVER */}
                     <button
                       type="button"
                       onClick={() => {
-                        // 🔥 REMOVE DO REF (FONTE REAL)
                         uploadedImagesRef.current =
                           uploadedImagesRef.current.filter(
                             (_, index) => index !== i,
                           );
 
-                        // 🔥 SINCRONIZA COM O STATE
                         setForm((prev) => ({
                           ...prev,
                           images: [...uploadedImagesRef.current],
@@ -508,15 +604,15 @@ export default function ProductsPage() {
                         }));
                       }}
                       className="
-  absolute -top-2 -right-2
-  bg-red-500 text-white
-  text-xs
-  rounded-full
-  w-5 h-5
-  flex items-center justify-center
-  hover:bg-red-600
-  transition
-  "
+                  absolute -top-2 -right-2
+                  bg-red-500 text-white
+                  text-xs
+                  rounded-full
+                  w-5 h-5
+                  flex items-center justify-center
+                  hover:bg-red-600
+                  transition
+                "
                     >
                       ×
                     </button>
@@ -531,17 +627,17 @@ export default function ProductsPage() {
           onClick={handleSubmit}
           disabled={saving}
           className="
-  w-full sm:w-auto
-  bg-[var(--gold)]
-  text-black
-  px-6 py-3
-  rounded-full
-  font-medium
-  hover:scale-[1.02]
-  transition
-  disabled:opacity-50
-  disabled:cursor-not-allowed
-  "
+      w-full sm:w-auto
+      bg-[var(--gold)]
+      text-black
+      px-6 py-3
+      rounded-full
+      font-medium
+      hover:scale-[1.02]
+      transition
+      disabled:opacity-50
+      disabled:cursor-not-allowed
+    "
         >
           {saving
             ? "Salvando..."

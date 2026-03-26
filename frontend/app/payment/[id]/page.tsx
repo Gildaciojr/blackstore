@@ -32,7 +32,7 @@ type Props = {
 };
 
 function getStatusLabel(status: string) {
-  const normalized = status.toLowerCase();
+  const normalized = (status || "").toLowerCase();
 
   if (normalized === "approved" || normalized === "paid") {
     return "Pagamento aprovado";
@@ -42,7 +42,11 @@ function getStatusLabel(status: string) {
     return "Aguardando pagamento";
   }
 
-  if (normalized === "declined" || normalized === "rejected" || normalized === "failed") {
+  if (
+    normalized === "declined" ||
+    normalized === "rejected" ||
+    normalized === "failed"
+  ) {
     return "Pagamento recusado";
   }
 
@@ -50,17 +54,21 @@ function getStatusLabel(status: string) {
     return "Pagamento cancelado";
   }
 
-  return status;
+  return status || "Processando";
 }
 
 function getStatusTextClass(status: string) {
-  const normalized = status.toLowerCase();
+  const normalized = (status || "").toLowerCase();
 
   if (normalized === "approved" || normalized === "paid") {
     return "text-green-400";
   }
 
-  if (normalized === "declined" || normalized === "rejected" || normalized === "failed") {
+  if (
+    normalized === "declined" ||
+    normalized === "rejected" ||
+    normalized === "failed"
+  ) {
     return "text-red-400";
   }
 
@@ -72,7 +80,7 @@ function getStatusTextClass(status: string) {
 }
 
 function formatCurrency(value: number) {
-  return value.toLocaleString("pt-BR", {
+  return (value ?? 0).toLocaleString("pt-BR", {
     style: "currency",
     currency: "BRL",
   });
@@ -92,6 +100,7 @@ export default function PaymentPage({ params }: Props) {
 
   const loadAll = useCallback(
     async (background = false) => {
+      if (!params?.id) return;
       if (fetchingRef.current) return;
 
       try {
@@ -129,21 +138,22 @@ export default function PaymentPage({ params }: Props) {
         }
       }
     },
-    [params.id]
+    [params.id],
   );
 
   useEffect(() => {
+    if (!params?.id) return;
     void loadAll(false);
-  }, [loadAll]);
+  }, [loadAll, params.id]);
 
   const normalizedPaymentStatus = useMemo(() => {
     if (!payment) return "";
-    return payment.status.toLowerCase();
+    return (payment.status || "").toLowerCase();
   }, [payment]);
 
   const normalizedOrderStatus = useMemo(() => {
     if (!order) return "";
-    return order.status.toLowerCase();
+    return (order.status || "").toLowerCase();
   }, [order]);
 
   const isApproved = useMemo(() => {
@@ -293,7 +303,7 @@ export default function PaymentPage({ params }: Props) {
           <div className="mt-8 space-y-3 text-sm">
             <div className="flex justify-between text-white/70">
               <span>Pedido</span>
-              <span>#{order.id.slice(0, 8)}</span>
+              <span>#{order.id ? order.id.slice(0, 8) : "—"}</span>
             </div>
 
             <div className="flex justify-between text-white/70">
@@ -321,7 +331,9 @@ export default function PaymentPage({ params }: Props) {
             {payment.providerId && (
               <div className="flex justify-between text-white/70 gap-4">
                 <span>Transação</span>
-                <span className="text-right break-all">{payment.providerId}</span>
+                <span className="text-right break-all">
+                  {payment.providerId}
+                </span>
               </div>
             )}
           </div>
@@ -381,10 +393,12 @@ export default function PaymentPage({ params }: Props) {
               </button>
 
               <div className="mt-6 space-y-2 text-sm text-white/60 leading-relaxed">
-                <p>Após o pagamento, esta página será atualizada automaticamente.</p>
                 <p>
-                  Assim que o gateway confirmar a transação, você será redirecionado
-                  para a confirmação do pedido.
+                  Após o pagamento, esta página será atualizada automaticamente.
+                </p>
+                <p>
+                  Assim que o gateway confirmar a transação, você será
+                  redirecionado para a confirmação do pedido.
                 </p>
               </div>
             </>

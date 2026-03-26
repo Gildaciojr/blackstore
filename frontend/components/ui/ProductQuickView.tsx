@@ -7,6 +7,12 @@ import { useCart } from "@/store/cart";
 import { motion, AnimatePresence } from "framer-motion";
 import { API_URL } from "@/lib/api";
 
+type Variant = {
+  id: string;
+  size: string;
+  stock: number;
+};
+
 export type Product = {
   id: string;
   name: string;
@@ -14,6 +20,7 @@ export type Product = {
   image: string;
   images?: string[];
   oldPrice?: number;
+  variants?: Variant[]; // 🔥 ADICIONAR
 };
 
 type Props = {
@@ -37,10 +44,17 @@ function resolveImage(url: string) {
 export default function ProductQuickView({ product, onClose }: Props) {
   const addItem = useCart((s) => s.addItem);
 
-  const [size, setSize] = useState<string | null>(null);
-  const [index, setIndex] = useState(0);
+  const [selectedVariant, setSelectedVariant] = useState<Variant | null>(null);
+  const [currentProductId, setCurrentProductId] = useState(product.id);
 
-  const sizes = ["PP", "P", "M", "G", "GG"];
+  if (currentProductId !== product.id) {
+    setCurrentProductId(product.id);
+    setSelectedVariant(null);
+  }
+
+  const hasVariants =
+    Array.isArray(product.variants) && product.variants.length > 0;
+  const [index, setIndex] = useState(0);
 
   /**
    * 🔥 CORREÇÃO AQUI
@@ -61,6 +75,33 @@ export default function ProductQuickView({ product, onClose }: Props) {
   function prev() {
     if (images.length <= 1) return;
     setIndex((prev) => (prev - 1 + images.length) % images.length);
+  }
+  function handleAddToCart() {
+    if (hasVariants) {
+      if (!selectedVariant) return;
+      if (selectedVariant.stock <= 0) return;
+
+      addItem({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: currentImage,
+        variantId: selectedVariant.id,
+        size: selectedVariant.size,
+      });
+
+      onClose();
+      return;
+    }
+
+    addItem({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: currentImage,
+    });
+
+    onClose();
   }
 
   return (
@@ -187,39 +228,59 @@ export default function ProductQuickView({ product, onClose }: Props) {
               </span>
             </div>
 
-            <div className="mt-8">
-              <p className="text-[10px] uppercase tracking-[0.4em] text-white/50 mb-4">
-                Tamanho
-              </p>
+            {/* TAMANHOS */}
+            {hasVariants && (
+              <div className="mt-8">
+                <p className="text-[10px] uppercase tracking-[0.4em] text-white/50 mb-4">
+                  Tamanho
+                </p>
 
-              <div className="flex gap-3 flex-wrap">
-                {sizes.map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => setSize(s)}
-                    className={`w-10 h-10 rounded-full border text-sm flex items-center justify-center transition ${
-                      size === s
-                        ? "bg-[var(--gold)] text-black border-[var(--gold)]"
-                        : "border-white/20 text-white hover:border-white"
-                    }`}
-                  >
-                    {s}
-                  </button>
-                ))}
+                <div className="flex gap-3 flex-wrap">
+                  {product.variants!.map((v) => {
+                    const disabled = v.stock <= 0;
+
+                    return (
+                      <button
+                        key={v.id}
+                        disabled={disabled}
+                        onClick={() => setSelectedVariant(v)}
+                        className={`w-10 h-10 rounded-full border text-sm flex items-center justify-center transition ${
+                          selectedVariant?.id === v.id
+                            ? "bg-[var(--gold)] text-black border-[var(--gold)]"
+                            : "border-white/20 text-white hover:border-white"
+                        } ${disabled ? "opacity-30 cursor-not-allowed" : ""}`}
+                      >
+                        {v.size}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
+            )}
 
+            {/* MENSAGEM UX */}
+            {hasVariants && !selectedVariant && (
+              <p className="text-xs text-red-400 mt-4">Selecione um tamanho</p>
+            )}
+
+            {/* AÇÕES */}
             <div className="mt-10 flex gap-4 flex-col sm:flex-row">
               <button
-                onClick={() =>
-                  addItem({
-                    id: product.id,
-                    name: product.name,
-                    price: product.price,
-                    image: currentImage,
-                  })
+                onClick={handleAddToCart}
+                disabled={
+                  hasVariants
+                    ? !selectedVariant || selectedVariant.stock <= 0
+                    : false
                 }
-                className="flex-1 inline-flex items-center justify-center gap-3 px-10 py-4 rounded-full bg-[var(--gold)] text-black text-xs uppercase tracking-[0.35em] shadow-[0_10px_30px_rgba(212,175,55,0.25)] hover:scale-105 transition"
+                className="
+        flex-1 inline-flex items-center justify-center gap-3
+        px-10 py-4 rounded-full
+        bg-[var(--gold)] text-black
+        text-xs uppercase tracking-[0.35em]
+        shadow-[0_10px_30px_rgba(212,175,55,0.25)]
+        hover:scale-105 transition
+        disabled:opacity-40 disabled:cursor-not-allowed
+      "
               >
                 <ShoppingBag size={18} />
                 Adicionar
@@ -227,7 +288,12 @@ export default function ProductQuickView({ product, onClose }: Props) {
 
               <button
                 onClick={onClose}
-                className="flex-1 px-10 py-4 rounded-full border border-white/20 text-xs uppercase tracking-[0.35em] hover:border-white transition"
+                className="
+        flex-1 px-10 py-4 rounded-full
+        border border-white/20
+        text-xs uppercase tracking-[0.35em]
+        hover:border-white transition
+      "
               >
                 Continuar
               </button>

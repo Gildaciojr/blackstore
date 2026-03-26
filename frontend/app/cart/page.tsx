@@ -50,11 +50,7 @@ export default function CartPage() {
       await applyCoupon(couponInput);
     } catch (err) {
       setCouponInput("");
-      alert(
-        err instanceof Error
-          ? err.message
-          : "Erro ao aplicar cupom"
-      );
+      alert(err instanceof Error ? err.message : "Erro ao aplicar cupom");
     } finally {
       setCouponLoading(false);
     }
@@ -63,8 +59,7 @@ export default function CartPage() {
   // 🔥 FRETE GRÁTIS
   const FREE_SHIPPING_THRESHOLD = 299;
   const subtotalValue = subtotal();
-  const remainingForFreeShipping =
-    FREE_SHIPPING_THRESHOLD - subtotalValue;
+  const remainingForFreeShipping = FREE_SHIPPING_THRESHOLD - subtotalValue;
 
   if (items.length === 0) {
     return (
@@ -89,7 +84,6 @@ export default function CartPage() {
 
   return (
     <section className="max-w-7xl mx-auto px-4 md:px-8 pt-28 pb-40">
-
       {/* HEADER */}
       <p className="text-white/50 uppercase text-xs tracking-[0.4em] mb-4">
         Checkout seguro
@@ -116,7 +110,7 @@ export default function CartPage() {
             style={{
               width: `${Math.min(
                 (subtotalValue / FREE_SHIPPING_THRESHOLD) * 100,
-                100
+                100,
               )}%`,
             }}
           />
@@ -124,13 +118,11 @@ export default function CartPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-
         {/* ITENS */}
         <div className="lg:col-span-2 space-y-6">
-
           {items.map((item) => (
             <div
-              key={item.id}
+              key={item.cartItemId}
               className="
                 flex gap-4 md:gap-8 
                 p-4 md:p-6 
@@ -151,11 +143,16 @@ export default function CartPage() {
               </div>
 
               <div className="flex-1 flex flex-col justify-between">
-
                 <div>
                   <h3 className="uppercase tracking-widest text-xs md:text-sm text-white/90">
                     {item.name}
                   </h3>
+
+                  {item.size && (
+                    <p className="mt-2 text-[10px] uppercase tracking-widest text-white/40">
+                      Tamanho: {item.size}
+                    </p>
+                  )}
 
                   <p className="mt-2 text-[var(--gold)] text-lg md:text-xl font-medium">
                     R$ {item.price.toFixed(2)}
@@ -163,11 +160,9 @@ export default function CartPage() {
                 </div>
 
                 <div className="flex items-center justify-between mt-6">
-
                   <div className="flex items-center gap-3 text-sm">
-
                     <button
-                      onClick={() => decrease(item.id)}
+                      onClick={() => decrease(item.cartItemId)}
                       className="w-9 h-9 border border-white/20 rounded-full hover:border-[var(--gold)] transition"
                     >
                       −
@@ -178,21 +173,19 @@ export default function CartPage() {
                     </span>
 
                     <button
-                      onClick={() => increase(item.id)}
+                      onClick={() => increase(item.cartItemId)}
                       className="w-9 h-9 border border-white/20 rounded-full hover:border-[var(--gold)] transition"
                     >
                       +
                     </button>
-
                   </div>
 
                   <button
-                    onClick={() => removeItem(item.id)}
+                    onClick={() => removeItem(item.cartItemId)}
                     className="text-red-400 text-[10px] uppercase tracking-widest hover:text-red-300 transition"
                   >
                     Remover
                   </button>
-
                 </div>
               </div>
             </div>
@@ -205,14 +198,15 @@ export default function CartPage() {
             </p>
 
             <p className="text-sm text-white/70">
-              Combine peças e monte um look completo para potencializar seu estilo.
+              Combine peças e monte um look completo para potencializar seu
+              estilo.
             </p>
           </div>
-
         </div>
 
         {/* RESUMO */}
-        <div className="
+        <div
+          className="
           border border-white/10 
           p-6 md:p-10 
           bg-black/40 
@@ -220,8 +214,8 @@ export default function CartPage() {
           rounded-2xl 
           h-fit 
           sticky top-24
-        ">
-
+        "
+        >
           <h2 className="uppercase tracking-widest text-xs mb-6">
             Resumo do pedido
           </h2>
@@ -324,7 +318,6 @@ export default function CartPage() {
 
           {/* VALORES */}
           <div className="space-y-3 text-sm">
-
             <div className="flex justify-between text-white/70">
               <span>Subtotal</span>
               <span>R$ {subtotal().toFixed(2)}</span>
@@ -349,7 +342,6 @@ export default function CartPage() {
                 R$ {total().toFixed(2)}
               </span>
             </div>
-
           </div>
 
           {/* PROVA */}
@@ -372,14 +364,11 @@ export default function CartPage() {
           >
             Finalizar compra segura
           </Link>
-
         </div>
-
       </div>
 
       {/* 🔥 MOBILE FIXO */}
       <div className="fixed bottom-0 left-0 w-full bg-black/95 border-t border-white/10 p-4 flex items-center justify-between lg:hidden z-50">
-
         <div>
           <p className="text-[10px] uppercase text-white/50 tracking-widest">
             Total
@@ -403,9 +392,7 @@ export default function CartPage() {
         >
           Finalizar
         </Link>
-
       </div>
-
     </section>
   );
 }

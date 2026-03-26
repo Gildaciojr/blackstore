@@ -3,13 +3,10 @@ export const API_URL =
 
 export async function apiFetch<T = unknown>(
   path: string,
-  options?: RequestInit
+  options?: RequestInit,
 ): Promise<T> {
-
   const token =
-    typeof window !== "undefined"
-      ? localStorage.getItem("bs_token")
-      : null;
+    typeof window !== "undefined" ? localStorage.getItem("bs_token") : null;
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -18,8 +15,13 @@ export async function apiFetch<T = unknown>(
   /**
    * merge headers externos
    */
-  if (options?.headers && typeof options.headers === "object") {
-    Object.assign(headers, options.headers as Record<string, string>);
+  if (options?.headers) {
+    const extraHeaders =
+      options.headers instanceof Headers
+        ? Object.fromEntries(options.headers.entries())
+        : (options.headers as Record<string, string>);
+
+    Object.assign(headers, extraHeaders);
   }
 
   /**
@@ -39,7 +41,6 @@ export async function apiFetch<T = unknown>(
    * tratamento profissional de erro
    */
   if (!response.ok) {
-
     let message = "Erro na API";
 
     try {
@@ -52,7 +53,6 @@ export async function apiFetch<T = unknown>(
       ) {
         message = String((errorData as { message: unknown }).message);
       }
-
     } catch {
       // fallback silencioso
     }

@@ -8,6 +8,12 @@ import { useCart } from "@/store/cart";
 import { useRef, useState } from "react";
 import { API_URL } from "@/lib/api";
 
+type Variant = {
+  id: string;
+  size: string;
+  stock: number;
+};
+
 type Props = {
   id: string;
   slug?: string;
@@ -18,7 +24,8 @@ type Props = {
   oldPrice?: number;
   badge?: string;
   highlight?: boolean;
-  stock?: number; // ✅ ADICIONADO
+  stock?: number;
+  variants?: Variant[]; // 🔥 NOVO
   onQuickView?: () => void;
 };
 
@@ -29,9 +36,6 @@ function brl(v: number) {
   });
 }
 
-/**
- * 🔥 RESOLVER IMAGEM (CRÍTICO)
- */
 function resolveImage(url: string) {
   if (!url) return "";
 
@@ -52,7 +56,8 @@ export default function ProductCard({
   oldPrice,
   badge,
   highlight,
-  stock, // ✅ ADICIONADO
+  stock,
+  variants, // 🔥 NOVO
   onQuickView,
 }: Props) {
   const addItem = useCart((s) => s.addItem);
@@ -60,9 +65,6 @@ export default function ProductCard({
 
   const [imgIndex, setImgIndex] = useState(0);
 
-  /**
-   * 🔥 AQUI FOI CORRIGIDO
-   */
   const imgs = [
     resolveImage(image),
     ...(images && images.length > 0
@@ -77,9 +79,6 @@ export default function ProductCard({
 
   const productUrl = slug ? `/product/${slug}` : "#";
 
-  /**
-   * 🔥 THROTTLE DE PERFORMANCE (CRÍTICO)
-   */
   const frameRef = useRef<number | null>(null);
 
   function handleMove(e: React.MouseEvent) {
@@ -115,6 +114,40 @@ export default function ProductCard({
     setImgIndex((prev) => (prev - 1 + imgs.length) % imgs.length);
   }
 
+  /**
+   * 🔥 REGRA CRÍTICA DE NEGÓCIO
+   */
+  const hasVariants = Array.isArray(variants) && variants.length > 0;
+
+  function handleAddToCart(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // 🔥 SE TEM VARIANTES → NÃO PODE ADICIONAR DIRETO
+    if (hasVariants) {
+      if (onQuickView) {
+        onQuickView();
+        return;
+      }
+
+      if (slug) {
+        window.location.href = `/product/${slug}`;
+        return;
+      }
+
+      return;
+    }
+
+    // 🔥 PRODUTO SIMPLES
+    addItem({
+      id,
+      name,
+      price,
+      oldPrice,
+      image,
+    });
+  }
+
   return (
     <motion.div
       ref={cardRef}
@@ -143,7 +176,7 @@ export default function ProductCard({
                       group-hover:border-white/10
                       group-hover:shadow-[0_20px_60px_rgba(0,0,0,0.6)]"
       >
-        {/* 🔥 GLOW DINÂMICO PREMIUM */}
+        {/* GLOW */}
         <div
           className="
     pointer-events-none absolute inset-0 z-10
@@ -227,7 +260,7 @@ export default function ProductCard({
           </Link>
         )}
 
-        {/* 🔥 ÚLTIMAS UNIDADES */}
+        {/* LOW STOCK */}
         {stock !== undefined && stock <= 2 && (
           <div className="absolute bottom-3 left-3 z-30">
             <motion.span
@@ -255,32 +288,14 @@ export default function ProductCard({
           <>
             <button
               onClick={prevImage}
-              className="
-                absolute left-2 top-1/2 -translate-y-1/2 z-20
-                w-7 h-7 rounded-full
-                bg-black/60 backdrop-blur
-                border border-white/20
-                flex items-center justify-center
-                text-white
-                opacity-0 group-hover:opacity-100
-                transition
-              "
+              className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-black/60 backdrop-blur border border-white/20 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition"
             >
               <ChevronLeft size={14} />
             </button>
 
             <button
               onClick={nextImage}
-              className="
-                absolute right-2 top-1/2 -translate-y-1/2 z-20
-                w-7 h-7 rounded-full
-                bg-black/60 backdrop-blur
-                border border-white/20
-                flex items-center justify-center
-                text-white
-                opacity-0 group-hover:opacity-100
-                transition
-              "
+              className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-black/60 backdrop-blur border border-white/20 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition"
             >
               <ChevronRight size={14} />
             </button>
@@ -309,16 +324,7 @@ export default function ProductCard({
           <div className="absolute top-3 right-3 z-20 opacity-0 group-hover:opacity-100 transition duration-300">
             <button
               onClick={onQuickView}
-              className="
-                w-9 h-9 rounded-full
-                bg-black/60 backdrop-blur
-                border border-white/20
-                flex items-center justify-center
-                text-white
-                hover:bg-[var(--gold)]
-                hover:text-black
-                transition
-              "
+              className="w-9 h-9 rounded-full bg-black/60 backdrop-blur border border-white/20 flex items-center justify-center text-white hover:bg-[var(--gold)] hover:text-black transition"
             >
               <Eye size={16} />
             </button>
@@ -326,28 +332,14 @@ export default function ProductCard({
         )}
 
         {/* CTA */}
-        <div
-          className="
-          absolute inset-0 flex items-end justify-center
-          opacity-0 group-hover:opacity-100
-          transition duration-500
-          pointer-events-none group-hover:pointer-events-auto
-        "
-        >
+        <div className="absolute inset-0 flex items-end justify-center opacity-0 group-hover:opacity-100 transition duration-500 pointer-events-none group-hover:pointer-events-auto">
           <div className="w-full p-3">
             <button
-              onClick={() => addItem({ id, name, price, oldPrice, image })}
-              className="
-                w-full py-2.5 rounded-full
-                bg-[var(--gold)] text-black
-                text-[10px] uppercase tracking-[0.35em]
-                flex items-center justify-center gap-2
-                hover:scale-105 active:scale-[0.98]
-                transition-all duration-300
-              "
+              onClick={handleAddToCart}
+              className="w-full py-2.5 rounded-full bg-[var(--gold)] text-black text-[10px] uppercase tracking-[0.35em] flex items-center justify-center gap-2 hover:scale-105 active:scale-[0.98] transition-all duration-300"
             >
               <ShoppingBag size={14} />
-              Adicionar
+              {hasVariants ? "Escolher opções" : "Adicionar"}
             </button>
           </div>
         </div>
@@ -360,16 +352,7 @@ export default function ProductCard({
         </p>
 
         <Link href={productUrl}>
-          <h3
-            className="
-            mt-1 text-xs md:text-sm
-            tracking-widest uppercase
-            text-white
-            line-clamp-2
-            group-hover:text-[var(--gold)]
-            transition
-          "
-          >
+          <h3 className="mt-1 text-xs md:text-sm tracking-widest uppercase text-white line-clamp-2 group-hover:text-[var(--gold)] transition">
             {name}
           </h3>
         </Link>

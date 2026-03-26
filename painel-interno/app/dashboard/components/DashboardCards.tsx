@@ -64,6 +64,13 @@ export default function DashboardCards({ stats }: { stats: DashboardStats }) {
       icon: TrendingUp,
       route: "/dashboard",
     },
+
+    {
+      label: "Cupons",
+      value: stats.coupons ?? 0,
+      icon: DollarSign,
+      route: "/dashboard/coupons",
+    },
   ];
 
   return (

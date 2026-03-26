@@ -38,12 +38,7 @@ export class AdminProductsController {
 
     while (true) {
       const existing = await this.prisma.product.findFirst({
-        where: ignoreId
-          ? {
-              slug,
-              id: { not: ignoreId },
-            }
-          : { slug },
+        where: ignoreId ? { slug, id: { not: ignoreId } } : { slug },
       });
 
       if (!existing) return slug;
@@ -53,11 +48,22 @@ export class AdminProductsController {
     }
   }
 
+  /**
+   * 🔥 VALIDAÇÃO DE VARIANTS DUPLICADAS
+   */
+  private validateVariants(variants?: { size: string }[]) {
+    if (!variants || variants.length === 0) return;
+
+    const sizes = variants.map((v) => v.size);
+    const uniqueSizes = new Set(sizes);
+
+    if (sizes.length !== uniqueSizes.size) {
+      throw new BadRequestException('Não é permitido repetir tamanhos nas variantes');
+    }
+  }
+
   @Post()
   async create(@Body() dto: CreateAdminProductDto) {
-    console.log('🔥 [CREATE PRODUCT] DTO RECEBIDO:');
-    console.dir(dto, { depth: null });
-
     if (!dto.name?.trim()) {
       throw new BadRequestException('Nome obrigatório');
     }
@@ -70,9 +76,11 @@ export class AdminProductsController {
       throw new BadRequestException('Imagem obrigatória');
     }
 
+    this.validateVariants(dto.variants);
+
     const slug = await this.getUniqueSlug(dto.slug || dto.name);
 
-    const { medias, ...productData } = dto;
+    const { medias, variants, ...productData } = dto;
 
     const product = await this.prisma.product.create({
       data: {
@@ -80,7 +88,6 @@ export class AdminProductsController {
         name: dto.name.trim(),
         slug,
 
-        // 🔥 GALERIA
         medias:
           medias && medias.length > 0
             ? {
@@ -90,14 +97,23 @@ export class AdminProductsController {
                 })),
               }
             : undefined,
+
+        variants:
+          variants && variants.length > 0
+            ? {
+                create: variants.map((v) => ({
+                  size: v.size,
+                  stock: v.stock,
+                })),
+              }
+            : undefined,
       },
       include: {
         medias: true,
+        variants: true,
+        category: true,
       },
     });
-
-    console.log('✅ [PRODUCT CREATED WITH GALLERY]');
-    console.dir(product, { depth: null });
 
     return product;
   }
@@ -106,50 +122,84 @@ export class AdminProductsController {
   async update(@Param('id') id: string, @Body() dto: UpdateAdminProductDto) {
     const current = await this.prisma.product.findUnique({
       where: { id },
-      include: { medias: true },
+      include: { medias: true, variants: true },
     });
 
     if (!current) {
       throw new BadRequestException('Produto não encontrado');
     }
 
+    this.validateVariants(dto.variants);
+
     const slug = await this.getUniqueSlug(dto.slug || dto.name || current.slug, id);
 
-    const { medias, ...productData } = dto as any;
+    const medias = dto.medias;
+    const variants = dto.variants;
 
-    // 🔥 remove antigas se vier nova galeria
+    const { name, description, price, oldPrice, image, stock, categoryId } = dto;
+
+    /**
+     * 🔥 GALERIA
+     */
     if (medias) {
       await this.prisma.media.deleteMany({
         where: { productId: id },
       });
     }
 
-    const updated = await this.prisma.product.update({
+    /**
+     * 🔥 VARIANTS (RECRIAÇÃO SEGURA)
+     */
+    if (variants) {
+      await this.prisma.productVariant.deleteMany({
+        where: { productId: id },
+      });
+    }
+
+    await this.prisma.product.update({
       where: { id },
       data: {
-        ...productData,
+        name: name?.trim() ?? current.name,
+        description,
+        price,
+        oldPrice,
+        image,
+        stock,
+        categoryId,
         slug,
 
-        // 🔥 recria galeria
         medias:
           medias && medias.length > 0
             ? {
-                create: medias.map((url: string) => ({
+                create: medias.map((url) => ({
                   url,
                   type: 'image',
                 })),
               }
             : undefined,
-      },
-      include: {
-        medias: true,
+
+        variants:
+          variants && variants.length > 0
+            ? {
+                create: variants.map((v) => ({
+                  size: v.size,
+                  stock: v.stock,
+                })),
+              }
+            : undefined,
       },
     });
 
-    console.log('♻️ [PRODUCT UPDATED WITH GALLERY]');
-    console.dir(updated, { depth: null });
+    const finalProduct = await this.prisma.product.findUnique({
+      where: { id },
+      include: {
+        medias: true,
+        variants: true,
+        category: true,
+      },
+    });
 
-    return updated;
+    return finalProduct;
   }
 
   @Delete(':id')

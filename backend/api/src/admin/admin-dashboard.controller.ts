@@ -13,6 +13,7 @@ export class AdminDashboardController {
     const orders = await this.prisma.order.count();
     const customers = await this.prisma.customer.count();
     const categories = await this.prisma.category.count();
+    const coupons = await this.prisma.coupon.count(); // 🔥 NOVO
 
     const revenue = await this.prisma.order.aggregate({
       _sum: {
@@ -20,10 +21,6 @@ export class AdminDashboardController {
       },
     });
 
-    /**
-     * crescimento placeholder por enquanto
-     * depois podemos calcular comparando períodos reais
-     */
     const growth = 12;
 
     return {
@@ -31,6 +28,7 @@ export class AdminDashboardController {
       orders,
       customers,
       categories,
+      coupons, // 🔥 NOVO
       revenue: revenue._sum.total || 0,
       growth,
     };

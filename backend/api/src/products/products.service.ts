@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
 
@@ -7,8 +7,32 @@ export class ProductsService {
   constructor(private prisma: PrismaService) {}
 
   async create(data: CreateProductDto) {
+    const { variants, ...productData } = data;
+
+    const hasVariants = variants && variants.length > 0;
+
+    const totalStock = hasVariants
+      ? variants.reduce((acc, v) => acc + v.stock, 0)
+      : productData.stock;
+
     const product = await this.prisma.product.create({
-      data,
+      data: {
+        ...productData,
+        stock: totalStock, // 🔥 CORREÇÃO
+        variants: hasVariants
+          ? {
+              create: variants.map((variant) => ({
+                size: variant.size,
+                stock: variant.stock,
+              })),
+            }
+          : undefined,
+      },
+      include: {
+        category: true,
+        medias: true,
+        variants: true,
+      },
     });
 
     console.log('✅ [PRODUCT CREATED - SERVICE]');
@@ -22,6 +46,7 @@ export class ProductsService {
       include: {
         category: true,
         medias: true,
+        variants: true,
       },
       orderBy: {
         createdAt: 'desc',
@@ -40,6 +65,7 @@ export class ProductsService {
       include: {
         category: true,
         medias: true,
+        variants: true,
       },
     });
 
@@ -60,6 +86,7 @@ export class ProductsService {
       include: {
         category: true,
         medias: true,
+        variants: true,
       },
     });
 
@@ -68,6 +95,63 @@ export class ProductsService {
     console.dir(products, { depth: 2 });
 
     return products;
+  }
+
+  async update(id: string, data: CreateProductDto) {
+    const { variants, ...productData } = data;
+
+    const existing = await this.prisma.product.findUnique({
+      where: { id },
+      include: { variants: true },
+    });
+
+    if (!existing) {
+      throw new NotFoundException('Produto não encontrado');
+    }
+
+    const hasVariants = variants && variants.length > 0;
+
+    const totalStock = hasVariants
+      ? variants.reduce((acc, v) => acc + v.stock, 0)
+      : productData.stock;
+
+    await this.prisma.product.update({
+      where: { id },
+      data: {
+        ...productData,
+        stock: totalStock, // 🔥 CORREÇÃO
+      },
+    });
+
+    if (variants) {
+      await this.prisma.productVariant.deleteMany({
+        where: { productId: id },
+      });
+
+      if (variants.length > 0) {
+        await this.prisma.productVariant.createMany({
+          data: variants.map((variant) => ({
+            productId: id,
+            size: variant.size,
+            stock: variant.stock,
+          })),
+        });
+      }
+    }
+
+    const finalProduct = await this.prisma.product.findUnique({
+      where: { id },
+      include: {
+        category: true,
+        medias: true,
+        variants: true,
+      },
+    });
+
+    console.log('✏️ [PRODUCT UPDATED]');
+    console.dir(finalProduct, { depth: 2 });
+
+    return finalProduct;
   }
 
   async delete(id: string) {

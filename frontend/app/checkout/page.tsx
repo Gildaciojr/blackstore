@@ -118,6 +118,7 @@ export default function CheckoutPage() {
   const {
     items,
     clear,
+    loadCart,
     subtotal,
     discount,
     shipping,
@@ -151,6 +152,10 @@ export default function CheckoutPage() {
   const [installments, setInstallments] = useState(1);
 
   const [checkoutLock, setCheckoutLock] = useState(false);
+
+  useEffect(() => {
+    loadCart();
+  }, [loadCart]);
 
   useEffect(() => {
     try {
@@ -242,6 +247,10 @@ export default function CheckoutPage() {
 
     const [month, shortYear] = cardExpiry.split("/");
 
+    if (!month || !shortYear) {
+      throw new Error("Validade do cartão inválida");
+    }
+
     const encrypted = window.PagSeguro.encryptCard({
       publicKey,
       holder: cardName.trim(),
@@ -267,7 +276,6 @@ export default function CheckoutPage() {
   async function handleCheckout() {
     if (loading || checkoutLock) return;
 
-    // 🔴 VALIDAÇÕES GERAIS (CRÍTICO)
     if (!items.length) {
       alert("Seu carrinho está vazio");
       return;
@@ -283,7 +291,6 @@ export default function CheckoutPage() {
       return;
     }
 
-    // 🟡 VALIDAÇÃO DO CARTÃO (UX + SEGURANÇA)
     if (payment === "card") {
       if (!cardNumber || !cardName || !cardExpiry || !cardCvv) {
         alert("Preencha todos os dados do cartão");
@@ -307,6 +314,7 @@ export default function CheckoutPage() {
     }
 
     let customerId: string;
+    let redirecting = false;
 
     try {
       customerId = getCustomerId();
@@ -360,16 +368,13 @@ export default function CheckoutPage() {
 
       clear();
 
-      /**
-       * 🔥 FEEDBACK VISUAL PREMIUM
-       */
-      setLoading(true);
+      redirecting = true;
 
       setTimeout(() => {
         window.location.href = `/payment/${paymentData.orderId}`;
       }, 1200);
 
-      return; // 🔥 CRÍTICO: impede o finally de desligar o loading
+      return;
     } catch (err) {
       console.error(err);
 
@@ -378,16 +383,10 @@ export default function CheckoutPage() {
 
       alert(message);
 
-      /**
-       * 🔥 LIBERA TRAVAS EM CASO DE ERRO
-       */
       setCheckoutLock(false);
       setLoading(false);
     } finally {
-      /**
-       * 🔥 SOMENTE DESLIGA LOADING SE NÃO ESTIVER EM REDIRECT
-       */
-      if (!checkoutLock) {
+      if (!redirecting) {
         setLoading(false);
       }
     }
@@ -711,20 +710,20 @@ export default function CheckoutPage() {
               onClick={handleCheckout}
               disabled={loading || checkoutLock}
               className={`
-    relative w-full mt-8 py-4 rounded-full text-xs tracking-[0.35em] uppercase
-    transition-all duration-300 overflow-hidden
-    ${
-      loading
-        ? "bg-[var(--gold)] opacity/70 cursor-not-allowed"
-        : "bg-[var(--gold)] hover:scale-[1.02] active:scale-[0.98]"
-    }
-  `}
+                relative w-full mt-8 py-4 rounded-full text-xs tracking-[0.35em] uppercase
+                transition-all duration-300 overflow-hidden
+                ${
+                  loading
+                    ? "bg-[var(--gold)] opacity/70 cursor-not-allowed"
+                    : "bg-[var(--gold)] hover:scale-[1.02] active:scale-[0.98]"
+                }
+              `}
             >
               <span
                 className={`
-      transition-opacity duration-200
-      ${loading ? "opacity-0" : "opacity-100"}
-    `}
+                  transition-opacity duration-200
+                  ${loading ? "opacity-0" : "opacity-100"}
+                `}
               >
                 Finalizar compra
               </span>

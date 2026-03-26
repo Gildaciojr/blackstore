@@ -13,13 +13,10 @@ type AuthState = {
 };
 
 export const useAuth = create<AuthState>((set) => ({
-
   token: null,
 
   login: async (email, password) => {
-
     try {
-
       const res = await apiFetch<{ token: string }>("/admin/login", {
         method: "POST",
         body: JSON.stringify({ email, password }),
@@ -33,23 +30,19 @@ export const useAuth = create<AuthState>((set) => ({
       /**
        * cookie para middleware
        */
-      document.cookie = `admin_token=${res.token}; path=/; max-age=604800`;
+      document.cookie = `admin_token=${res.token}; path=/; max-age=604800; SameSite=Lax`;
 
       set({
-        token: res.token
+        token: res.token,
       });
 
       return true;
-
     } catch {
-
       return false;
-
     }
   },
 
   logout: () => {
-
     localStorage.removeItem("admin_token");
 
     /**
@@ -58,22 +51,22 @@ export const useAuth = create<AuthState>((set) => ({
     document.cookie = "admin_token=; path=/; max-age=0";
 
     set({
-      token: null
+      token: null,
     });
 
     window.location.href = "/login";
   },
 
   loadSession: () => {
-
-    const token = localStorage.getItem("admin_token");
+    const token =
+      localStorage.getItem("admin_token") ||
+      document.cookie
+        .split("; ")
+        .find((c) => c.startsWith("admin_token="))
+        ?.split("=")[1];
 
     if (!token) return;
 
-    set({
-      token
-    });
-
-  }
-
+    set({ token });
+  },
 }));
