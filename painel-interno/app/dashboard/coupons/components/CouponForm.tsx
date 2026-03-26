@@ -84,19 +84,43 @@ export default function CouponForm({ editing, onSave, onCancel }: Props) {
   }
 
   return (
-    <div className="border border-white/10 p-8 mb-12 rounded-2xl bg-white/[0.02]">
-      <h2 className="mb-6 text-xl tracking-widest uppercase">
-        {editing ? "Editar cupom" : "Novo cupom"}
-      </h2>
+    <div
+      className="
+        bs-glass
+        border border-white/10
+        rounded-3xl
+        p-5 sm:p-6 md:p-8
+        mb-10 md:mb-12
+      "
+    >
+      {/* HEADER */}
+      <div className="mb-6 md:mb-8">
+        <p className="text-[11px] tracking-[0.4em] uppercase text-white/40">
+          Configuração
+        </p>
 
-      <div className="grid grid-cols-2 gap-4">
+        <h2 className="mt-2 text-lg md:text-xl tracking-[0.3em] uppercase text-white/80">
+          {editing ? "Editar cupom" : "Novo cupom"}
+        </h2>
+      </div>
+
+      {/* GRID PRINCIPAL */}
+      <div
+        className="
+          grid
+          grid-cols-1
+          sm:grid-cols-2
+          xl:grid-cols-4
+          gap-4
+        "
+      >
         <input
           value={form.code}
           onChange={(e) =>
             updateField("code", e.target.value.toUpperCase())
           }
           placeholder="Código"
-          className="bg-black border border-white/20 p-3 rounded-md"
+          className="input"
         />
 
         <input
@@ -106,7 +130,7 @@ export default function CouponForm({ editing, onSave, onCancel }: Props) {
             updateField("discount", Number(e.target.value))
           }
           placeholder="Desconto (%)"
-          className="bg-black border border-white/20 p-3 rounded-md"
+          className="input"
         />
 
         <input
@@ -116,7 +140,7 @@ export default function CouponForm({ editing, onSave, onCancel }: Props) {
             updateField("maxUses", Number(e.target.value))
           }
           placeholder="Limite de uso"
-          className="bg-black border border-white/20 p-3 rounded-md"
+          className="input"
         />
 
         <input
@@ -125,12 +149,28 @@ export default function CouponForm({ editing, onSave, onCancel }: Props) {
           onChange={(e) =>
             updateField("expiresAt", e.target.value)
           }
-          className="bg-black border border-white/20 p-3 rounded-md"
+          className="input"
         />
       </div>
 
-      <div className="mt-6 flex flex-col gap-3">
-        <label className="flex items-center gap-3 text-sm text-white/70">
+      {/* CONFIGURAÇÕES */}
+      <div
+        className="
+          mt-6 md:mt-8
+          flex
+          flex-col
+          sm:flex-row
+          sm:items-center
+          gap-4 sm:gap-8
+        "
+      >
+        <label
+          className="
+            flex items-center gap-3
+            text-sm text-white/70
+            cursor-pointer
+          "
+        >
           <input
             type="checkbox"
             checked={form.isFeatured}
@@ -141,7 +181,13 @@ export default function CouponForm({ editing, onSave, onCancel }: Props) {
           Destacar no Hero
         </label>
 
-        <label className="flex items-center gap-3 text-sm text-white/70">
+        <label
+          className="
+            flex items-center gap-3
+            text-sm text-white/70
+            cursor-pointer
+          "
+        >
           <input
             type="checkbox"
             checked={form.active}
@@ -153,11 +199,30 @@ export default function CouponForm({ editing, onSave, onCancel }: Props) {
         </label>
       </div>
 
-      <div className="mt-6 flex gap-4">
+      {/* AÇÕES */}
+      <div
+        className="
+          mt-6 md:mt-8
+          flex
+          flex-col sm:flex-row
+          gap-3 sm:gap-4
+        "
+      >
         <button
           onClick={handleSubmit}
           disabled={loading}
-          className="px-6 py-3 bg-[var(--gold)] text-black rounded-md hover:scale-105 transition disabled:opacity-50"
+          className="
+            px-6 py-3
+            rounded-xl
+            bg-[var(--gold)]
+            text-black
+            text-sm md:text-base
+            font-medium
+            transition
+            hover:scale-[1.03]
+            hover:shadow-[0_0_30px_rgba(212,175,55,0.25)]
+            disabled:opacity-50
+          "
         >
           {loading ? "Salvando..." : editing ? "Atualizar" : "Criar"}
         </button>
@@ -165,7 +230,14 @@ export default function CouponForm({ editing, onSave, onCancel }: Props) {
         {editing && (
           <button
             onClick={onCancel}
-            className="px-6 py-3 border border-white/20 rounded-md"
+            className="
+              px-6 py-3
+              rounded-xl
+              border border-white/20
+              text-sm md:text-base
+              hover:border-white/40
+              transition
+            "
           >
             Cancelar
           </button>
