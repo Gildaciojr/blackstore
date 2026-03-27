@@ -145,7 +145,8 @@ export default function HomePage() {
   const scroll = useCallback((direction: "left" | "right") => {
     if (!scrollRef.current) return;
 
-    const firstChild = scrollRef.current.firstElementChild as HTMLElement | null;
+    const firstChild = scrollRef.current
+      .firstElementChild as HTMLElement | null;
 
     if (!firstChild) return;
 
@@ -253,6 +254,47 @@ export default function HomePage() {
 
     return getCover(firstPromotion);
   }, [promotionItems, getCover, getImages]);
+  function generateFallbackLookbook(
+    products: HomeSectionItem[],
+  ): LookbookItem[] {
+    if (!products || products.length === 0) return [];
+
+    // 🔥 limita e garante previsibilidade
+    const safeProducts = products.slice(0, 6);
+
+    const result: LookbookItem[] = [];
+
+    safeProducts.forEach((p, i) => {
+      const isTop = i % 2 === 0;
+
+      result.push({
+        id: `${isTop ? "top" : "bottom"}-${p.product.id}`,
+        position: i + 1,
+        type: isTop ? "TOP" : "BOTTOM",
+        active: true,
+        product: p.product,
+        top: isTop ? "30%" : "65%",
+        left: isTop ? "60%" : "50%",
+      });
+    });
+
+    return result;
+  }
+
+  const lookbookItems = useMemo(() => {
+    // 🔥 prioridade: backend (se existir)
+    if (home?.lookbook && home.lookbook.length > 0) {
+      return home.lookbook;
+    }
+
+    // 🔥 fallback inteligente (launches + promotions)
+    const fallback = generateFallbackLookbook([
+      ...(home?.launches ?? []),
+      ...(home?.promotions ?? []),
+    ]);
+
+    return fallback.length > 0 ? fallback : [];
+  }, [home]);
 
   if (loading) {
     return (
@@ -357,7 +399,7 @@ export default function HomePage() {
       </section>
 
       <Reveal>
-        <LookbookTyped items={home?.lookbook ?? []} />
+        <LookbookTyped items={lookbookItems} />
       </Reveal>
 
       <section className="relative overflow-hidden bg-gradient-to-r from-black via-[#1a1408] to-black py-24 md:py-32">

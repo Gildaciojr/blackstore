@@ -167,8 +167,9 @@ export default function Lookbook({ items }: LookbookProps) {
   /**
    * 🔥 ESTADO DERIVADO (SEM useEffect)
    */
-  const selectedTop = manualTop ?? tops[0] ?? null;
-  const selectedBottom = manualBottom ?? bottoms[0] ?? null;
+  const selectedTop = manualTop ?? tops.find((t) => t.type === "top") ?? null;
+  const selectedBottom =
+    manualBottom ?? bottoms.find((b) => b.type === "bottom") ?? null;
 
   /**
    * 🔥 SUGESTÕES

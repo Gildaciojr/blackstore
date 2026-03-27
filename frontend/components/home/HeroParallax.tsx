@@ -195,17 +195,23 @@ export default function HeroParallax({
             }}
             className="absolute inset-0 transform-gpu"
           >
-            <Image
-              src={slide.image}
-              alt="Blackstore"
-              fill
-              priority
-              sizes="100vw"
-              className="object-cover will-change-transform md:scale-[1.03]"
-              style={{
-                objectPosition,
-              }}
-            />
+            <div className="relative w-full h-full">
+              <Image
+                src={slide.image}
+                alt="Blackstore"
+                fill
+                priority
+                sizes="100vw"
+                className="
+        object-contain
+        md:object-cover
+        will-change-transform
+      "
+                style={{
+                  objectPosition,
+                }}
+              />
+            </div>
           </motion.div>
         </motion.div>
       </AnimatePresence>
