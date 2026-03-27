@@ -44,7 +44,9 @@ export default function WeeklyBestSellersPage() {
   useEffect(() => {
     async function loadRanking() {
       try {
-        const data = await apiFetch<WeeklyBestSellerResponse[]>("/weekly-best-sellers");
+        const data = await apiFetch<WeeklyBestSellerResponse[]>(
+          "/weekly-best-sellers",
+        );
 
         if (!data || data.length === 0) return;
 
@@ -76,7 +78,6 @@ export default function WeeklyBestSellersPage() {
     setLoading(true);
 
     try {
-      // validação front (evita erro backend)
       const hasEmpty = ranking.some((r) => !r.productId);
 
       if (hasEmpty) {
@@ -92,10 +93,25 @@ export default function WeeklyBestSellersPage() {
         return;
       }
 
-      await apiFetch("/weekly-best-sellers", {
-        method: "POST",
-        body: JSON.stringify(ranking),
-      });
+      const payload = ranking.map((item, index) => ({
+        productId: item.productId,
+        position: index + 1,
+      }));
+
+      const response = await apiFetch<{ count: number }>(
+        "/weekly-best-sellers",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        },
+      );
+
+      if (!response || typeof response.count !== "number") {
+        throw new Error("Resposta inválida");
+      }
 
       alert("Ranking salvo com sucesso");
     } catch (err) {
