@@ -121,36 +121,46 @@ export default function HomeSectionsPage() {
     });
   }
 
-  async function handleSave() {
+  async function handleSave(): Promise<void> {
     try {
       setSaving(true);
 
-      // 🔥 normaliza posições (garante 1..N sequencial)
-      const payload = selected.map((item, index) => ({
-        productId: item.productId,
-        position: index + 1,
+      /**
+       * 🔥 NORMALIZAÇÃO PROFISSIONAL
+       * - garante ordem correta (1..N)
+       * - remove qualquer inconsistência de posição
+       */
+      const payload: { productId: string; position: number }[] = selected.map(
+        (item, index) => ({
+          productId: item.productId,
+          position: index + 1,
+        }),
+      );
 
-        // 🔥 mantém compatibilidade com HERO (se existir no item)
-        heroSlideType: item.heroSlideType ?? undefined,
-        imageOverride: item.imageOverride ?? undefined,
-        focus: item.focus ?? undefined,
-        focusDesktop: item.focusDesktop ?? undefined,
-        title1: item.title1 ?? undefined,
-        title2: item.title2 ?? undefined,
-        subtitle: item.subtitle ?? undefined,
-        cta1: item.cta1 ?? undefined,
-        cta2: item.cta2 ?? undefined,
-      }));
-
-      // 🔥 ENDPOINT CORRETO (ADMIN)
+      /**
+       * 🔥 ENVIO PARA BACKEND
+       * - section precisa bater com ENUM do banco (HERO, LAUNCHES, PROMOTIONS)
+       */
       await apiFetch(`/admin/home-sections/${section}`, {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(payload),
       });
 
-      console.log("✅ Seção salva com sucesso");
+      /**
+       * 🔥 FEEDBACK
+       */
+      console.log("✅ Seção salva com sucesso", {
+        section,
+        payload,
+      });
     } catch (error) {
-      console.error("❌ Erro ao salvar seção", error);
+      console.error("❌ Erro ao salvar seção", {
+        section,
+        error,
+      });
     } finally {
       setSaving(false);
     }
