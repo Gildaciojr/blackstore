@@ -158,8 +158,8 @@ export default function HeroParallax({
   function handleMouseMove(e: React.MouseEvent) {
     if (!isDesktop) return;
 
-    const x = (e.clientX / window.innerWidth - 0.5) * 10;
-    const y = (e.clientY / window.innerHeight - 0.5) * 10;
+    const x = (e.clientX / window.innerWidth - 0.5) * (isDesktop ? 10 : 4);
+    const y = (e.clientY / window.innerHeight - 0.5) * (isDesktop ? 10 : 4);
     setMouse({ x, y });
   }
 
@@ -175,7 +175,7 @@ export default function HeroParallax({
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
-      className="relative h-[88vh] md:h-[92vh] w-full overflow-hidden"
+      className="relative h-[78vh] md:h-[88vh] lg:h-[92vh]"
     >
       {/* BACKGROUND */}
       <AnimatePresence mode="wait">
@@ -201,7 +201,7 @@ export default function HeroParallax({
               fill
               priority
               sizes="100vw"
-              className="object-cover will-change-transform scale-[1.01] md:scale-[1.05]"
+              className="object-cover will-change-transform md:scale-[1.03]"
               style={{
                 objectPosition,
               }}

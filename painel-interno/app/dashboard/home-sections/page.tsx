@@ -31,6 +31,9 @@ export default function HomeSectionsPage() {
   const [selected, setSelected] = useState<SelectedItem[]>([]);
   const [saving, setSaving] = useState(false);
 
+  const [message, setMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
   function resolveImage(url: string): string {
     if (!url) return "";
 
@@ -124,12 +127,9 @@ export default function HomeSectionsPage() {
   async function handleSave(): Promise<void> {
     try {
       setSaving(true);
+      setMessage(null);
+      setErrorMessage(null);
 
-      /**
-       * 🔥 NORMALIZAÇÃO PROFISSIONAL
-       * - garante ordem correta (1..N)
-       * - remove qualquer inconsistência de posição
-       */
       const payload: { productId: string; position: number }[] = selected.map(
         (item, index) => ({
           productId: item.productId,
@@ -137,30 +137,32 @@ export default function HomeSectionsPage() {
         }),
       );
 
-      /**
-       * 🔥 ENVIO PARA BACKEND
-       * - section precisa bater com ENUM do banco (HERO, LAUNCHES, PROMOTIONS)
-       */
-      await apiFetch(`/admin/home-sections/${section}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await apiFetch<{ count: number }>(
+        `/admin/home-sections/${section}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
         },
-        body: JSON.stringify(payload),
-      });
+      );
 
       /**
-       * 🔥 FEEDBACK
+       * 🔥 VALIDAÇÃO PROFISSIONAL DA RESPOSTA
        */
-      console.log("✅ Seção salva com sucesso", {
-        section,
-        payload,
-      });
+      if (!response || typeof response.count !== "number") {
+        throw new Error("Resposta inválida do servidor");
+      }
+
+      setMessage(`Seção salva com sucesso (${response.count} itens)`);
     } catch (error) {
       console.error("❌ Erro ao salvar seção", {
         section,
         error,
       });
+
+      setErrorMessage("Erro ao salvar. Verifique o servidor.");
     } finally {
       setSaving(false);
     }
@@ -260,11 +262,26 @@ export default function HomeSectionsPage() {
         })}
       </div>
 
+      {/* FEEDBACK */}
+      {message && <div className="text-green-400 text-sm">{message}</div>}
+
+      {errorMessage && (
+        <div className="text-red-400 text-sm">{errorMessage}</div>
+      )}
+
       {/* SAVE */}
       <button
         onClick={handleSave}
         disabled={saving}
-        className="bg-[var(--gold)] text-black px-6 py-3 rounded-full"
+        className="
+    bg-[var(--gold)]
+    text-black
+    px-6 py-3
+    rounded-full
+    transition
+    disabled:opacity-50
+    disabled:cursor-not-allowed
+  "
       >
         {saving ? "Salvando..." : "Salvar seção"}
       </button>
