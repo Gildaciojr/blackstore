@@ -10,7 +10,14 @@ import InstagramShowcase from "@/components/sections/InstagramShowcase";
 import { apiFetch } from "@/lib/api";
 import ProductQuickView from "@/components/ui/ProductQuickView";
 import WeeklyBestSellers from "@/components/sections/WeeklyBestSellers";
-import { useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ComponentProps,
+} from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 type Media = {
@@ -22,6 +29,12 @@ type Media = {
   createdAt?: string;
 };
 
+type Variant = {
+  id: string;
+  size: string;
+  stock: number;
+};
+
 type Product = {
   id: string;
   name: string;
@@ -31,6 +44,7 @@ type Product = {
   oldPrice?: number | null;
   image: string;
   medias?: Media[];
+  variants?: Variant[];
   stock: number;
   categoryId: string;
   createdAt: string;
@@ -43,6 +57,7 @@ type QuickProduct = {
   image: string;
   images: string[];
   oldPrice?: number;
+  variants?: Variant[];
 };
 
 type WeeklyBestSellerItem = {
@@ -52,52 +67,97 @@ type WeeklyBestSellerItem = {
   product: Product;
 };
 
+type HeroSlideApi = {
+  id: string;
+  position: number;
+  product: Product;
+  hero: {
+    type?: "COLLECTION" | "PRODUCT" | "PROMO" | null;
+    image?: string | null;
+    focus?: string | null;
+    focusDesktop?: string | null;
+    title1?: string | null;
+    title2?: string | null;
+    subtitle?: string | null;
+    cta1?: string | null;
+    cta2?: string | null;
+  };
+};
+
+type HomeSectionItem = {
+  id: string;
+  position: number;
+  product: Product;
+};
+
+type LookbookItem = {
+  id: string;
+  position: number;
+  type: "TOP" | "BOTTOM";
+  label?: string | null;
+  top?: string | null;
+  left?: string | null;
+  fabric?: string | null;
+  active: boolean;
+  product: Product;
+};
+
+type HomeResponse = {
+  hero: HeroSlideApi[];
+  launches: HomeSectionItem[];
+  promotions: HomeSectionItem[];
+  lookbook: LookbookItem[];
+  bestSellers: WeeklyBestSellerItem[];
+};
+
+type HeroParallaxSlides = ComponentProps<typeof HeroParallax>["slides"];
+type HeroSlide = NonNullable<HeroParallaxSlides>[number];
+
+const LookbookTyped = Lookbook as unknown as React.ComponentType<{
+  items: LookbookItem[];
+}>;
+
 export default function HomePage() {
-  const [products, setProducts] = useState<Product[]>([]);
+  const [home, setHome] = useState<HomeResponse | null>(null);
   const [quickProduct, setQuickProduct] = useState<QuickProduct | null>(null);
-  const [weekly, setWeekly] = useState<WeeklyBestSellerItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    async function load() {
-      const data = await apiFetch<Product[]>("/products");
-      setProducts(data);
-    }
-
-    load();
-  }, []);
-
-  useEffect(() => {
-    async function loadWeekly() {
+    async function loadHome() {
       try {
-        const data = await apiFetch<WeeklyBestSellerItem[]>(
-          "/weekly-best-sellers",
-        );
-        setWeekly(data);
+        setLoading(true);
+
+        const data = await apiFetch<HomeResponse>("/home");
+
+        setHome(data);
       } catch (err) {
-        console.error("Erro ao carregar ranking semanal", err);
+        console.error("Erro ao carregar dados da home", err);
+      } finally {
+        setLoading(false);
       }
     }
 
-    loadWeekly();
+    void loadHome();
   }, []);
 
-  function scroll(direction: "left" | "right") {
+  const scroll = useCallback((direction: "left" | "right") => {
     if (!scrollRef.current) return;
 
-    const card = scrollRef.current.querySelector("div");
-    if (!card) return;
+    const firstChild = scrollRef.current.firstElementChild as HTMLElement | null;
 
-    const cardWidth = (card as HTMLElement).offsetWidth + 24;
+    if (!firstChild) return;
+
+    const cardWidth = firstChild.offsetWidth + 24;
 
     scrollRef.current.scrollBy({
       left: direction === "left" ? -cardWidth : cardWidth,
       behavior: "smooth",
     });
-  }
+  }, []);
 
-  function resolveImage(url: string) {
+  const resolveImage = useCallback((url: string) => {
     if (!url) return "";
 
     if (url.startsWith("http")) return url;
@@ -105,46 +165,120 @@ export default function HomePage() {
 
     const normalizedPath = url.startsWith("/") ? url : `/${url}`;
     return `${process.env.NEXT_PUBLIC_API_URL}${normalizedPath}`;
-  }
+  }, []);
 
-  function getCover(product: Product) {
-    return resolveImage(product.image);
-  }
+  const getCover = useCallback(
+    (product: Product) => {
+      return resolveImage(product.image);
+    },
+    [resolveImage],
+  );
 
-  function getImages(product: Product) {
-    return product.medias?.map((m) => resolveImage(m.url)) ?? [];
-  }
+  const getImages = useCallback(
+    (product: Product) => {
+      return product.medias?.map((m) => resolveImage(m.url)) ?? [];
+    },
+    [resolveImage],
+  );
 
-  function normalizeProduct(product: Product): QuickProduct {
-    return {
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      image: getCover(product),
-      images: getImages(product),
-      oldPrice: product.oldPrice ?? undefined,
-    };
+  const normalizeProduct = useCallback(
+    (product: Product): QuickProduct => {
+      return {
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: getCover(product),
+        images: getImages(product),
+        oldPrice: product.oldPrice ?? undefined,
+        variants: product.variants ?? [],
+      };
+    },
+    [getCover, getImages],
+  );
+
+  const heroSlides = useMemo<HeroSlide[]>(() => {
+    if (!home?.hero || home.hero.length === 0) {
+      return [];
+    }
+
+    return home.hero.map<HeroSlide>((item) => {
+      const normalizedType: HeroSlide["type"] =
+        item.hero.type === "PROMO"
+          ? "promo"
+          : item.hero.type === "PRODUCT"
+            ? "product"
+            : "collection";
+
+      return {
+        type: normalizedType,
+        image: resolveImage(item.hero.image ?? item.product.image),
+        focus: item.hero.focus ?? "center 25%",
+        focusDesktop: item.hero.focusDesktop ?? "center 22%",
+        title1: item.hero.title1 ?? item.product.name,
+        title2: item.hero.title2 ?? "Blackstore",
+        subtitle:
+          item.hero.subtitle ??
+          item.product.description ??
+          "Peças premium selecionadas para destacar sua presença.",
+        cta1: item.hero.cta1 ?? "#lancamentos",
+        cta2: item.hero.cta2 ?? `/product/${item.product.slug}`,
+      };
+    });
+  }, [home, resolveImage]);
+
+  const launchProducts = useMemo(() => {
+    return home?.launches?.map((item) => item.product) ?? [];
+  }, [home]);
+
+  const promotionItems = useMemo(() => {
+    return home?.promotions ?? [];
+  }, [home]);
+
+  const featuredPromotion = useMemo(() => {
+    if (!promotionItems.length) return null;
+    return promotionItems[0]?.product ?? null;
+  }, [promotionItems]);
+
+  const featuredPromotionBanner = useMemo(() => {
+    if (!promotionItems.length) {
+      return null;
+    }
+
+    const firstPromotion = promotionItems[0].product;
+    const promotionImages = getImages(firstPromotion);
+
+    if (promotionImages.length > 0) {
+      return promotionImages[0];
+    }
+
+    return getCover(firstPromotion);
+  }, [promotionItems, getCover, getImages]);
+
+  if (loading) {
+    return (
+      <section className="min-h-[70vh] bg-black">
+        <div className="mx-auto max-w-7xl px-6 py-20 md:px-8">
+          <div className="h-[70vh] rounded-3xl border border-white/10 bg-white/[0.03] animate-pulse" />
+        </div>
+      </section>
+    );
   }
 
   return (
     <>
-      <HeroParallax />
+      <HeroParallax slides={heroSlides.length > 0 ? heroSlides : undefined} />
 
-      {/* ================= LANÇAMENTOS ================= */}
-      <section className="relative py-14 md:py-20 overflow-hidden bg-black pb-20">
+      <section className="relative overflow-hidden bg-black py-14 pb-20 md:py-20">
         <Reveal>
           <Section
             id="lancamentos"
             title={<span className="bs-title">Lançamentos</span>}
             subtitle="Novidades que definem a temporada."
           >
-            {/* CONTROLE DE LAYOUT */}
             <div className="relative -mx-4 sm:-mx-6 md:-mx-8 lg:-mx-10">
-              {/* FADE LATERAL MAIS SUAVE */}
-              <div className="pointer-events-none absolute left-0 top-0 z-10 h-full w-10 md:w-16 bg-gradient-to-r from-black via-black/70 to-transparent" />
-              <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-10 md:w-16 bg-gradient-to-l from-black via-black/70 to-transparent" />
+              <div className="pointer-events-none absolute left-0 top-0 z-10 h-full w-10 bg-gradient-to-r from-black via-black/70 to-transparent md:w-16" />
+              <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-10 bg-gradient-to-l from-black via-black/70 to-transparent md:w-16" />
 
-              {/* BOTÕES */}
               <button
                 onClick={() => scroll("left")}
                 className="absolute left-3 top-1/2 z-20 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/10 bg-black/60 backdrop-blur-lg transition hover:border-[var(--gold)] md:flex"
@@ -159,31 +293,26 @@ export default function HomePage() {
                 <ChevronRight size={16} />
               </button>
 
-              {/* SCROLL */}
               <div
                 ref={scrollRef}
                 className="
-            scrollbar-hide
-            flex gap-4 md:gap-6
-            overflow-x-auto
-            scroll-smooth
-            snap-x snap-mandatory
-
-            px-4 sm:px-6 md:px-8 lg:px-10
-          "
+                  scrollbar-hide
+                  flex gap-4 overflow-x-auto px-4 scroll-smooth snap-x snap-mandatory
+                  sm:px-6
+                  md:gap-6 md:px-8
+                  lg:px-10
+                "
               >
-                {products.slice(0, 8).map((product, index) => (
+                {launchProducts.map((product, index) => (
                   <div
                     key={product.id}
                     className="
-                snap-start
-
-                min-w-[78%]
-                sm:min-w-[48%]
-                md:min-w-[32%]
-                lg:min-w-[24%]
-                xl:min-w-[20%]
-              "
+                      min-w-[78%] snap-start
+                      sm:min-w-[48%]
+                      md:min-w-[32%]
+                      lg:min-w-[24%]
+                      xl:min-w-[20%]
+                    "
                   >
                     <Reveal delay={0.06 * (index + 1)}>
                       <ProductCard
@@ -195,6 +324,7 @@ export default function HomePage() {
                         price={product.price}
                         oldPrice={product.oldPrice ?? undefined}
                         stock={product.stock}
+                        variants={product.variants}
                         onQuickView={() =>
                           setQuickProduct(normalizeProduct(product))
                         }
@@ -208,7 +338,6 @@ export default function HomePage() {
         </Reveal>
       </section>
 
-      {/* ================= MAIS VENDIDOS ================= */}
       <section className="relative bg-gradient-to-b from-[#0f0c06] via-[#0a0907] to-black py-24 md:py-32">
         <Reveal>
           <Section
@@ -216,7 +345,7 @@ export default function HomePage() {
             subtitle="As peças que mais conquistaram nossas clientes."
           >
             <WeeklyBestSellers
-              items={weekly}
+              items={home?.bestSellers ?? []}
               getCover={getCover}
               getImages={getImages}
               onQuickView={(product: Product) =>
@@ -228,7 +357,7 @@ export default function HomePage() {
       </section>
 
       <Reveal>
-        <Lookbook />
+        <LookbookTyped items={home?.lookbook ?? []} />
       </Reveal>
 
       <section className="relative overflow-hidden bg-gradient-to-r from-black via-[#1a1408] to-black py-24 md:py-32">
@@ -299,7 +428,10 @@ export default function HomePage() {
         <InstagramShowcase />
       </Reveal>
 
-      <section className="relative overflow-hidden py-24 md:py-32">
+      <section
+        id="promocao"
+        className="relative overflow-hidden py-24 md:py-32"
+      >
         <div className="absolute inset-0 bg-gradient-to-br from-black via-[#1a1408] to-black" />
 
         <div className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 items-center gap-14 px-6 md:gap-20 md:px-8 lg:grid-cols-2">
@@ -313,21 +445,22 @@ export default function HomePage() {
               <span className="bs-title block">da semana</span>
             </h2>
 
-            {products[0] && (
+            {featuredPromotion && (
               <div className="mt-10 max-w-sm md:mt-12">
                 <ProductCard
-                  id={products[0].id}
-                  slug={products[0].slug}
-                  image={getCover(products[0])}
-                  images={getImages(products[0])}
-                  name={products[0].name}
-                  price={products[0].price}
-                  oldPrice={products[0].oldPrice ?? undefined}
-                  stock={products[0].stock}
+                  id={featuredPromotion.id}
+                  slug={featuredPromotion.slug}
+                  image={getCover(featuredPromotion)}
+                  images={getImages(featuredPromotion)}
+                  name={featuredPromotion.name}
+                  price={featuredPromotion.price}
+                  oldPrice={featuredPromotion.oldPrice ?? undefined}
+                  stock={featuredPromotion.stock}
+                  variants={featuredPromotion.variants}
                   highlight
                   badge="OFERTA"
                   onQuickView={() =>
-                    setQuickProduct(normalizeProduct(products[0]))
+                    setQuickProduct(normalizeProduct(featuredPromotion))
                   }
                 />
               </div>
@@ -335,12 +468,21 @@ export default function HomePage() {
           </div>
 
           <div className="relative h-[420px] overflow-hidden rounded-3xl md:h-[520px] lg:h-[600px]">
-            <Image
-              src="/images/product-3.jpg"
-              alt="Promoção"
-              fill
-              className="object-cover"
-            />
+            {featuredPromotionBanner ? (
+              <Image
+                src={featuredPromotionBanner}
+                alt="Promoção"
+                fill
+                className="object-cover"
+              />
+            ) : (
+              <Image
+                src="/images/product-3.jpg"
+                alt="Promoção"
+                fill
+                className="object-cover"
+              />
+            )}
           </div>
         </div>
       </section>

@@ -2,9 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Eye, ShoppingBag } from "lucide-react";
-import { apiFetch } from "@/lib/api";
 import { useCart } from "@/store/cart";
 import ProductQuickView from "@/components/ui/ProductQuickView";
 
@@ -34,6 +33,18 @@ type Product = {
   createdAt: string;
 };
 
+type LookbookItem = {
+  id: string;
+  position: number;
+  type: "TOP" | "BOTTOM";
+  label?: string | null;
+  top?: string | null;
+  left?: string | null;
+  fabric?: string | null;
+  active: boolean;
+  product: Product;
+};
+
 type LookItemType = "top" | "bottom";
 
 type LookItem = {
@@ -58,6 +69,10 @@ type QuickProduct = {
   image: string;
   images: string[];
   oldPrice?: number;
+};
+
+type LookbookProps = {
+  items?: LookbookItem[];
 };
 
 type LookSuggestion = {
@@ -87,42 +102,10 @@ function getImages(product: Product) {
   return gallery;
 }
 
-function isTopProduct(product: Product) {
-  const categorySlug = product.category?.slug?.toLowerCase() ?? "";
-  const categoryName = product.category?.name?.toLowerCase() ?? "";
-  const productName = product.name.toLowerCase();
+function normalizeFromApi(item: LookbookItem): LookItem {
+  const product = item.product;
+  const type: LookItemType = item.type === "TOP" ? "top" : "bottom";
 
-  return (
-    categorySlug.includes("top") ||
-    categoryName.includes("top") ||
-    productName.includes("top")
-  );
-}
-
-function isBottomProduct(product: Product) {
-  const categorySlug = product.category?.slug?.toLowerCase() ?? "";
-  const categoryName = product.category?.name?.toLowerCase() ?? "";
-  const productName = product.name.toLowerCase();
-
-  return (
-    categorySlug.includes("legging") ||
-    categorySlug.includes("bottom") ||
-    categorySlug.includes("calca") ||
-    categorySlug.includes("calça") ||
-    categoryName.includes("legging") ||
-    categoryName.includes("bottom") ||
-    categoryName.includes("calca") ||
-    categoryName.includes("calça") ||
-    productName.includes("legging") ||
-    productName.includes("calça") ||
-    productName.includes("calca")
-  );
-}
-
-function normalizeProductToLookItem(
-  product: Product,
-  type: LookItemType,
-): LookItem {
   return {
     id: product.id,
     type,
@@ -133,11 +116,12 @@ function normalizeProductToLookItem(
     images: getImages(product),
     slug: product.slug,
     fabric:
+      item.fabric ||
       product.description?.trim() ||
       "Tecido premium com ajuste confortável e toque macio.",
     sizes: type === "top" ? ["PP", "P", "M", "G"] : ["P", "M", "G", "GG"],
-    top: type === "top" ? "30%" : "60%",
-    left: type === "top" ? "60%" : "52%",
+    top: item.top ?? (type === "top" ? "30%" : "60%"),
+    left: item.left ?? (type === "top" ? "60%" : "52%"),
   };
 }
 
@@ -152,48 +136,43 @@ function toQuickProduct(item: LookItem): QuickProduct {
   };
 }
 
-export default function Lookbook() {
+export default function Lookbook({ items }: LookbookProps) {
   const addItem = useCart((s) => s.addItem);
 
-  const [tops, setTops] = useState<LookItem[]>([]);
-  const [bottoms, setBottoms] = useState<LookItem[]>([]);
-
-  const [selectedTop, setSelectedTop] = useState<LookItem | null>(null);
-  const [selectedBottom, setSelectedBottom] = useState<LookItem | null>(null);
+  /**
+   * 🔥 ESTADO MANUAL (USUÁRIO)
+   */
+  const [manualTop, setManualTop] = useState<LookItem | null>(null);
+  const [manualBottom, setManualBottom] = useState<LookItem | null>(null);
 
   const [quickProduct, setQuickProduct] = useState<QuickProduct | null>(null);
 
-  useEffect(() => {
-    async function loadLookProducts() {
-      try {
-        const data = await apiFetch<Product[]>("/products");
+  /**
+   * 🔥 DERIVAÇÃO DO BACKEND
+   */
+  const tops = useMemo(() => {
+    if (!items) return [];
+    return items
+      .filter((i) => i.type === "TOP" && i.active)
+      .map(normalizeFromApi);
+  }, [items]);
 
-        const realTops = data
-          .filter((product) => isTopProduct(product))
-          .map((product) => normalizeProductToLookItem(product, "top"));
+  const bottoms = useMemo(() => {
+    if (!items) return [];
+    return items
+      .filter((i) => i.type === "BOTTOM" && i.active)
+      .map(normalizeFromApi);
+  }, [items]);
 
-        const realBottoms = data
-          .filter((product) => isBottomProduct(product))
-          .map((product) => normalizeProductToLookItem(product, "bottom"));
+  /**
+   * 🔥 ESTADO DERIVADO (SEM useEffect)
+   */
+  const selectedTop = manualTop ?? tops[0] ?? null;
+  const selectedBottom = manualBottom ?? bottoms[0] ?? null;
 
-        setTops(realTops);
-        setBottoms(realBottoms);
-
-        if (realTops.length > 0) {
-          setSelectedTop(realTops[0]);
-        }
-
-        if (realBottoms.length > 0) {
-          setSelectedBottom(realBottoms[0]);
-        }
-      } catch (error) {
-        console.error("Erro ao carregar produtos do look builder", error);
-      }
-    }
-
-    loadLookProducts();
-  }, []);
-
+  /**
+   * 🔥 SUGESTÕES
+   */
   const suggestions = useMemo<LookSuggestion[]>(() => {
     const result: LookSuggestion[] = [];
 
@@ -220,11 +199,11 @@ export default function Lookbook() {
 
   function handleSelectItem(item: LookItem) {
     if (item.type === "top") {
-      setSelectedTop(item);
+      setManualTop(item);
       return;
     }
 
-    setSelectedBottom(item);
+    setManualBottom(item);
   }
 
   function handleApplySuggestion(topId: string, bottomId: string) {
@@ -233,8 +212,8 @@ export default function Lookbook() {
 
     if (!top || !bottom) return;
 
-    setSelectedTop(top);
-    setSelectedBottom(bottom);
+    setManualTop(top);
+    setManualBottom(bottom);
   }
 
   async function handleAddSingle(item: LookItem) {
@@ -305,7 +284,8 @@ export default function Lookbook() {
             </h2>
 
             <p className="mt-6 text-white/60 max-w-2xl">
-              Descubra combinações, selecione cada peça separadamente e monte seu look em tempo real.
+              Descubra combinações, selecione cada peça separadamente e monte
+              seu look em tempo real.
             </p>
           </div>
 
@@ -313,11 +293,14 @@ export default function Lookbook() {
             <div className="relative max-w-sm md:max-w-md xl:max-w-[460px] mx-auto xl:mx-0 xl:justify-self-start">
               <div className="relative aspect-[4/5] rounded-[28px] overflow-hidden border border-white/10 bg-[#090909]">
                 <Image
-                  src={selectedTop.image}
+                  src={selectedTop.image || "/images/placeholder"}
                   alt="Look Blackstore"
                   fill
                   sizes="(max-width:768px) 110vw, 420px"
                   className="object-cover object-center"
+                  onError={(e) => {
+                    e.currentTarget.src = "/images/placeholder";
+                  }}
                 />
 
                 <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-black/10" />
@@ -325,7 +308,7 @@ export default function Lookbook() {
 
               {[selectedTop, selectedBottom].map((item) => (
                 <button
-                  key={item.id}
+                  key={`${item.type}-${item.id}`}
                   onClick={() => handleSelectItem(item)}
                   className="
                     absolute z-20
@@ -389,14 +372,14 @@ export default function Lookbook() {
                       <div className="flex items-start gap-4">
                         <div className="relative w-20 h-24 rounded-xl overflow-hidden shrink-0">
                           <Image
-                            src={selectedTop.image}
+                            src={selectedTop.image || "/images/placeholder"}
                             alt={selectedTop.name}
                             fill
                             sizes="(max-width: 768px) 100vw, 420px"
-                            className="
-                            object-cover
-                            object-center
-                            "
+                            className="object-cover object-center"
+                            onError={(e) => {
+                              e.currentTarget.src = "/images/placeholder";
+                            }}
                           />
                         </div>
 
@@ -432,7 +415,9 @@ export default function Lookbook() {
 
                       <div className="mt-5 flex flex-col sm:flex-row gap-3">
                         <button
-                          onClick={() => setQuickProduct(toQuickProduct(selectedTop))}
+                          onClick={() =>
+                            setQuickProduct(toQuickProduct(selectedTop))
+                          }
                           className="
                             flex-1 inline-flex items-center justify-center gap-2
                             py-2.5 rounded-full border border-white/15
@@ -472,14 +457,17 @@ export default function Lookbook() {
                       <div className="flex items-start gap-4">
                         <div className="relative w-20 h-24 rounded-xl overflow-hidden shrink-0">
                           <Image
-                            src={selectedBottom.image}
+                            src={selectedBottom.image || "/images/placeholder"}
                             alt={selectedBottom.name}
                             fill
                             sizes="(max-width:768px) 100vw, 420px"
-                            className="
-                            object-cover
-                            object-center
-                            "
+                            className="object-cover object-center"
+                            onError={(
+                              e: React.SyntheticEvent<HTMLImageElement>,
+                            ) => {
+                              const target = e.currentTarget;
+                              target.src = "/images/placeholder";
+                            }}
                           />
                         </div>
 
@@ -565,11 +553,14 @@ export default function Lookbook() {
 
                     <h3 className="mt-3 text-2xl md:text-3xl font-light leading-tight">
                       <span className="block">{selectedTop.name}</span>
-                      <span className="block bs-title">+ {selectedBottom.name}</span>
+                      <span className="block bs-title">
+                        + {selectedBottom.name}
+                      </span>
                     </h3>
 
                     <p className="mt-4 text-white/60 max-w-xl text-sm md:text-base">
-                      Escolha cada peça separadamente, visualize os detalhes e adicione o look completo ao carrinho com um clique.
+                      Escolha cada peça separadamente, visualize os detalhes e
+                      adicione o look completo ao carrinho com um clique.
                     </p>
                   </div>
 

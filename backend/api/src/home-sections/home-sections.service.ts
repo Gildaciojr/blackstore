@@ -105,6 +105,54 @@ export class HomeSectionsService {
     });
   }
 
+  async setSection(type: HomeSectionType, items: any[]) {
+    if (!items || items.length === 0) {
+      throw new Error('Lista vazia');
+    }
+
+    // valida duplicação de produto
+    const productIds = items.map((i) => i.productId);
+    const uniqueProducts = new Set(productIds);
+
+    if (uniqueProducts.size !== items.length) {
+      throw new Error('Produtos duplicados na mesma seção');
+    }
+
+    // valida posições
+    const positions = items.map((i) => i.position);
+    const uniquePositions = new Set(positions);
+
+    if (uniquePositions.size !== items.length) {
+      throw new Error('Posições duplicadas');
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      // 🔥 LIMPA A SEÇÃO
+      await tx.homeSectionItem.deleteMany({
+        where: { type },
+      });
+
+      // 🔥 RECRIA
+      return tx.homeSectionItem.createMany({
+        data: items.map((item) => ({
+          type,
+          position: item.position,
+          productId: item.productId,
+
+          heroSlideType: item.heroSlideType,
+          imageOverride: item.imageOverride,
+          focus: item.focus,
+          focusDesktop: item.focusDesktop,
+          title1: item.title1,
+          title2: item.title2,
+          subtitle: item.subtitle,
+          cta1: item.cta1,
+          cta2: item.cta2,
+        })),
+      });
+    });
+  }
+
   /**
    * =========================
    * HOME COMPLETA

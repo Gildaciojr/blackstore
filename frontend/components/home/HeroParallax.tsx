@@ -19,7 +19,10 @@ type Slide = {
   cta2: string;
 };
 
-const slides: Slide[] = [
+/**
+ * 🔥 FALLBACK (NUNCA QUEBRA)
+ */
+const fallbackSlides: Slide[] = [
   {
     type: "collection",
     image: "/images/hero.jpg",
@@ -56,7 +59,13 @@ const slides: Slide[] = [
   },
 ];
 
-export default function HeroParallax() {
+type HeroParallaxProps = {
+  slides?: Slide[];
+};
+
+export default function HeroParallax({
+  slides: externalSlides,
+}: HeroParallaxProps) {
   const [index, setIndex] = useState(0);
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
   const [progress, setProgress] = useState(0);
@@ -65,18 +74,48 @@ export default function HeroParallax() {
   const [couponCopied, setCouponCopied] = useState(false);
 
   const startRef = useRef<number | null>(null);
+  const progressRef = useRef(0);
 
+  /**
+   * 🔥 DERIVAÇÃO CORRETA (SEM setState - EVITA WARNING DO REACT)
+   */
+  const slidesState = useMemo(() => {
+    if (externalSlides && externalSlides.length > 0) {
+      return externalSlides;
+    }
+    return fallbackSlides;
+  }, [externalSlides]);
+
+  const safeIndex =
+    slidesState.length > 0
+      ? ((index % slidesState.length) + slidesState.length) % slidesState.length
+      : 0;
+
+  const slide = slidesState[safeIndex];
+  /**
+   * 🔥 BREAKPOINT RESPONSIVO (DESKTOP / MOBILE)
+   */
   useEffect(() => {
     function syncBreakpoint() {
       setIsDesktop(window.innerWidth >= 768);
     }
 
     syncBreakpoint();
+
     window.addEventListener("resize", syncBreakpoint);
-    return () => window.removeEventListener("resize", syncBreakpoint);
+
+    return () => {
+      window.removeEventListener("resize", syncBreakpoint);
+    };
   }, []);
 
+  /**
+   * 🔥 LOOP AUTO SLIDE
+   */
+
   useEffect(() => {
+    if (slidesState.length === 0) return;
+
     const duration = 5200;
     let raf = 0;
 
@@ -86,15 +125,21 @@ export default function HeroParallax() {
       }
 
       if (paused) {
-        startRef.current = timestamp - progress * duration;
+        startRef.current = timestamp - progressRef.current * duration;
       }
 
       const elapsed = timestamp - startRef.current;
-      const progressValue = elapsed / duration;
+      const progressValue = Math.min(elapsed / duration, 1);
+
+      progressRef.current = progressValue;
 
       if (progressValue >= 1) {
-        setIndex((prev) => (prev + 1) % slides.length);
+        setIndex((prev) =>
+          slidesState.length > 0 ? (prev + 1) % slidesState.length : 0,
+        );
+
         startRef.current = timestamp;
+        progressRef.current = 0;
         setProgress(0);
       } else {
         setProgress(progressValue);
@@ -106,8 +151,10 @@ export default function HeroParallax() {
     raf = requestAnimationFrame(loop);
 
     return () => cancelAnimationFrame(raf);
-  }, [paused, progress]);
-
+  }, [paused, slidesState.length]);
+  /**
+   * 🔥 PARALLAX
+   */
   function handleMouseMove(e: React.MouseEvent) {
     if (!isDesktop) return;
 
@@ -116,11 +163,12 @@ export default function HeroParallax() {
     setMouse({ x, y });
   }
 
-  const slide = slides[index];
-
   const objectPosition = useMemo(() => {
+    if (!slide) return "center";
     return isDesktop ? slide.focusDesktop : slide.focus;
   }, [isDesktop, slide]);
+
+  if (!slide) return null;
 
   return (
     <section
@@ -153,11 +201,7 @@ export default function HeroParallax() {
               fill
               priority
               sizes="100vw"
-              className="
-                object-cover
-                will-change-transform
-                scale-[1.01] md:scale-[1.05]
-              "
+              className="object-cover will-change-transform scale-[1.01] md:scale-[1.05]"
               style={{
                 objectPosition,
               }}
@@ -380,7 +424,7 @@ export default function HeroParallax() {
 
       {/* INDICADORES */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3">
-        {slides.map((_, i) => (
+        {slidesState.map((_, i) => (
           <button key={i} onClick={() => setIndex(i)}>
             <span
               className={`h-[2px] w-8 transition-all duration-300 ${
@@ -391,77 +435,41 @@ export default function HeroParallax() {
         ))}
       </div>
 
+      {/* CUPOM */}
       <div className="absolute top-16 md:top-6 right-3 md:right-10 z-30">
         <motion.div
           initial={{ opacity: 0, y: -30, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.5 }}
           className="
-      relative
-      bg-black/60 backdrop-blur-xl
-      border border-[var(--gold)]/30
-      rounded-xl px-3 py-2 md:px-5 md:py-4
-      shadow-[0_15px_50px_rgba(0,0,0,0.7)]
-      flex flex-col gap-3
-      overflow-hidden
-    "
+            relative
+            bg-black/60 backdrop-blur-xl
+            border border-[var(--gold)]/30
+            rounded-xl px-3 py-2 md:px-5 md:py-4
+            shadow-[0_15px_50px_rgba(0,0,0,0.7)]
+            flex flex-col gap-3
+            overflow-hidden
+          "
         >
-          {/* 🔥 GLOW ANIMADO */}
           <motion.div
             animate={{ opacity: [0.2, 0.5, 0.2] }}
             transition={{ duration: 3, repeat: Infinity }}
             className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(212,175,55,0.2),transparent_60%)] pointer-events-none"
           />
 
-          {/* 🔥 CONTAINER INTERNO OTIMIZADO */}
-          <div
-            className="
-              relative z-10
-
-              flex flex-col md:flex-col
-              gap-1.5 md:gap-3
-
-              md:gap-3
-            "
-          >
-            {/* 🔥 HEADLINE */}
+          <div className="relative z-10 flex flex-col gap-1.5 md:gap-3">
             <div className="leading-tight">
-              <span
-                className="
-                  text-[8px] md:text-[10px]
-                  uppercase tracking-[0.2em] md:tracking-widest
-                  text-white/35
-                "
-              >
+              <span className="text-[8px] md:text-[10px] uppercase tracking-[0.2em] md:tracking-widest text-white/35">
                 Ganhe agora
               </span>
 
-              <div
-                className="
-                  text-[11px] md:text-[14px]
-                  font-semibold
-                  text-[var(--gold)]
-                  mt-[1px]
-                "
-              >
+              <div className="text-[11px] md:text-[14px] font-semibold text-[var(--gold)] mt-[1px]">
                 10% OFF
               </div>
             </div>
 
-            {/* 🔥 LINHA PRINCIPAL (compacta no mobile) */}
-            <div
-              className="
-                flex items-center justify-between
-                gap-2
-              "
-            >
-              <span
-                className="
-                  text-[10px] md:text-[12px]
-                  tracking-[0.2em] md:tracking-widest
-                  text-white
-                "
-              >
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[10px] md:text-[12px] tracking-[0.2em] md:tracking-widest text-white">
                 BLACK10
               </span>
 
@@ -469,7 +477,6 @@ export default function HeroParallax() {
                 onClick={() => {
                   navigator.clipboard.writeText("BLACK10");
                   setCouponCopied(true);
-
                   localStorage.setItem("applied_coupon", "BLACK10");
 
                   setTimeout(() => {
@@ -479,13 +486,10 @@ export default function HeroParallax() {
                 className={`
                   text-[8px] md:text-[10px]
                   uppercase tracking-[0.2em] md:tracking-widest
-
                   px-2 py-1 md:px-3 md:py-1.5
-
                   rounded-md
                   border
                   transition-all duration-300
-
                   ${
                     couponCopied
                       ? "border-green-400 text-green-400"
@@ -497,25 +501,14 @@ export default function HeroParallax() {
               </button>
             </div>
 
-            {/* 🔥 CTA (ESCONDIDO NO MOBILE — CRÍTICO PARA LIMPEZA) */}
             <Link
               href="/catalog"
-              className="
-                hidden md:block
-
-                text-[10px]
-                uppercase
-                tracking-widest
-                text-white/60
-                hover:text-[var(--gold)]
-                transition
-              "
+              className="hidden md:block text-[10px] uppercase tracking-widest text-white/60 hover:text-[var(--gold)] transition"
             >
               Usar no catálogo →
             </Link>
           </div>
 
-          {/* 🔥 FEEDBACK FLOAT */}
           <AnimatePresence>
             {couponCopied && (
               <motion.div
@@ -527,15 +520,11 @@ export default function HeroParallax() {
                   absolute
                   right-0
                   mt-1.5 md:mt-3
-
                   bg-green-500/10
                   border border-green-400/30
                   text-green-400
-
                   text-[8px] md:text-[10px]
-
                   px-2 py-1 md:px-3 md:py-2
-
                   rounded-md
                   shadow-[0_10px_30px_rgba(0,0,0,0.4)]
                   backdrop-blur-md
@@ -545,7 +534,7 @@ export default function HeroParallax() {
               </motion.div>
             )}
           </AnimatePresence>
-           </motion.div>
+        </motion.div>
       </div>
     </section>
   );

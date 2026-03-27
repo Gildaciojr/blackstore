@@ -71,6 +71,14 @@ export default function DashboardCards({ stats }: { stats: DashboardStats }) {
       icon: DollarSign,
       route: "/dashboard/coupons",
     },
+
+    // 🔥 NOVO CARD (CRÍTICO)
+    {
+      label: "Curadoria",
+      value: 0,
+      icon: Layers,
+      route: "/dashboard/home-sections",
+    },
   ];
 
   return (
@@ -78,81 +86,85 @@ export default function DashboardCards({ stats }: { stats: DashboardStats }) {
       {cards.map((card) => {
         const Icon = card.icon;
 
+        const isActionCard = card.label === "Curadoria";
+
         return (
           <button
             key={card.label}
             onClick={() => router.push(card.route)}
             className="
-            relative
-            group
-            text-left
-            bs-glass
-            border border-white/10
-            rounded-2xl
-            p-6
-            overflow-hidden
-            transition
-            hover:border-[var(--gold)]
-            hover:shadow-[0_0_40px_rgba(212,175,55,0.15)]
-            hover:scale-[1.02]
-            "
+          relative
+          group
+          text-left
+          bs-glass
+          border border-white/10
+          rounded-2xl
+          p-5 sm:p-6
+          overflow-hidden
+          transition
+          hover:border-[var(--gold)]
+          hover:shadow-[0_0_40px_rgba(212,175,55,0.15)]
+          hover:scale-[1.02]
+          active:scale-[0.98]
+          "
           >
             {/* glow background */}
-
             <div
               className="
-              absolute
-              inset-0
-              opacity-0
-              group-hover:opacity-100
-              transition
-              bg-[radial-gradient(circle_at_80%_20%,rgba(212,175,55,0.12),transparent_60%)]
-              "
+            absolute
+            inset-0
+            opacity-0
+            group-hover:opacity-100
+            transition
+            bg-[radial-gradient(circle_at_80%_20%,rgba(212,175,55,0.12),transparent_60%)]
+            "
             />
 
             {/* content */}
-
-            <div className="relative flex items-start justify-between mb-5">
-              <p className="text-xs uppercase tracking-[0.35em] text-white/50">
+            <div className="relative flex items-start justify-between mb-4 sm:mb-5">
+              <p className="text-[10px] sm:text-xs uppercase tracking-[0.35em] text-white/50">
                 {card.label}
               </p>
 
               <div
                 className="
-                w-9
-                h-9
-                rounded-xl
-                flex
-                items-center
-                justify-center
-                bg-white/5
-                border border-white/10
-                text-[var(--gold)]
-                "
+              w-8 h-8 sm:w-9 sm:h-9
+              rounded-xl
+              flex items-center justify-center
+              bg-white/5
+              border border-white/10
+              text-[var(--gold)]
+              "
               >
                 <Icon size={16} />
               </div>
             </div>
 
-            <div className="relative flex items-end gap-3">
-              <p className="text-3xl font-light">
-                {card.prefix}
+            <div className="relative flex items-end gap-3 flex-wrap">
+              <p className="text-2xl sm:text-3xl font-light leading-none">
+                {isActionCard ? (
+                  <span className="text-[var(--gold)] text-xs sm:text-sm tracking-[0.3em]">
+                    GERENCIAR
+                  </span>
+                ) : (
+                  <>
+                    {card.prefix}
 
-                <CountUp end={card.value} duration={1.6} separator="." />
+                    <CountUp end={card.value} duration={1.6} separator="." />
 
-                {card.suffix}
+                    {card.suffix}
+                  </>
+                )}
               </p>
 
-              {card.trend && (
+              {!isActionCard && card.trend && (
                 <span
                   className="
-                  text-xs
-                  text-emerald-400
-                  mb-1
-                  flex
-                  items-center
-                  gap-1
-                  "
+                text-[10px] sm:text-xs
+                text-emerald-400
+                mb-1
+                flex items-center gap-1
+                "
                 >
                   ↑ {card.trend}%
                 </span>
