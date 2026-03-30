@@ -192,7 +192,7 @@ export default function CartPage() {
           ))}
 
           {/* 🔥 UPSELL */}
-          <div className="mt-6 p-6 rounded-2xl border border-white/10 bg-white/[0.02]">
+          <div className="mt-6 p-6 rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-xl">
             <p className="text-xs uppercase tracking-widest text-white/50 mb-3">
               Dica Blackstore
             </p>

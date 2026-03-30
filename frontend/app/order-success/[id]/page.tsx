@@ -93,7 +93,7 @@ export default function OrderSuccessPage({ params }: Props) {
       </p>
 
       {/* STATUS */}
-      <div className="mb-12 p-5 rounded-xl border border-[var(--gold)] bg-white/[0.02]">
+      <div className="mb-12 p-5 rounded-xl border border-[var(--gold)]/40 bg-[var(--gold)]/5 bg-white/[0.02]">
         <p className="text-xs uppercase tracking-widest text-white/50 mb-2">
           Status atual
         </p>

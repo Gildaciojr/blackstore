@@ -423,7 +423,7 @@ export default function CheckoutPage() {
                     w-full text-left p-4 sm:p-5 rounded-xl border transition
                     ${
                       selectedAddress === address.id
-                        ? "border-[var(--gold)] bg-white/[0.03]"
+                        ? "border-[var(--gold)] bg-white/[0.02]"
                         : "border-white/10 hover:border-white/30"
                     }
                   `}
@@ -451,7 +451,7 @@ export default function CheckoutPage() {
           <div>
             <h2 className="uppercase tracking-widest text-xs mb-6">Frete</h2>
 
-            <div className="rounded-xl border border-white/10 p-4 sm:p-5 bg-black/30">
+            <div className="rounded-xl border border-white/10 p-4 sm:p-5 bg-black/40 backdrop-blur-xl">
               <div className="flex flex-col sm:flex-row gap-3">
                 <input
                   value={zip}
@@ -479,7 +479,7 @@ export default function CheckoutPage() {
                         w-full text-left p-4 rounded-xl border transition
                         ${
                           selectedShipping?.method === option.method
-                            ? "border-[var(--gold)] bg-white/[0.03]"
+                            ? "border-[var(--gold)] bg-white/[0.02]"
                             : "border-white/10 hover:border-white/30"
                         }
                       `}
@@ -513,7 +513,7 @@ export default function CheckoutPage() {
                 onClick={() => setPayment("pix")}
                 className={`p-5 sm:p-6 rounded-xl border transition text-left ${
                   payment === "pix"
-                    ? "border-[var(--gold)] bg-white/[0.03]"
+                    ? "border-[var(--gold)] bg-white/[0.02]"
                     : "border-white/10"
                 }`}
               >
@@ -527,7 +527,7 @@ export default function CheckoutPage() {
                 onClick={() => setPayment("card")}
                 className={`p-5 sm:p-6 rounded-xl border transition text-left ${
                   payment === "card"
-                    ? "border-[var(--gold)] bg-white/[0.03]"
+                    ? "border-[var(--gold)] bg-white/[0.02]"
                     : "border-white/10"
                 }`}
               >
@@ -544,7 +544,7 @@ export default function CheckoutPage() {
                   onChange={(e) =>
                     setCardNumber(formatCardNumber(e.target.value))
                   }
-                  className="w-full p-3 bg-black border border-white/10 rounded-md"
+                  className="w-full h-11 px-4 bg-black/60 border border-white/15 rounded-md"
                   inputMode="numeric"
                   autoComplete="cc-number"
                 />
@@ -553,7 +553,7 @@ export default function CheckoutPage() {
                   placeholder="Nome no cartão"
                   value={cardName}
                   onChange={(e) => setCardName(e.target.value)}
-                  className="w-full p-3 bg-black border border-white/10 rounded-md"
+                  className="w-full h-11 px-4 bg-black/60 border border-white/15 rounded-md"
                   autoComplete="cc-name"
                 />
 
@@ -605,7 +605,7 @@ export default function CheckoutPage() {
               Cupom de desconto
             </h2>
 
-            <div className="rounded-xl border border-white/10 p-4 sm:p-5 bg-black/30">
+            <div className="rounded-xl border border-white/10 p-4 sm:p-5 bg-black/40 backdrop-blur-xl">
               <p className="text-[10px] uppercase tracking-widest text-white/50 mb-2">
                 Possui um cupom?
               </p>

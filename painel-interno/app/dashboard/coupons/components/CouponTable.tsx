@@ -92,7 +92,7 @@ export default function CouponTable({
           {Array.from({ length: 5 }).map((_, i) => (
             <div
               key={i}
-              className="h-16 rounded-2xl bg-white/[0.03] border border-white/10 animate-pulse"
+              className="h-16 rounded-2xl bg-white/[0.02] border border-white/10 animate-pulse"
             />
           ))}
         </div>
@@ -130,7 +130,7 @@ export default function CouponTable({
                     key={coupon.id}
                     className="
                       border-t border-white/10
-                      hover:bg-white/[0.03]
+                      hover:bg-white/[0.02]
                       transition
                     "
                   >

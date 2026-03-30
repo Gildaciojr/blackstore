@@ -103,8 +103,7 @@ export default function WeeklyBestSellers({
                 images={getImages(topOne.product)}
                 name={topOne.product.name}
                 price={topOne.product.price}
-                oldPrice={topOne.product.oldPrice ?? undefined}
-                badge="TOP 1"
+                oldPrice={undefined}
                 onQuickView={() => onQuickView(topOne.product)}
               />
             </motion.div>
@@ -153,8 +152,7 @@ export default function WeeklyBestSellers({
                     images={getImages(product)}
                     name={product.name}
                     price={product.price}
-                    oldPrice={product.oldPrice ?? undefined}
-                    badge="BEST SELLER"
+                    oldPrice={undefined}
                     onQuickView={() => onQuickView(product)}
                   />
                 </motion.div>

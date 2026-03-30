@@ -142,7 +142,7 @@ export default function LoginPage() {
               : "Entre em sua conta para acompanhar pedidos e acessar benefícios exclusivos."}
           </p>
 
-          <div className="mt-10 border border-white/10 bg-white/[0.03] backdrop-blur-xl p-8 rounded-2xl shadow-[0_20px_80px_rgba(0,0,0,0.6)]">
+          <div className="mt-10 border border-white/10 bg-white/[0.02] backdrop-blur-xl p-8 rounded-2xl shadow-[0_20px_80px_rgba(0,0,0,0.6)]">
             <div className="mb-6">
               <label className="text-xs uppercase tracking-[0.3em] text-white/40">
                 E-mail
@@ -244,7 +244,7 @@ export default function LoginPage() {
                 bs-glass 
                 p-6 md:p-10
                 border border-white/10
-                bg-white/[0.03]
+                bg-white/[0.02]
                 backdrop-blur-xl
                 shadow-[0_20px_80px_rgba(0,0,0,0.6)]
               "

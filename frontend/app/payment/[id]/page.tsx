@@ -270,7 +270,7 @@ export default function PaymentPage({ params }: Props) {
       </h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-        <div className="border border-white/10 rounded-3xl p-6 md:p-8 bg-black/40 backdrop-blur">
+        <div className="border border-white/10 rounded-3xl p-6 md:p-8 bg-black/40 backdrop-blurxl">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-xs uppercase tracking-widest text-white/50 mb-2">
@@ -344,7 +344,7 @@ export default function PaymentPage({ params }: Props) {
                 QR Code PIX
               </p>
 
-              <div className="bg-white rounded-2xl p-4 inline-flex">
+              <div className="bg-white p-4 rounded-xl inline-flex">
                 <img
                   src={payment.qrCode}
                   alt="QR Code PIX"
@@ -364,7 +364,7 @@ export default function PaymentPage({ params }: Props) {
           )}
         </div>
 
-        <div className="border border-white/10 rounded-3xl p-6 md:p-8 bg-black/40 backdrop-blur">
+        <div className="border border-white/10 rounded-3xl p-6 md:p-8 bg-black/40 backdrop-blurxl">
           {payment.method === "pix" ? (
             <>
               <p className="text-xs uppercase tracking-widest text-white/50 mb-4">
