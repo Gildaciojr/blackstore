@@ -212,7 +212,7 @@ export default function ProductCard({
                   src={imgs[imgIndex]}
                   alt={name}
                   fill
-                  sizes="(max-width:768px) 60vw, (max-width:1200px) 30vw, 20vw"
+                  sizes="(max-width:768px) 80vw, (max-width:1200px) 30vw, 20vw"
                   loading="lazy"
                   decoding="async"
                   draggable={false}
@@ -242,7 +242,7 @@ export default function ProductCard({
                   src={imgs[imgIndex]}
                   alt={name}
                   fill
-                  sizes="(max-width:768px) 60vw, (max-width:1200px) 30vw, 20vw"
+                  sizes="(max-width:768px) 80vw, (max-width:1200px) 30vw, 20vw"
                   loading="lazy"
                   decoding="async"
                   draggable={false}

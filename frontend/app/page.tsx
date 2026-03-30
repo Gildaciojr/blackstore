@@ -306,84 +306,87 @@ export default function HomePage() {
     );
   }
 
-return (
-  <>
-    <HeroParallax slides={heroSlides.length > 0 ? heroSlides : undefined} />
+  return (
+    <>
+      <HeroParallax slides={heroSlides.length > 0 ? heroSlides : undefined} />
 
-    <section className="relative overflow-hidden bg-black py-14 pb-20 md:py-20">
-      <Reveal>
-        <Section
-          id="lancamentos"
-          title={<span className="bs-title">Lançamentos</span>}
-          subtitle="Novidades que definem a temporada."
-        >
-          <div className="relative -mx-4 sm:-mx-6 md:-mx-8 lg:-mx-10">
-            <div className="pointer-events-none absolute left-0 top-0 z-10 h-full w-10 bg-gradient-to-r from-black via-black/70 to-transparent md:w-16" />
-            <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-10 bg-gradient-to-l from-black via-black/70 to-transparent md:w-16" />
+      <section className="relative overflow-hidden bg-black py-14 pb-20 md:py-20">
+        <Reveal>
+          <Section
+            id="lancamentos"
+            title={<span className="bs-title">Lançamentos</span>}
+            subtitle="Novidades que definem a temporada."
+          >
+            <div className="relative -mx-4 sm:-mx-6 md:-mx-8 lg:-mx-10">
+              <div className="pointer-events-none absolute left-0 top-0 z-10 h-full w-10 bg-gradient-to-r from-black via-black/70 to-transparent md:w-16" />
+              <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-10 bg-gradient-to-l from-black via-black/70 to-transparent md:w-16" />
 
-            <button
-              onClick={() => scroll("left")}
-              className="absolute left-3 top-1/2 z-20 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/10 bg-black/60 backdrop-blur-lg transition hover:border-[var(--gold)] md:flex"
-            >
-              <ChevronLeft size={16} />
-            </button>
+              <button
+                onClick={() => scroll("left")}
+                className="absolute left-3 top-1/2 z-20 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/10 bg-black/60 backdrop-blur-lg transition hover:border-[var(--gold)] md:flex"
+              >
+                <ChevronLeft size={16} />
+              </button>
 
-            <button
-              onClick={() => scroll("right")}
-              className="absolute right-3 top-1/2 z-20 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/10 bg-black/60 backdrop-blur-lg transition hover:border-[var(--gold)] md:flex"
-            >
-              <ChevronRight size={16} />
-            </button>
+              <button
+                onClick={() => scroll("right")}
+                className="absolute right-3 top-1/2 z-20 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/10 bg-black/60 backdrop-blur-lg transition hover:border-[var(--gold)] md:flex"
+              >
+                <ChevronRight size={16} />
+              </button>
 
-            <div
-              ref={scrollRef}
-              className="
-                scrollbar-hide
-                flex gap-4 overflow-x-auto px-4
-                scroll-smooth snap-x snap-mandatory
-                sm:px-6
-                md:gap-6 md:px-8
-                lg:px-10
-              "
-              style={{
-                touchAction: "pan-y",
-                WebkitOverflowScrolling: "touch",
-              }}
-            >
-              {launchProducts.map((product, index) => (
-                <div
-                  key={product.id}
-                  className="
-                    min-w-[78%] snap-start
+              <div
+                ref={scrollRef}
+                className="
+    scrollbar-hide
+    flex gap-4
+    overflow-x-auto
+    overflow-y-hidden
+    px-4
+    scroll-smooth
+    snap-x snap-proximity
+    sm:px-6
+    md:gap-6 md:px-8
+    lg:px-10
+  "
+                style={{
+                  WebkitOverflowScrolling: "touch",
+                }}
+              >
+                {launchProducts.map((product, index) => (
+                  <div
+                    key={product.id}
+                    className="
+                    min-w-[85%] snap-start
                     sm:min-w-[48%]
                     md:min-w-[32%]
                     lg:min-w-[24%]
                     xl:min-w-[20%]
                   "
-                >
-                  <Reveal delay={0.06 * (index + 1)}>
-                    <ProductCard
-                      id={product.id}
-                      slug={product.slug}
-                      image={getCover(product)}
-                      images={getImages(product)}
-                      name={product.name}
-                      price={product.price}
-                      oldPrice={product.oldPrice ?? undefined}
-                      stock={product.stock}
-                      variants={product.variants}
-                      onQuickView={() =>
-                        setQuickProduct(normalizeProduct(product))
-                      }
-                    />
-                  </Reveal>
-                </div>
-              ))}
+                  >
+                    <Reveal delay={0.06 * (index + 1)}>
+                      <ProductCard
+                        id={product.id}
+                        slug={product.slug}
+                        image={getCover(product)}
+                        images={getImages(product)}
+                        name={product.name}
+                        price={product.price}
+                        oldPrice={product.oldPrice ?? undefined}
+                        stock={product.stock}
+                        variants={product.variants}
+                        onQuickView={() =>
+                          setQuickProduct(normalizeProduct(product))
+                        }
+                      />
+                    </Reveal>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        </Section>
-      </Reveal>
-    </section>
+          </Section>
+        </Reveal>
+      </section>
 
       <section className="relative bg-gradient-to-b from-[#0f0c06] via-[#0a0907] to-black py-24 md:py-32">
         <Reveal>

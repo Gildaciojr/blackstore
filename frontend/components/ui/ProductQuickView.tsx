@@ -168,7 +168,7 @@ export default function ProductQuickView({ product, onClose }: Props) {
 
           {/* GALERIA */}
           <div className="relative flex min-h-[280px] flex-col bg-black">
-            <div className="relative h-[38vh] md:flex-1 overflow-hidden">
+            <div className="relative aspect-[3/4] md:flex-1 overflow-hidden">
               <Image
                 key={currentImage}
                 src={currentImage}
@@ -212,7 +212,7 @@ export default function ProductQuickView({ product, onClose }: Props) {
                         : "border-white/10"
                     }`}
                   >
-                    <Image src={img} alt="" fill className="object-cover" />
+                    <Image src={img} alt="" fill className="object-cover object-center md:object-center" />
                   </button>
                 ))}
               </div>
