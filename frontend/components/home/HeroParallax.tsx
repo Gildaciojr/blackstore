@@ -175,7 +175,7 @@ export default function HeroParallax({
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
-      className="relative h-[78vh] md:h-[88vh] lg:h-[92vh]"
+      className="relative h-[72vh] md:h-[88vh] lg:h-[92vh]"
     >
       {/* BACKGROUND */}
       <AnimatePresence mode="wait">
@@ -203,7 +203,7 @@ export default function HeroParallax({
                 priority
                 sizes="100vw"
                 className="
-        object-contain
+        object-cover
         md:object-cover
         will-change-transform
       "
@@ -221,7 +221,7 @@ export default function HeroParallax({
 
       {/* CONTENT */}
       <div className="relative z-10 flex items-center h-full">
-        <div className="w-full max-w-7xl mx-auto px-5 md:px-10">
+        <div className="w-full max-w-7xl mx-auto px-0 md:px-10">
           <motion.div
             key={index}
             initial="hidden"
@@ -237,7 +237,7 @@ export default function HeroParallax({
             }}
             className="
               w-full
-              max-w-[280px] sm:max-w-sm md:max-w-lg lg:max-w-xl
+              max-w-full sm:max-w-sm md:max-w-lg lg:max-w-xl px-5 sm:px-0
             "
           >
             {/* LABEL */}
@@ -375,7 +375,7 @@ export default function HeroParallax({
       </div>
 
       {/* BENEFÍCIOS */}
-      <div className="absolute bottom-20 w-full z-20">
+      <div className="absolute bottom-16 w-full z-20 px-3 md:px-0">
         <div className="max-w-7xl mx-auto px-4 md:px-10">
           <div
             className="
@@ -442,7 +442,7 @@ export default function HeroParallax({
       </div>
 
       {/* CUPOM */}
-      <div className="absolute top-16 md:top-6 right-3 md:right-10 z-30">
+      <div className="absolute top-16 md:top-6 right-2 md:right-10 z-30">
         <motion.div
           initial={{ opacity: 0, y: -30, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
