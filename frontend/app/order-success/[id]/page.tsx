@@ -75,7 +75,7 @@ export default function OrderSuccessPage({ params }: Props) {
     );
   }
 
-  const statusLabel = order.status || "Processando";
+  const statusLabel = order?.status ?? "Processando";
 
   return (
     <section className="max-w-5xl mx-auto px-6 md:px-8 pt-32 pb-32">
@@ -93,7 +93,7 @@ export default function OrderSuccessPage({ params }: Props) {
       </p>
 
       {/* STATUS */}
-      <div className="mb-12 p-5 rounded-xl border border-[var(--gold)]/40 bg-[var(--gold)]/5 bg-white/[0.02]">
+      <div className="mb-12 p-5 rounded-xl border border-[var(--gold)]/40 bg-white/[0.02]">
         <p className="text-xs uppercase tracking-widest text-white/50 mb-2">
           Status atual
         </p>
@@ -151,7 +151,7 @@ export default function OrderSuccessPage({ params }: Props) {
       {/* AÇÕES */}
       <div className="mt-14 flex flex-col sm:flex-row gap-4">
         <Link
-          href={`/orders/${order.id}`}
+          href={`/account/orders/${order.id}`}
           className="
             px-8 py-4 rounded-full 
             border border-white/20 

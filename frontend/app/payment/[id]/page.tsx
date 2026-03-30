@@ -209,7 +209,7 @@ export default function PaymentPage({ params }: Props) {
       await navigator.clipboard.writeText(payment.qrCodeText);
       setCopied(true);
 
-      window.setTimeout(() => {
+      setTimeout(() => {
         setCopied(false);
       }, 2000);
     } catch (err) {
@@ -225,7 +225,7 @@ export default function PaymentPage({ params }: Props) {
 
   if (loading) {
     return (
-      <section className="max-w-5xl mx-auto px-6 md:px-8 pt-32 pb-32 text-center">
+      <section className="max-w-5xl mx-auto px-4 sm:px-6 md:px-8 pt-32 pb-32 text-center">
         <p className="text-white/60">Carregando pagamento...</p>
       </section>
     );
@@ -233,17 +233,17 @@ export default function PaymentPage({ params }: Props) {
 
   if (error) {
     return (
-      <section className="max-w-5xl mx-auto px-6 md:px-8 pt-32 pb-32 text-center">
+      <section className="max-w-5xl mx-auto px-4 sm:px-6 md:px-8 pt-32 pb-32 text-center">
         <p className="text-red-400">{error}</p>
 
         <button
           onClick={() => void loadAll(false)}
           className="
-            mt-6 px-8 py-4 rounded-full
-            border border-white/20
-            text-xs tracking-[0.35em] uppercase
-            hover:border-[var(--gold)] transition
-          "
+          mt-6 px-8 py-4 rounded-full
+          border border-white/20
+          text-xs tracking-[0.35em] uppercase
+          hover:border-[var(--gold)] transition
+        "
         >
           Tentar novamente
         </button>
@@ -253,14 +253,14 @@ export default function PaymentPage({ params }: Props) {
 
   if (!payment || !order) {
     return (
-      <section className="max-w-5xl mx-auto px-6 md:px-8 pt-32 pb-32 text-center">
+      <section className="max-w-5xl mx-auto px-4 sm:px-6 md:px-8 pt-32 pb-32 text-center">
         <p className="text-white/60">Pagamento não encontrado.</p>
       </section>
     );
   }
 
   return (
-    <section className="max-w-6xl mx-auto px-6 md:px-8 pt-32 pb-32">
+    <section className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 pt-32 pb-32 bg-gradient-to-b from-black via-black to-black">
       <p className="text-white/50 uppercase text-xs tracking-[0.4em] mb-4">
         Pagamento do pedido
       </p>
@@ -270,7 +270,7 @@ export default function PaymentPage({ params }: Props) {
       </h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-        <div className="border border-white/10 rounded-3xl p-6 md:p-8 bg-black/40 backdrop-blurxl">
+        <div className="border border-white/10 rounded-3xl p-6 md:p-8 bg-black/40 backdrop-blur-xl">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-xs uppercase tracking-widest text-white/50 mb-2">
@@ -286,15 +286,15 @@ export default function PaymentPage({ params }: Props) {
               onClick={() => void handleRefresh()}
               disabled={loadingRefresh}
               className="
-                px-4 py-2 rounded-full
-                border border-white/15
-                text-[10px] uppercase tracking-[0.28em]
-                text-white/70
-                hover:border-[var(--gold)]
-                hover:text-white
-                transition
-                disabled:opacity-50 disabled:cursor-not-allowed
-              "
+              px-4 py-2 rounded-full
+              border border-white/15
+              text-[10px] uppercase tracking-[0.28em]
+              text-white/70
+              hover:border-[var(--gold)]
+              hover:text-white
+              transition
+              disabled:opacity-50 disabled:cursor-not-allowed
+            "
             >
               {loadingRefresh ? "Atualizando" : "Atualizar"}
             </button>
@@ -364,7 +364,7 @@ export default function PaymentPage({ params }: Props) {
           )}
         </div>
 
-        <div className="border border-white/10 rounded-3xl p-6 md:p-8 bg-black/40 backdrop-blurxl">
+        <div className="border border-white/10 rounded-3xl p-6 md:p-8 bg-black/40 backdrop-blur-xl">
           {payment.method === "pix" ? (
             <>
               <p className="text-xs uppercase tracking-widest text-white/50 mb-4">
@@ -381,13 +381,13 @@ export default function PaymentPage({ params }: Props) {
                 onClick={copyPixCode}
                 disabled={!payment.qrCodeText}
                 className="
-                  mt-5 w-full py-4 rounded-full
-                  bg-[var(--gold)] text-black
-                  text-xs tracking-[0.35em] uppercase
-                  hover:scale-105 active:scale-[0.98]
-                  transition
-                  disabled:opacity-50 disabled:cursor-not-allowed
-                "
+          mt-5 w-full py-4 rounded-full
+          bg-[var(--gold)] text-black
+          text-xs tracking-[0.35em] uppercase
+          hover:scale-105 active:scale-[0.98]
+          transition
+          disabled:opacity-50 disabled:cursor-not-allowed
+        "
               >
                 {copied ? "Código copiado" : "Copiar código PIX"}
               </button>
@@ -418,16 +418,17 @@ export default function PaymentPage({ params }: Props) {
             </>
           )}
 
-          <div className="mt-10 flex flex-col sm:flex-row gap-4">
+          <div className="mt-10 flex flex-col sm:flex-row gap-4 w-full">
             {isApproved ? (
               <Link
                 href={`/order-success/${order.id}`}
                 className="
-                  px-8 py-4 rounded-full
-                  bg-[var(--gold)] text-black
-                  text-xs tracking-[0.35em] uppercase
-                  hover:scale-105 transition text-center
-                "
+          w-full sm:w-auto
+          px-8 py-4 rounded-full
+          bg-[var(--gold)] text-black
+          text-xs tracking-[0.35em] uppercase
+          hover:scale-105 transition text-center
+        "
               >
                 Ver pedido
               </Link>
@@ -435,11 +436,12 @@ export default function PaymentPage({ params }: Props) {
               <Link
                 href="/checkout"
                 className="
-                  px-8 py-4 rounded-full
-                  border border-white/20
-                  text-xs tracking-[0.35em] uppercase
-                  hover:border-[var(--gold)] transition text-center
-                "
+          w-full sm:w-auto
+          px-8 py-4 rounded-full
+          border border-white/20
+          text-xs tracking-[0.35em] uppercase
+          hover:border-[var(--gold)] transition text-center
+        "
               >
                 Voltar ao checkout
               </Link>
@@ -448,11 +450,12 @@ export default function PaymentPage({ params }: Props) {
             <Link
               href="/catalog"
               className="
-                px-8 py-4 rounded-full
-                border border-white/20
-                text-xs tracking-[0.35em] uppercase
-                hover:border-[var(--gold)] transition text-center
-              "
+        w-full sm:w-auto
+        px-8 py-4 rounded-full
+        border border-white/20
+        text-xs tracking-[0.35em] uppercase
+        hover:border-[var(--gold)] transition text-center
+      "
             >
               Continuar comprando
             </Link>
