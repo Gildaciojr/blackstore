@@ -25,7 +25,7 @@ export default function ProductImage({ src, alt }: Props) {
   const resolvedSrc = resolveImage(src);
 
   return (
-    <div className="relative w-full aspect-[3/4] overflow-hidden bg-black">
+    <div className="relative w-full aspect-[4/5] overflow-hidden bg-black">
 
       <Image
         src={resolvedSrc}

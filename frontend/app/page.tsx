@@ -58,6 +58,7 @@ type QuickProduct = {
   images: string[];
   oldPrice?: number;
   variants?: Variant[];
+  description?: string;
 };
 
 type WeeklyBestSellerItem = {
@@ -192,6 +193,7 @@ export default function HomePage() {
         images: getImages(product),
         oldPrice: product.oldPrice ?? undefined,
         variants: product.variants ?? [],
+        description: product.description ?? "",
       };
     },
     [getCover, getImages],
