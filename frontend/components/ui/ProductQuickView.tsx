@@ -169,13 +169,13 @@ export default function ProductQuickView({ product, onClose }: Props) {
 
           {/* GALERIA */}
           <div className="relative flex min-h-[280px] flex-col bg-black">
-            <div className="relative w-full aspect-[4/5] md:h-full overflow-hidden">
+            <div className="relative w-full aspect-[4/5] md:h-full bg-black overflow-hidden">
               <Image
                 key={currentImage}
                 src={currentImage}
                 alt={product.name}
                 fill
-                className="object-cover object-center"
+                className="object-contain object-center"
                 sizes="(max-width: 768px) 100vw, 50vw"
                 priority
               />

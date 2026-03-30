@@ -431,12 +431,30 @@ export default function HomePage() {
                 Mais do que vestir, é sobre presença, atitude e identidade.
               </p>
 
-              <div className="mt-14 flex flex-col gap-5 sm:flex-row sm:gap-6">
+              <div className="mt-12 flex flex-col gap-4 sm:flex-row sm:gap-6">
                 <a
                   href="https://instagram.com/blackstoreloja1"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group inline-flex items-center justify-center gap-4 rounded-full border border-white/20 px-8 py-4 text-xs uppercase tracking-[0.35em] text-white/80 transition-all duration-300 hover:border-[var(--gold)] hover:text-[var(--gold)] sm:px-10"
+                  className="
+      group
+      inline-flex items-center justify-center
+      rounded-full
+
+      border border-white/20
+
+      px-6 py-3 sm:px-8 sm:py-4
+
+      text-[10px] sm:text-xs
+      uppercase
+      tracking-[0.25em] sm:tracking-[0.35em]
+
+      text-white/80
+
+      transition-colors duration-200
+      hover:border-[var(--gold)]
+      hover:text-[var(--gold)]
+    "
                 >
                   Instagram Blackstore
                 </a>
@@ -445,7 +463,26 @@ export default function HomePage() {
                   href="https://wa.me/5562994694804"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group inline-flex items-center justify-center gap-4 rounded-full bg-[var(--gold)] px-10 py-4 text-xs font-medium uppercase tracking-[0.35em] text-black transition-all duration-300 hover:scale-[1.05] active:scale-[0.97] sm:px-12"
+                  className="
+      group
+      inline-flex items-center justify-center
+      rounded-full
+
+      bg-[var(--gold)]
+
+      px-6 py-3 sm:px-10 sm:py-4
+
+      text-[10px] sm:text-xs
+      font-medium
+      uppercase
+      tracking-[0.25em] sm:tracking-[0.35em]
+
+      text-black
+
+      transition-transform duration-200
+      sm:hover:scale-[1.05]
+      active:scale-[0.97]
+    "
                 >
                   Atendimento via WhatsApp
                 </a>
