@@ -93,63 +93,175 @@ export default function ShippingModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-      <div className="bg-[#0b0b0d] p-6 rounded-xl w-full max-w-md border border-white/10 space-y-4">
-        <h2 className="text-lg">
-          {initialData ? "Editar frete" : "Novo frete"}
-        </h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* OVERLAY */}
+      <div
+        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+        onClick={onClose}
+      />
 
-        <input
-          placeholder="Nome"
-          value={form.name}
-          onChange={(e) => setForm({ ...form, name: e.target.value })}
-          className="w-full p-2 bg-black border border-white/10 rounded"
-        />
+      {/* MODAL */}
+      <div
+        className="
+        relative z-10
+        w-full max-w-2xl
+        rounded-3xl
+        border border-white/10
+        bg-[#0b0b0d]/95
+        backdrop-blur-xl
+        p-8
+        space-y-8
+      "
+      >
+        {/* HEADER */}
+        <div className="space-y-2">
+          <p className="text-xs uppercase tracking-[0.4em] text-white/40">
+            Logística
+          </p>
 
-        <input
-          placeholder="Método (ex: pac)"
-          value={form.method}
-          onChange={(e) => setForm({ ...form, method: e.target.value })}
-          className="w-full p-2 bg-black border border-white/10 rounded"
-        />
+          <h2 className="text-2xl font-light">
+            {initialData ? "Editar frete" : "Novo frete"}
+          </h2>
+        </div>
 
-        <input
-          placeholder="Preço"
-          value={form.price}
-          onChange={(e) => setForm({ ...form, price: e.target.value })}
-          className="w-full p-2 bg-black border border-white/10 rounded"
-        />
+        {/* FORM */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* NOME */}
+          <div className="space-y-2 md:col-span-2">
+            <label className="text-xs uppercase tracking-widest text-white/50">
+              Nome
+            </label>
+            <input
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              className="
+                w-full px-4 py-3 rounded-xl
+                bg-black border border-white/10
+                focus:border-[var(--gold)]
+                outline-none
+                transition
+              "
+            />
+          </div>
 
-        <input
-          placeholder="Dias mínimos"
-          value={form.minDays}
-          onChange={(e) => setForm({ ...form, minDays: e.target.value })}
-          className="w-full p-2 bg-black border border-white/10 rounded"
-        />
+          {/* MÉTODO */}
+          <div className="space-y-2">
+            <label className="text-xs uppercase tracking-widest text-white/50">
+              Método
+            </label>
+            <input
+              value={form.method}
+              onChange={(e) => setForm({ ...form, method: e.target.value })}
+              className="
+                w-full px-4 py-3 rounded-xl
+                bg-black border border-white/10
+                focus:border-[var(--gold)]
+                outline-none
+                transition
+              "
+            />
+          </div>
 
-        <input
-          placeholder="Dias máximos"
-          value={form.maxDays}
-          onChange={(e) => setForm({ ...form, maxDays: e.target.value })}
-          className="w-full p-2 bg-black border border-white/10 rounded"
-        />
+          {/* PREÇO */}
+          <div className="space-y-2">
+            <label className="text-xs uppercase tracking-widest text-white/50">
+              Preço
+            </label>
+            <input
+              value={form.price}
+              onChange={(e) => setForm({ ...form, price: e.target.value })}
+              className="
+                w-full px-4 py-3 rounded-xl
+                bg-black border border-white/10
+                focus:border-[var(--gold)]
+                outline-none
+                transition
+              "
+            />
+          </div>
 
-        <input
-          placeholder="Prefixo CEP (opcional)"
-          value={form.cepPrefix}
-          onChange={(e) => setForm({ ...form, cepPrefix: e.target.value })}
-          className="w-full p-2 bg-black border border-white/10 rounded"
-        />
+          {/* PRAZO */}
+          <div className="space-y-2">
+            <label className="text-xs uppercase tracking-widest text-white/50">
+              Dias mínimos
+            </label>
+            <input
+              value={form.minDays}
+              onChange={(e) => setForm({ ...form, minDays: e.target.value })}
+              className="
+                w-full px-4 py-3 rounded-xl
+                bg-black border border-white/10
+                focus:border-[var(--gold)]
+                outline-none
+                transition
+              "
+            />
+          </div>
 
-        <div className="flex justify-end gap-2 pt-4">
-          <button onClick={onClose} className="px-4 py-2 border rounded">
+          <div className="space-y-2">
+            <label className="text-xs uppercase tracking-widest text-white/50">
+              Dias máximos
+            </label>
+            <input
+              value={form.maxDays}
+              onChange={(e) => setForm({ ...form, maxDays: e.target.value })}
+              className="
+                w-full px-4 py-3 rounded-xl
+                bg-black border border-white/10
+                focus:border-[var(--gold)]
+                outline-none
+                transition
+              "
+            />
+          </div>
+
+          {/* CEP */}
+          <div className="space-y-2 md:col-span-2">
+            <label className="text-xs uppercase tracking-widest text-white/50">
+              Prefixo de CEP (opcional)
+            </label>
+            <input
+              value={form.cepPrefix}
+              onChange={(e) => setForm({ ...form, cepPrefix: e.target.value })}
+              className="
+                w-full px-4 py-3 rounded-xl
+                bg-black border border-white/10
+                focus:border-[var(--gold)]
+                outline-none
+                transition
+              "
+            />
+          </div>
+        </div>
+
+        {/* FOOTER */}
+        <div className="flex justify-between items-center pt-4">
+          <button
+            onClick={onClose}
+            className="
+              text-xs uppercase tracking-[0.3em]
+              text-white/50
+              hover:text-white
+              transition
+            "
+          >
             Cancelar
           </button>
 
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="px-4 py-2 bg-[var(--gold)] text-black rounded"
+            className="
+              px-8 py-3
+              rounded-full
+              bg-[var(--gold)]
+              text-black
+              text-xs
+              uppercase tracking-[0.35em]
+              hover:scale-105 active:scale-[0.98]
+              transition
+              disabled:opacity-50
+            "
           >
             {loading ? "Salvando..." : "Salvar"}
           </button>
