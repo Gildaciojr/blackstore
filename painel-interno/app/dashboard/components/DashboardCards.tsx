@@ -79,6 +79,13 @@ export default function DashboardCards({ stats }: { stats: DashboardStats }) {
       icon: Layers,
       route: "/dashboard/home-sections",
     },
+
+    {
+      label: "Frete",
+      value: 0,
+      icon: Package,
+      route: "/dashboard/shipping",
+    },
   ];
 
   return (
@@ -86,7 +93,7 @@ export default function DashboardCards({ stats }: { stats: DashboardStats }) {
       {cards.map((card) => {
         const Icon = card.icon;
 
-        const isActionCard = card.label === "Curadoria";
+        const isActionCard = ["Curadoria", "Frete"].includes(card.label);
 
         return (
           <button

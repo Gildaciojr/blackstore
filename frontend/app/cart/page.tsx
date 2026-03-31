@@ -207,14 +207,14 @@ export default function CartPage() {
         {/* RESUMO */}
         <div
           className="
-          border border-white/10 
-          p-6 md:p-10 
-          bg-black/40 
-          backdrop-blur 
-          rounded-2xl 
-          h-fit 
-          sticky top-24
-        "
+  border border-white/10 
+  p-6 md:p-10 
+  bg-black/40 
+  backdrop-blur 
+  rounded-2xl 
+  h-fit 
+  sticky top-24
+"
         >
           <h2 className="uppercase tracking-widest text-xs mb-6">
             Resumo do pedido
@@ -231,13 +231,13 @@ export default function CartPage() {
                 onChange={(e) => setCouponInput(e.target.value)}
                 placeholder="Digite seu cupom"
                 className={`
-                  flex-1 px-4 py-3 text-sm rounded-md bg-black border transition
-                  ${
-                    appliedCouponCode
-                      ? "border-green-500 text-green-400"
-                      : "border-white/20 focus:border-[var(--gold)]"
-                  }
-                `}
+          flex-1 px-4 py-3 text-sm rounded-md bg-black border transition
+          ${
+            appliedCouponCode
+              ? "border-green-500 text-green-400"
+              : "border-white/20 focus:border-[var(--gold)]"
+          }
+        `}
                 disabled={!!appliedCouponCode}
               />
 
@@ -245,10 +245,10 @@ export default function CartPage() {
                 <button
                   onClick={handleApplyCoupon}
                   className="
-                    px-5 py-3 text-xs uppercase tracking-widest
-                    bg-[var(--gold)] text-black rounded-md
-                    hover:scale-105 active:scale-95 transition
-                  "
+            px-5 py-3 text-xs uppercase tracking-widest
+            bg-[var(--gold)] text-black rounded-md
+            hover:scale-105 active:scale-95 transition
+          "
                 >
                   {couponLoading ? "Validando..." : "Aplicar"}
                 </button>
@@ -256,10 +256,10 @@ export default function CartPage() {
                 <button
                   onClick={removeCoupon}
                   className="
-                    px-5 py-3 text-xs uppercase tracking-widest
-                    border border-white/20 rounded-md
-                    hover:border-red-400 hover:text-red-400 transition
-                  "
+            px-5 py-3 text-xs uppercase tracking-widest
+            border border-white/20 rounded-md
+            hover:border-red-400 hover:text-red-400 transition
+          "
                 >
                   Remover
                 </button>
@@ -289,12 +289,34 @@ export default function CartPage() {
                 className="flex-1 bg-black border border-white/20 px-3 py-2 text-sm rounded-md"
               />
               <button
-                onClick={() => calculateShipping(zip)}
+                onClick={() => {
+                  const normalizedZip = zip.replace(/\D/g, "");
+
+                  if (!normalizedZip) {
+                    alert("Digite seu CEP");
+                    return;
+                  }
+
+                  if (normalizedZip.length !== 8) {
+                    alert("Digite um CEP válido");
+                    return;
+                  }
+
+                  calculateShipping(normalizedZip);
+                }}
                 className="px-4 bg-white text-black text-xs rounded-md"
               >
                 OK
               </button>
             </div>
+
+            {/* 🔥 FEEDBACK PROFISSIONAL */}
+            {shippingOptions.length === 0 &&
+              zip.replace(/\D/g, "").length === 8 && (
+                <p className="text-xs text-red-400 mt-3">
+                  Nenhuma opção de frete encontrada para este CEP.
+                </p>
+              )}
           </div>
 
           {/* FRETE */}
@@ -352,18 +374,25 @@ export default function CartPage() {
           </div>
 
           {/* CTA */}
-          <Link
-            href="/checkout"
+          <button
+            onClick={() => {
+              if (!selectedShipping) {
+                alert("Calcule e selecione o frete antes de continuar");
+                return;
+              }
+
+              window.location.href = "/checkout";
+            }}
             className="
-              block mt-8 py-4 text-center rounded-full 
-              bg-[var(--gold)] text-black 
-              text-xs tracking-[0.35em] uppercase 
-              hover:scale-105 active:scale-[0.98]
-              transition
-            "
+    block mt-8 py-4 text-center rounded-full 
+    bg-[var(--gold)] text-black 
+    text-xs tracking-[0.35em] uppercase 
+    hover:scale-105 active:scale-[0.98]
+    transition
+  "
           >
             Finalizar compra segura
-          </Link>
+          </button>
         </div>
       </div>
 
@@ -378,20 +407,27 @@ export default function CartPage() {
           </p>
         </div>
 
-        <Link
-          href="/checkout"
+        <button
+          onClick={() => {
+            if (!selectedShipping) {
+              alert("Calcule e selecione o frete antes de continuar");
+              return;
+            }
+
+            window.location.href = "/checkout";
+          }}
           className="
-            px-6 py-3 
-            bg-[var(--gold)] 
-            text-black 
-            text-[10px] 
-            uppercase 
-            tracking-[0.35em] 
-            rounded-full
-          "
+      px-6 py-3 
+      bg-[var(--gold)] 
+      text-black 
+      text-[10px] 
+      uppercase 
+      tracking-[0.35em] 
+      rounded-full
+    "
         >
           Finalizar
-        </Link>
+        </button>
       </div>
     </section>
   );

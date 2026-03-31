@@ -16,7 +16,12 @@ const prisma = new PrismaClient({ adapter });
 async function main() {
   console.log('Iniciando seed...');
 
-  const category = await prisma.category.upsert({
+  /**
+   * =========================
+   * CATEGORIA BASE (SAFE)
+   * =========================
+   */
+  await prisma.category.upsert({
     where: { slug: 'fitness' },
     update: {},
     create: {
@@ -25,52 +30,48 @@ async function main() {
     },
   });
 
-  await prisma.product.deleteMany();
+  /**
+   * =========================
+   * SHIPPING (NÃO DESTRUTIVO)
+   * =========================
+   */
 
-  await prisma.product.createMany({
-    data: [
-      {
-        name: 'Top Fitness Premium Pink',
-        slug: 'top-fitness-premium-pink',
-        description: 'Top premium com alta sustentação e conforto.',
-        price: 129.9,
-        oldPrice: 159.9,
-        image: '/images/product-3.jpg',
-        stock: 20,
-        categoryId: category.id,
-      },
-      {
-        name: 'Conjunto Fitness Black Gold',
-        slug: 'conjunto-fitness-black-gold',
-        description: 'Conjunto premium com acabamento sofisticado.',
-        price: 189.9,
-        oldPrice: 229.9,
-        image: '/images/product-4.jpg',
-        stock: 15,
-        categoryId: category.id,
-      },
-      {
-        name: 'Legging Sculpt Premium',
-        slug: 'legging-sculpt-premium',
-        description: 'Modelagem que valoriza o corpo com conforto.',
-        price: 149.9,
-        oldPrice: null,
-        image: '/images/product-5.jpg',
-        stock: 25,
-        categoryId: category.id,
-      },
-      {
-        name: 'Top Performance Minimal',
-        slug: 'top-performance-minimal',
-        description: 'Minimalista, elegante e funcional.',
-        price: 119.9,
-        oldPrice: 139.9,
-        image: '/images/product-6.jpg',
-        stock: 18,
-        categoryId: category.id,
-      },
-    ],
-  });
+  const shippingCount = await prisma.shippingRate.count();
+
+  if (shippingCount === 0) {
+    console.log('Criando fretes iniciais...');
+
+    await prisma.shippingRate.createMany({
+      data: [
+        {
+          name: 'PAC',
+          method: 'pac',
+          price: 15,
+          minDays: 5,
+          maxDays: 10,
+          cepPrefix: '74',
+        },
+        {
+          name: 'SEDEX',
+          method: 'sedex',
+          price: 25,
+          minDays: 2,
+          maxDays: 5,
+          cepPrefix: '74',
+        },
+        {
+          name: 'Padrão',
+          method: 'default',
+          price: 20,
+          minDays: 3,
+          maxDays: 7,
+          cepPrefix: null,
+        },
+      ],
+    });
+  } else {
+    console.log('Fretes já existem. Seed não irá sobrescrever.');
+  }
 
   console.log('Seed executado com sucesso!');
 }

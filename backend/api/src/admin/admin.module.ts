@@ -6,6 +6,7 @@ import { AdminOrdersController } from './admin-orders.controller';
 import { AdminDashboardController } from './admin-dashboard.controller';
 import { AdminAuthController } from './admin-auth.controller';
 import { AdminCustomersController } from './admin-customers.controller';
+import { AdminShippingController } from './admin-shipping.controller';
 
 @Module({
   imports: [PrismaModule],
@@ -16,6 +17,7 @@ import { AdminCustomersController } from './admin-customers.controller';
     AdminDashboardController,
     AdminAuthController,
     AdminCustomersController,
+    AdminShippingController,
   ],
 })
 export class AdminModule {}
