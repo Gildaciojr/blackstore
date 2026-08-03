@@ -46,6 +46,7 @@ model Customer {
   email     String   @unique
   password  String
   phone     String?
+  cpf       String?
   createdAt DateTime @default(now())
 
   orders    Order[]
@@ -129,7 +130,7 @@ model Order {
   total         Float
 
   couponCode String?
-  discount   Float @default(0)
+  discount   Float   @default(0)
 
   shippingName     String?
   shippingMethod   String?
@@ -190,22 +191,22 @@ model Address {
 }
 
 model Payment {
-  id          String   @id @default(uuid())
+  id String @id @default(uuid())
 
-  orderId     String   @unique
-  order       Order    @relation(fields: [orderId], references: [id])
+  orderId String @unique
+  order   Order  @relation(fields: [orderId], references: [id])
 
-  method      String
-  status      String
+  method String
+  status String
 
-  amount      Float
+  amount Float
 
   provider    String?
   providerId  String?
   providerRef String?
 
-  qrCode      String?
-  qrCodeText  String?
+  qrCode     String?
+  qrCodeText String?
 
   cardLast4      String?
   cardBrand      String?
@@ -216,8 +217,8 @@ model Payment {
 
   logs PaymentLog[]
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model PaymentLog {
@@ -226,7 +227,7 @@ model PaymentLog {
   paymentId String
   payment   Payment @relation(fields: [paymentId], references: [id])
 
-  type String
+  type    String
   message String?
 
   rawPayload Json?
@@ -290,22 +291,22 @@ model WeeklyBestSeller {
 }
 
 model HomeSectionItem {
-  id        String          @id @default(uuid())
-  type      HomeSectionType
-  position  Int
+  id       String          @id @default(uuid())
+  type     HomeSectionType
+  position Int
 
   productId String
-  product   Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
-  heroSlideType  HeroSlideType?
-  imageOverride  String?
-  focus          String?
-  focusDesktop   String?
-  title1         String?
-  title2         String?
-  subtitle       String?
-  cta1           String?
-  cta2           String?
+  heroSlideType HeroSlideType?
+  imageOverride String?
+  focus         String?
+  focusDesktop  String?
+  title1        String?
+  title2        String?
+  subtitle      String?
+  cta1          String?
+  cta2          String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -321,17 +322,17 @@ model LookbookItem {
   position Int
 
   productId String
-  product   Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   /**
    * Campos opcionais de apoio ao componente interativo.
    * Mantém flexibilidade sem depender de heurística por categoria/nome.
    */
-  label   String?
-  top     String?
-  left    String?
-  fabric  String?
-  active  Boolean           @default(true)
+  label  String?
+  top    String?
+  left   String?
+  fabric String?
+  active Boolean @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -177,6 +177,10 @@ export default function OrderDetails({
               {order.customer.phone || "Sem telefone"}
             </p>
 
+            <p className="text-white/70 mt-2 break-words">
+              CPF: {order.customer.cpf || "Não informado"}
+            </p>
+
           </div>
 
           <div className="border border-white/10 rounded-xl p-4 sm:p-6">
@@ -214,7 +218,7 @@ export default function OrderDetails({
 
         </div>
 
-        {/* PAGAMENTO + FRETE */}
+{/* PAGAMENTO + FRETE */}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-8 mb-8 sm:mb-10">
 
@@ -233,6 +237,12 @@ export default function OrderDetails({
                 <p className="mt-2 break-words">
                   Valor: {formatCurrency(order.payment.amount)}
                 </p>
+
+                {order.payment.providerId && (
+                  <p className="mt-2 break-words text-[10px] text-white/50">
+                    ID PagBank: {order.payment.providerId}
+                  </p>
+                )}
               </>
             ) : (
               <p className="text-white/60">

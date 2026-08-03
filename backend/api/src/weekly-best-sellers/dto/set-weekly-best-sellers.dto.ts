@@ -4,8 +4,8 @@ export class SetWeeklyBestSellersDto {
   @IsInt()
   @Min(1)
   @Max(4)
-  position: number;
+  position!: number;
 
   @IsString()
-  productId: string;
+  productId!: string;
 }

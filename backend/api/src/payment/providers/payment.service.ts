@@ -44,6 +44,10 @@ export class PaymentService {
       throw new NotFoundException('Customer not found');
     }
 
+    if (!customer.cpf) {
+      throw new BadRequestException('O cadastro do cliente está incompleto. CPF obrigatório.');
+    }
+
     let providerData: ProviderData | null = null;
 
     /**
@@ -59,6 +63,8 @@ export class PaymentService {
         customer: {
           name: `${customer.name} ${customer.surname}`,
           email: customer.email,
+          tax_id: customer.cpf,
+          phone: customer.phone,
         },
       });
     }
@@ -80,6 +86,8 @@ export class PaymentService {
         customer: {
           name: `${customer.name} ${customer.surname}`,
           email: customer.email,
+          tax_id: customer.cpf,
+          phone: customer.phone,
         },
         cardToken: data.cardToken,
         installments: data.installments ?? 1,
@@ -108,7 +116,6 @@ export class PaymentService {
         cardHolderName: data.holderName ?? null,
         installments: data.installments ?? null,
 
-        // mantém compatibilidade com schema
         cardExpMonth: null,
         cardExpYear: null,
       },
@@ -126,7 +133,6 @@ export class PaymentService {
     const charge = data.charges?.[0];
 
     const providerId = charge?.id ?? data.id ?? null;
-
     const referenceId = data.reference_id ?? null;
 
     if (!providerId && !referenceId) {
@@ -135,18 +141,12 @@ export class PaymentService {
 
     let payment: Payment | null = null;
 
-    /**
-     * 🔥 PRIORIDADE 1: providerId (mais confiável)
-     */
     if (providerId) {
       payment = await this.prisma.payment.findFirst({
         where: { providerId },
       });
     }
 
-    /**
-     * 🔥 PRIORIDADE 2: fallback por orderId
-     */
     if (!payment && referenceId) {
       payment = await this.prisma.payment.findUnique({
         where: { orderId: referenceId },
@@ -161,9 +161,6 @@ export class PaymentService {
 
     let status: 'pending' | 'paid' | 'failed' = 'pending';
 
-    /**
-     * 🔥 NORMALIZAÇÃO DE STATUS (ROBUSTA)
-     */
     if (rawStatus === 'PAID') {
       status = 'paid';
     } else if (rawStatus === 'DECLINED' || rawStatus === 'CANCELED' || rawStatus === 'CANCELLED') {
@@ -180,9 +177,6 @@ export class PaymentService {
       },
     });
 
-    /**
-     * 🔥 ATUALIZA PEDIDO (CRÍTICO)
-     */
     if (status === 'paid') {
       await this.prisma.order.update({
         where: { id: payment.orderId },

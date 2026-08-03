@@ -13,21 +13,21 @@ import { ProductSize } from '@prisma/client';
 
 export class ProductVariantDto {
   @IsEnum(ProductSize)
-  size: ProductSize;
+  size!: ProductSize;
 
   @IsNumber()
   @Min(0)
-  stock: number;
+  stock!: number;
 }
 
 export class CreateProductDto {
   @IsString()
   @IsNotEmpty()
-  name: string;
+  name!: string;
 
   @IsString()
   @IsNotEmpty()
-  slug: string;
+  slug!: string;
 
   @IsOptional()
   @IsString()
@@ -35,7 +35,7 @@ export class CreateProductDto {
 
   @IsNumber()
   @Min(0)
-  price: number;
+  price!: number;
 
   @IsOptional()
   @IsNumber()
@@ -44,14 +44,14 @@ export class CreateProductDto {
 
   @IsString()
   @IsNotEmpty()
-  image: string;
+  image!: string;
 
   @IsNumber()
   @Min(0)
-  stock: number;
+  stock!: number;
 
   @IsUUID()
-  categoryId: string;
+  categoryId!: string;
 
   @IsOptional()
   @ValidateNested({ each: true })

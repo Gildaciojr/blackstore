@@ -13,39 +13,39 @@ import { ProductSize } from '@prisma/client';
 
 class AdminProductVariantDto {
   @IsEnum(ProductSize)
-  size: ProductSize;
+  size!: ProductSize;
 
   @IsNumber()
   @Min(0)
-  stock: number;
+  stock!: number;
 }
 
 export class CreateAdminProductDto {
   @IsString()
-  name: string;
+  name!: string;
 
   @IsString()
-  slug: string;
+  slug!: string;
 
   @IsOptional()
   @IsString()
   description?: string;
 
   @IsNumber()
-  price: number;
+  price!: number;
 
   @IsOptional()
   @IsNumber()
   oldPrice?: number;
 
   @IsString()
-  image: string;
+  image!: string;
 
   @IsNumber()
-  stock: number;
+  stock!: number;
 
   @IsUUID()
-  categoryId: string;
+  categoryId!: string;
 
   @IsOptional()
   @IsArray()

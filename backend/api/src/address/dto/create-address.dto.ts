@@ -1,12 +1,12 @@
 export class CreateAddressDto {
-  customerId: string;
+  customerId!: string;
 
-  name: string;
-  street: string;
-  number: string;
+  name!: string;
+  street!: string;
+  number!: string;
   complement?: string;
-  district: string;
-  city: string;
-  state: string;
-  zipCode: string;
+  district!: string;
+  city!: string;
+  state!: string;
+  zipCode!: string;
 }

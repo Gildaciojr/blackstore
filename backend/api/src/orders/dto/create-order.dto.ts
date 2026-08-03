@@ -2,23 +2,23 @@ import { IsNumber, IsOptional, IsString, IsUUID, Min } from 'class-validator';
 
 export class CreateOrderDto {
   @IsUUID()
-  customerId: string;
+  customerId!: string;
 
   @IsUUID()
-  addressId: string;
+  addressId!: string;
 
   @IsNumber()
   @Min(0)
-  shippingPrice: number;
+  shippingPrice!: number;
 
   @IsString()
-  shippingMethod: string;
+  shippingMethod!: string;
 
   @IsString()
-  shippingName: string;
+  shippingName!: string;
 
   @IsString()
-  shippingDeadline: string;
+  shippingDeadline!: string;
 
   @IsOptional()
   @IsString()

@@ -5,5 +5,5 @@ export class CalculateShippingDto {
   @Matches(/^\d{5}-?\d{3}$/, {
     message: 'CEP inválido',
   })
-  cep: string;
+  cep!: string;
 }

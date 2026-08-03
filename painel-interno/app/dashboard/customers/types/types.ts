@@ -19,6 +19,7 @@ export type Customer = {
   surname: string;
   email: string;
   phone?: string | null;
+  cpf?: string | null; // <-- ADICIONADO
   createdAt: string;
 
   orders: CustomerOrder[];

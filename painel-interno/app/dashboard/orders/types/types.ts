@@ -17,6 +17,7 @@ export type OrderCustomer = {
   surname: string;
   email: string;
   phone?: string | null;
+  cpf?: string | null; // <-- ADICIONADO
 };
 
 export type OrderAddress = {
@@ -37,6 +38,7 @@ export type OrderPayment = {
   status: string;
   amount: number;
   providerId?: string | null;
+  providerRef?: string | null; // <-- ADICIONADO (pra facilitar o rastreio do webhook)
 };
 
 export type Order = {

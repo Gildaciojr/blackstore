@@ -1,6 +1,6 @@
 export class CreatePaymentDto {
-  orderId: string;
-  method: 'pix' | 'card';
+  orderId!: string;
+  method!: 'pix' | 'card';
 
   // CARTÃO
   cardToken?: string;
