@@ -1,4 +1,4 @@
-import axios, { isAxiosError } from 'axios';
+import axios from 'axios';
 import { BadRequestException, InternalServerErrorException } from '@nestjs/common';
 
 type CreatePixPayload = {
@@ -155,8 +155,10 @@ export class PagbankProvider {
       console.error('\n=========================================');
       console.error('[PAGBANK] - ERRO NA REQUISIÇÃO PIX');
       console.error('[PAGBANK] - RESPONSE ERROR:');
-      if (isAxiosError(error)) {
+      if (axios.isAxiosError(error)) {
         console.error(JSON.stringify(error.response?.data || error.message, null, 2));
+      } else if (error instanceof Error) {
+        console.error(error.message);
       } else {
         console.error(error);
       }
@@ -259,8 +261,10 @@ export class PagbankProvider {
       console.error('\n=========================================');
       console.error('[PAGBANK] - ERRO NA REQUISIÇÃO CARTÃO');
       console.error('[PAGBANK] - RESPONSE ERROR:');
-      if (isAxiosError(error)) {
+      if (axios.isAxiosError(error)) {
         console.error(JSON.stringify(error.response?.data || error.message, null, 2));
+      } else if (error instanceof Error) {
+        console.error(error.message);
       } else {
         console.error(error);
       }
