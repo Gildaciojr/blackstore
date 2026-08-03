@@ -56,6 +56,18 @@ export default function CartPage() {
     }
   }
 
+  // 🔥 MÁSCARA DO CEP
+  function handleZipChange(e: React.ChangeEvent<HTMLInputElement>) {
+    let value = e.target.value.replace(/\D/g, ""); // Remove tudo que não for número
+    if (value.length > 5) {
+      value = value.replace(/^(\d{5})(\d)/, "$1-$2"); // Adiciona o traço
+    }
+    if (value.length > 9) {
+      value = value.substring(0, 9); // Limita o tamanho
+    }
+    setZip(value);
+  }
+
   // 🔥 FRETE GRÁTIS
   const FREE_SHIPPING_THRESHOLD = 299;
   const subtotalValue = subtotal();
@@ -284,7 +296,7 @@ export default function CartPage() {
             <div className="flex gap-2">
               <input
                 value={zip}
-                onChange={(e) => setZip(e.target.value)}
+                onChange={handleZipChange}
                 placeholder="Digite seu CEP"
                 className="flex-1 bg-black border border-white/20 px-3 py-2 text-sm rounded-md"
               />

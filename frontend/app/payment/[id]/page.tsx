@@ -3,6 +3,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { apiFetch } from "@/lib/api";
 import Link from "next/link";
+import {
+  Copy,
+  Check,
+  RefreshCw,
+  QrCode,
+  CreditCard,
+  AlertCircle,
+} from "lucide-react";
 
 type Payment = {
   id: string;
@@ -96,7 +104,7 @@ export default function PaymentPage({ params }: Props) {
 
   const intervalRef = useRef<number | null>(null);
   const redirectedRef = useRef(false);
-  const fetchingRef = useRef(false); // 🔒 evita concorrência
+  const fetchingRef = useRef(false);
 
   const loadAll = useCallback(
     async (background = false) => {
@@ -225,25 +233,29 @@ export default function PaymentPage({ params }: Props) {
 
   if (loading) {
     return (
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 md:px-8 pt-32 pb-32 text-center">
-        <p className="text-white/60">Carregando pagamento...</p>
+      <section className="min-h-screen flex flex-col items-center justify-center pt-20 px-6 bg-[#0b0b0d]">
+        <div className="w-8 h-8 border-2 border-[var(--gold)] border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p className="text-white/60 text-xs tracking-widest uppercase">
+          Carregando pagamento...
+        </p>
       </section>
     );
   }
 
   if (error) {
     return (
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 md:px-8 pt-32 pb-32 text-center">
-        <p className="text-red-400">{error}</p>
+      <section className="min-h-screen flex flex-col items-center justify-center pt-20 px-6 text-center bg-[#0b0b0d]">
+        <AlertCircle className="text-red-400 w-12 h-12 mb-4" />
+        <p className="text-red-400 mb-6">{error}</p>
 
         <button
           onClick={() => void loadAll(false)}
           className="
-          mt-6 px-8 py-4 rounded-full
-          border border-white/20
-          text-xs tracking-[0.35em] uppercase
-          hover:border-[var(--gold)] transition
-        "
+            px-8 py-4 rounded-full
+            border border-white/20
+            text-xs tracking-[0.35em] uppercase text-white/90
+            hover:border-[var(--gold)] transition
+          "
         >
           Tentar novamente
         </button>
@@ -253,212 +265,237 @@ export default function PaymentPage({ params }: Props) {
 
   if (!payment || !order) {
     return (
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 md:px-8 pt-32 pb-32 text-center">
+      <section className="min-h-screen flex flex-col items-center justify-center pt-20 px-6 text-center bg-[#0b0b0d]">
         <p className="text-white/60">Pagamento não encontrado.</p>
       </section>
     );
   }
 
   return (
-    <section className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 pt-32 pb-32 bg-gradient-to-b from-black via-black to-black">
-      <p className="text-white/50 uppercase text-xs tracking-[0.4em] mb-4">
-        Pagamento do pedido
-      </p>
+    <section className="min-h-screen pt-32 pb-32 bg-[#0b0b0d]">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 md:px-8">
+        <p className="text-white/50 uppercase text-[10px] md:text-xs tracking-[0.4em] mb-4">
+          Status do Pedido
+        </p>
 
-      <h1 className="text-3xl md:text-5xl tracking-widest uppercase bs-title mb-10">
-        {payment.method === "pix" ? "Pagar com PIX" : "Pagar com cartão"}
-      </h1>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-        <div className="border border-white/10 rounded-3xl p-6 md:p-8 bg-black/40 backdrop-blur-xl">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-xs uppercase tracking-widest text-white/50 mb-2">
-                Status
-              </p>
-
-              <p className={`text-lg ${getStatusTextClass(payment.status)}`}>
-                {getStatusLabel(payment.status)}
-              </p>
-            </div>
-
-            <button
-              onClick={() => void handleRefresh()}
-              disabled={loadingRefresh}
-              className="
-              px-4 py-2 rounded-full
-              border border-white/15
-              text-[10px] uppercase tracking-[0.28em]
-              text-white/70
-              hover:border-[var(--gold)]
-              hover:text-white
-              transition
-              disabled:opacity-50 disabled:cursor-not-allowed
-            "
-            >
-              {loadingRefresh ? "Atualizando" : "Atualizar"}
-            </button>
-          </div>
-
-          <div className="mt-8 space-y-3 text-sm">
-            <div className="flex justify-between text-white/70">
-              <span>Pedido</span>
-              <span>#{order.id ? order.id.slice(0, 8) : "—"}</span>
-            </div>
-
-            <div className="flex justify-between text-white/70">
-              <span>Método</span>
-              <span className="uppercase">{payment.method}</span>
-            </div>
-
-            <div className="flex justify-between text-white/70">
-              <span>Total</span>
-              <span>{formatCurrency(payment.amount)}</span>
-            </div>
-
-            <div className="flex justify-between text-white/70">
-              <span>Status do pedido</span>
-              <span className="uppercase">{order.status}</span>
-            </div>
-
-            {payment.provider && (
-              <div className="flex justify-between text-white/70">
-                <span>Gateway</span>
-                <span>{payment.provider}</span>
-              </div>
-            )}
-
-            {payment.providerId && (
-              <div className="flex justify-between text-white/70 gap-4">
-                <span>Transação</span>
-                <span className="text-right break-all">
-                  {payment.providerId}
-                </span>
-              </div>
-            )}
-          </div>
-
-          {payment.method === "pix" && payment.qrCode && (
-            <div className="mt-10">
-              <p className="text-xs uppercase tracking-widest text-white/50 mb-4">
-                QR Code PIX
-              </p>
-
-              <div className="bg-white p-4 rounded-xl inline-flex">
-                <img
-                  src={payment.qrCode}
-                  alt="QR Code PIX"
-                  className="w-64 h-64 object-contain"
-                />
-              </div>
-            </div>
-          )}
-
-          {payment.method === "pix" && !payment.qrCode && (
-            <div className="mt-10 border border-white/10 rounded-2xl p-5 bg-white/[0.02]">
-              <p className="text-white/60 leading-relaxed">
-                O QR Code ainda não foi disponibilizado pelo gateway. Atualize a
-                página em instantes.
-              </p>
-            </div>
-          )}
-        </div>
-
-        <div className="border border-white/10 rounded-3xl p-6 md:p-8 bg-black/40 backdrop-blur-xl">
+        <h1 className="flex items-center gap-3 text-3xl md:text-5xl tracking-widest uppercase bs-title mb-10">
           {payment.method === "pix" ? (
-            <>
-              <p className="text-xs uppercase tracking-widest text-white/50 mb-4">
-                Código copia e cola
-              </p>
+            <QrCode className="text-[var(--gold)] w-8 h-8 md:w-10 md:h-10" />
+          ) : (
+            <CreditCard className="text-[var(--gold)] w-8 h-8 md:w-10 md:h-10" />
+          )}
+          <span>{payment.method === "pix" ? "Pagar via PIX" : "Cartão"}</span>
+        </h1>
 
-              <div className="border border-white/10 rounded-2xl p-4 bg-white/[0.02]">
-                <p className="text-sm text-white/80 break-all leading-relaxed">
-                  {payment.qrCodeText || "Código PIX ainda não disponível."}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-10">
+          {/* DETALHES DO PAGAMENTO */}
+          <div className="border border-white/10 rounded-3xl p-6 md:p-8 bg-white/[0.02] backdrop-blur-xl">
+            <div className="flex items-start justify-between gap-4 border-b border-white/10 pb-6 mb-6">
+              <div>
+                <p className="text-[10px] uppercase tracking-widest text-white/50 mb-2">
+                  Status da Transação
+                </p>
+                <p
+                  className={`text-lg md:text-xl font-medium tracking-wide ${getStatusTextClass(payment.status)}`}
+                >
+                  {getStatusLabel(payment.status)}
                 </p>
               </div>
 
               <button
-                onClick={copyPixCode}
-                disabled={!payment.qrCodeText}
+                onClick={() => void handleRefresh()}
+                disabled={loadingRefresh}
                 className="
-          mt-5 w-full py-4 rounded-full
-          bg-[var(--gold)] text-black
-          text-xs tracking-[0.35em] uppercase
-          hover:scale-105 active:scale-[0.98]
-          transition
-          disabled:opacity-50 disabled:cursor-not-allowed
-        "
+                  flex items-center gap-2
+                  px-4 py-2.5 rounded-full
+                  border border-white/15 bg-black/50
+                  text-[10px] uppercase tracking-[0.2em]
+                  text-white/70
+                  hover:border-[var(--gold)] hover:text-[var(--gold)]
+                  transition-all duration-300
+                  disabled:opacity-50 disabled:cursor-not-allowed
+                "
               >
-                {copied ? "Código copiado" : "Copiar código PIX"}
+                <RefreshCw
+                  size={14}
+                  className={loadingRefresh ? "animate-spin" : ""}
+                />
+                <span className="hidden sm:inline">
+                  {loadingRefresh ? "Atualizando" : "Atualizar"}
+                </span>
               </button>
+            </div>
 
-              <div className="mt-6 space-y-2 text-sm text-white/60 leading-relaxed">
-                <p>
-                  Após o pagamento, esta página será atualizada automaticamente.
-                </p>
-                <p>
-                  Assim que o gateway confirmar a transação, você será
-                  redirecionado para a confirmação do pedido.
-                </p>
+            <div className="space-y-4 text-sm">
+              <div className="flex justify-between items-center text-white/70">
+                <span>Nº do Pedido</span>
+                <span className="font-mono text-white">
+                  #{order.id ? order.id.slice(0, 8) : "—"}
+                </span>
               </div>
-            </>
-          ) : (
-            <>
-              <p className="text-xs uppercase tracking-widest text-white/50 mb-4">
-                Cartão
-              </p>
 
-              <div className="border border-white/10 rounded-2xl p-5 bg-white/[0.02]">
-                <p className="text-white/70 leading-relaxed">
-                  O fluxo de cartão será conectado ao SDK do PagBank para
-                  criptografia do cartão no navegador e criação da cobrança no
-                  backend.
-                </p>
+              <div className="flex justify-between items-center text-white/70">
+                <span>Método</span>
+                <span className="uppercase text-white">{payment.method}</span>
               </div>
-            </>
-          )}
 
-          <div className="mt-10 flex flex-col sm:flex-row gap-4 w-full">
-            {isApproved ? (
-              <Link
-                href={`/order-success/${order.id}`}
-                className="
-          w-full sm:w-auto
-          px-8 py-4 rounded-full
-          bg-[var(--gold)] text-black
-          text-xs tracking-[0.35em] uppercase
-          hover:scale-105 transition text-center
-        "
-              >
-                Ver pedido
-              </Link>
-            ) : (
-              <Link
-                href="/checkout"
-                className="
-          w-full sm:w-auto
-          px-8 py-4 rounded-full
-          border border-white/20
-          text-xs tracking-[0.35em] uppercase
-          hover:border-[var(--gold)] transition text-center
-        "
-              >
-                Voltar ao checkout
-              </Link>
+              <div className="flex justify-between items-center text-white/70">
+                <span>Total a Pagar</span>
+                <span className="text-[var(--gold)] font-medium text-base">
+                  {formatCurrency(payment.amount)}
+                </span>
+              </div>
+
+              {payment.provider && (
+                <div className="flex justify-between items-center text-white/70">
+                  <span>Gateway</span>
+                  <span className="text-white">{payment.provider}</span>
+                </div>
+              )}
+
+              {payment.providerId && (
+                <div className="flex justify-between items-start text-white/70 gap-4 mt-2 pt-4 border-t border-white/5">
+                  <span>Transação ID</span>
+                  <span className="text-right text-xs break-all text-white/50 font-mono">
+                    {payment.providerId}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* QR CODE DISPLAY */}
+            {payment.method === "pix" && payment.qrCode && (
+              <div className="mt-8 flex flex-col items-center">
+                <p className="text-[10px] uppercase tracking-widest text-white/50 mb-4 w-full text-left">
+                  Escaneie o QR Code
+                </p>
+
+                <div className="bg-white p-4 md:p-6 rounded-2xl shadow-[0_0_30px_rgba(255,255,255,0.1)] inline-block">
+                  <img
+                    src={payment.qrCode}
+                    alt="QR Code PIX"
+                    className="w-48 h-48 md:w-56 md:h-56 object-contain"
+                  />
+                </div>
+              </div>
             )}
 
-            <Link
-              href="/catalog"
-              className="
-        w-full sm:w-auto
-        px-8 py-4 rounded-full
-        border border-white/20
-        text-xs tracking-[0.35em] uppercase
-        hover:border-[var(--gold)] transition text-center
-      "
-            >
-              Continuar comprando
-            </Link>
+            {payment.method === "pix" && !payment.qrCode && (
+              <div className="mt-8 border border-white/10 rounded-2xl p-5 bg-white/[0.02] flex items-center gap-3">
+                <AlertCircle className="text-white/40 shrink-0" />
+                <p className="text-white/60 text-xs md:text-sm leading-relaxed">
+                  O QR Code ainda não foi disponibilizado pelo banco. Aguarde ou
+                  atualize a página.
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* ÁREA DE AÇÃO */}
+          <div className="flex flex-col">
+            <div className="border border-white/10 rounded-3xl p-6 md:p-8 bg-white/[0.02] backdrop-blur-xl flex-1">
+              {payment.method === "pix" ? (
+                <>
+                  <p className="text-[10px] uppercase tracking-widest text-white/50 mb-4">
+                    Pix Copia e Cola
+                  </p>
+
+                  <div className="border border-white/10 rounded-2xl p-4 bg-black/50 relative group">
+                    <p className="text-xs md:text-sm text-white/80 break-all leading-relaxed font-mono">
+                      {payment.qrCodeText || "Código PIX ainda não disponível."}
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={copyPixCode}
+                    disabled={!payment.qrCodeText}
+                    className={`
+                      mt-5 w-full py-4 rounded-full flex items-center justify-center gap-3
+                      text-xs tracking-[0.35em] uppercase font-medium transition-all duration-300
+                      ${
+                        copied
+                          ? "bg-green-500 text-black border-transparent shadow-[0_0_20px_rgba(34,197,94,0.3)]"
+                          : "bg-[var(--gold)] text-black hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                      }
+                    `}
+                  >
+                    {copied ? <Check size={18} /> : <Copy size={18} />}
+                    {copied ? "Código copiado" : "Copiar código PIX"}
+                  </button>
+
+                  <div className="mt-8 p-5 rounded-2xl bg-white/[0.02] border border-white/5 space-y-2 text-xs md:text-sm text-white/50 leading-relaxed">
+                    <p>
+                      ✦ Após o pagamento, esta página será atualizada
+                      automaticamente.
+                    </p>
+                    <p>
+                      ✦ Assim que o banco confirmar a transação, você será
+                      redirecionado.
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="text-[10px] uppercase tracking-widest text-white/50 mb-4">
+                    Pagamento via Cartão
+                  </p>
+
+                  <div className="border border-white/10 rounded-2xl p-6 bg-black/50 flex flex-col items-center justify-center text-center gap-4 h-48">
+                    <CreditCard className="text-white/20 w-12 h-12" />
+                    <p className="text-white/50 text-sm leading-relaxed max-w-xs">
+                      Sua transação está sendo processada de forma segura e
+                      criptografada.
+                    </p>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* BOTÕES INFERIORES */}
+            <div className="mt-8 flex flex-col sm:flex-row gap-4 w-full">
+              {isApproved ? (
+                <Link
+                  href={`/order-success/${order.id}`}
+                  className="
+                    w-full
+                    px-8 py-4 rounded-full
+                    bg-[var(--gold)] text-black
+                    text-xs tracking-[0.35em] uppercase font-medium
+                    hover:scale-[1.02] active:scale-[0.98] transition text-center
+                  "
+                >
+                  Ver pedido confirmado
+                </Link>
+              ) : (
+                <Link
+                  href="/checkout"
+                  className="
+                    w-full sm:w-1/2
+                    px-8 py-4 rounded-full
+                    border border-white/20 bg-black
+                    text-xs tracking-[0.35em] uppercase text-white/90
+                    hover:border-[var(--gold)] transition text-center
+                  "
+                >
+                  Voltar
+                </Link>
+              )}
+
+              {!isApproved && (
+                <Link
+                  href="/catalog"
+                  className="
+                    w-full sm:w-1/2
+                    px-8 py-4 rounded-full
+                    bg-white/5 border border-transparent text-white
+                    text-xs tracking-[0.35em] uppercase
+                    hover:bg-white/10 transition text-center
+                  "
+                >
+                  Catálogo
+                </Link>
+              )}
+            </div>
           </div>
         </div>
       </div>

@@ -27,7 +27,6 @@ type Address = {
 };
 
 export default function AddressesPage() {
-
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -45,12 +44,9 @@ export default function AddressesPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
 
   async function loadAddresses() {
-
     const customerId = getCustomerId();
 
-    const data = await apiFetch<Address[]>(
-      `/address/${customerId}`
-    );
+    const data = await apiFetch<Address[]>(`/address/${customerId}`);
 
     setAddresses(data);
   }
@@ -59,40 +55,52 @@ export default function AddressesPage() {
     loadAddresses();
   }, []);
 
-  function handleChange(
-    e: React.ChangeEvent<HTMLInputElement>
-  ) {
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const { name, value } = e.target;
+
+    // Aplica máscara de CEP (XXXXX-XXX) em tempo real
+    if (name === "zipCode") {
+      let cep = value.replace(/\D/g, ""); // Remove tudo que não for número
+      if (cep.length > 5) {
+        cep = cep.replace(/^(\d{5})(\d)/, "$1-$2");
+      }
+      if (cep.length > 9) {
+        cep = cep.substring(0, 9); // Limita o tamanho máximo
+      }
+      setForm({ ...form, zipCode: cep });
+      return;
+    }
+
     setForm({
       ...form,
-      [e.target.name]: e.target.value,
+      [name]: value,
     });
   }
 
   async function handleSubmit() {
-
     const customerId = getCustomerId();
-
     setLoading(true);
 
+    // Remove a máscara do CEP antes de enviar para o backend
+    const cleanForm = {
+      ...form,
+      zipCode: form.zipCode.replace(/\D/g, ""),
+    };
+
     try {
-
       if (editingId) {
-
         await apiFetch(`/address/${editingId}`, {
           method: "PATCH",
-          body: JSON.stringify(form),
+          body: JSON.stringify(cleanForm),
         });
-
       } else {
-
         await apiFetch("/address", {
           method: "POST",
           body: JSON.stringify({
-            ...form,
+            ...cleanForm,
             customerId,
           }),
         });
-
       }
 
       setForm({
@@ -107,23 +115,15 @@ export default function AddressesPage() {
       });
 
       setEditingId(null);
-
       await loadAddresses();
-
     } catch {
-
       alert("Erro ao salvar endereço");
-
     } finally {
-
       setLoading(false);
-
     }
-
   }
 
   async function handleDelete(id: string) {
-
     if (!confirm("Excluir endereço?")) return;
 
     await apiFetch(`/address/${id}`, {
@@ -134,8 +134,13 @@ export default function AddressesPage() {
   }
 
   function handleEdit(address: Address) {
-
     setEditingId(address.id);
+
+    // Reaplica a máscara ao carregar para edição
+    let cep = address.zipCode.replace(/\D/g, "");
+    if (cep.length > 5) {
+      cep = cep.replace(/^(\d{5})(\d)/, "$1-$2");
+    }
 
     setForm({
       name: address.name,
@@ -145,28 +150,23 @@ export default function AddressesPage() {
       district: address.district,
       city: address.city,
       state: address.state,
-      zipCode: address.zipCode,
+      zipCode: cep,
     });
-
   }
 
   return (
     <section className="max-w-5xl mx-auto px-8 pt-40 pb-32">
-
       <h1 className="text-4xl md:text-5xl uppercase tracking-widest mb-16 bs-title">
         Meus endereços
       </h1>
 
       {/* FORM */}
-
       <div className="border border-white/10 p-10 mb-20">
-
         <h2 className="uppercase text-sm tracking-widest mb-8">
           {editingId ? "Editar endereço" : "Novo endereço"}
         </h2>
 
         <div className="grid grid-cols-2 gap-6">
-
           <input
             name="name"
             placeholder="Nome do endereço"
@@ -230,7 +230,6 @@ export default function AddressesPage() {
             onChange={handleChange}
             className="bg-black border border-white/20 p-3"
           />
-
         </div>
 
         <button
@@ -244,64 +243,44 @@ export default function AddressesPage() {
             hover:scale-105 transition
           "
         >
-
           {loading ? "Salvando..." : "Salvar endereço"}
-
         </button>
-
       </div>
 
       {/* LISTA */}
-
       <div className="space-y-6">
-
         {addresses.map((address) => (
-
           <div
             key={address.id}
             className="border border-white/10 p-6 flex justify-between items-center"
           >
-
             <div>
-
               <p className="text-sm">
                 {address.street}, {address.number}
               </p>
-
               <p className="text-xs text-white/60">
                 {address.city} - {address.state}
               </p>
-
-              <p className="text-xs text-white/60">
-                CEP {address.zipCode}
-              </p>
-
+              <p className="text-xs text-white/60">CEP {address.zipCode}</p>
             </div>
 
             <div className="flex gap-4">
-
               <button
                 onClick={() => handleEdit(address)}
                 className="text-xs text-white/60 hover:text-white"
               >
                 Editar
               </button>
-
               <button
                 onClick={() => handleDelete(address.id)}
                 className="text-xs text-red-400"
               >
                 Excluir
               </button>
-
             </div>
-
           </div>
-
         ))}
-
       </div>
-
     </section>
   );
 }

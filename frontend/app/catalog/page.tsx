@@ -24,7 +24,7 @@ type Product = {
   image: string;
   images?: string[];
   categoryId: string;
-  stock: number; // mantido (fallback)
+  stock: number;
   variants?: Variant[];
 };
 
@@ -89,12 +89,12 @@ export default function CatalogPage() {
   });
 
   return (
-    <main className="pt-16 pb-28 bg-[#0b0b0d]">
-      <div className="max-w-[1500px] mx-auto px-6 md:px-8">
+    <main className="pt-16 pb-28 bg-[#0b0b0d] min-h-screen">
+      <div className="max-w-[1500px] mx-auto px-4 md:px-8">
         {/* HEADER */}
-        <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 mb-10">
+        <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-8 md:mb-10">
           <div>
-            <p className="uppercase text-xs tracking-[0.35em] text-white/40">
+            <p className="uppercase text-[10px] md:text-xs tracking-[0.35em] text-white/40">
               coleção
             </p>
 
@@ -103,7 +103,7 @@ export default function CatalogPage() {
               <span className="bs-title">Blackstore</span>
             </h1>
 
-            <p className="mt-3 text-white/60 max-w-xl text-sm">
+            <p className="mt-3 text-white/60 max-w-xl text-xs md:text-sm">
               Moda fitness e vestidos premium pensados para mulheres que
               valorizam presença, design e autenticidade.
             </p>
@@ -123,7 +123,7 @@ export default function CatalogPage() {
               onChange={(e) => handleSearch(e.target.value)}
               className="
                 w-full
-                pl-10 pr-4 py-3
+                pl-10 pr-4 py-3 md:py-4
                 rounded-full
                 bg-black
                 border border-white/10
@@ -132,21 +132,27 @@ export default function CatalogPage() {
                 placeholder:text-white/30
                 focus:outline-none
                 focus:border-[var(--gold)]
+                transition-colors
               "
             />
           </div>
         </div>
 
         {/* TOOLBAR */}
-        <div className="flex flex-wrap items-center justify-between gap-6 mb-12">
-          <div className="text-xs tracking-[0.35em] uppercase text-white/40">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10 md:mb-12 overflow-hidden">
+          <div className="text-[10px] md:text-xs tracking-[0.35em] uppercase text-white/40 whitespace-nowrap shrink-0">
             {filtered.length} produtos
           </div>
 
-          <div className="flex gap-3 flex-wrap">
+          {/* 🔥 CATEGORIAS COM SCROLL HORIZONTAL NATIVO (App Feel) */}
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide snap-x w-full md:w-auto">
             <button
               onClick={() => setCategory("all")}
-              className="px-4 py-2 rounded-full border border-white/10 bg-white/5 text-white/70"
+              className={`px-5 py-2.5 rounded-full border whitespace-nowrap snap-start transition text-xs md:text-sm ${
+                category === "all"
+                  ? "bg-[var(--gold)] border-[var(--gold)] text-black font-semibold"
+                  : "bg-white/5 border-white/10 text-white/70 hover:bg-white/10"
+              }`}
             >
               Todos
             </button>
@@ -155,7 +161,11 @@ export default function CatalogPage() {
               <button
                 key={cat.id}
                 onClick={() => setCategory(cat.slug)}
-                className="px-4 py-2 rounded-full border border-white/10 bg-white/5 text-white/70"
+                className={`px-5 py-2.5 rounded-full border whitespace-nowrap snap-start transition text-xs md:text-sm ${
+                  category === cat.slug
+                    ? "bg-[var(--gold)] border-[var(--gold)] text-black font-semibold"
+                    : "bg-white/5 border-white/10 text-white/70 hover:bg-white/10"
+                }`}
               >
                 {cat.name}
               </button>
@@ -163,12 +173,31 @@ export default function CatalogPage() {
           </div>
         </div>
 
-        {/* GRID */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 md:gap-x-8 gap-y-10 md:gap-y-14">
+        {/* EMPTY STATE */}
+        {filtered.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <Search size={48} className="text-white/20 mb-4" />
+            <p className="text-white/50 text-sm md:text-base">
+              Nenhum produto encontrado para esta busca ou categoria.
+            </p>
+            <button
+              onClick={() => {
+                setQuery("");
+                setCategory("all");
+                handleSearch("");
+              }}
+              className="mt-6 px-6 py-2 text-xs tracking-widest uppercase border border-white/20 rounded-full hover:bg-white/5 transition"
+            >
+              Limpar Filtros
+            </button>
+          </div>
+        )}
+
+        {/* GRID 🔥 AJUSTADO PARA MOBILE (gap-x-3) E DESKTOP (gap-x-8) */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-3 md:gap-x-8 gap-y-8 md:gap-y-14">
           {filtered.map((product, index) => {
             const imageUrl = resolveImage(product.image);
 
-            // 🔥 ESTOQUE CORRETO
             const totalStock =
               product.variants && product.variants.length > 0
                 ? product.variants.reduce((acc, v) => acc + v.stock, 0)
@@ -182,7 +211,7 @@ export default function CatalogPage() {
                   image={imageUrl}
                   name={product.name}
                   price={product.price}
-                  stock={totalStock} // 🔥 CORRIGIDO
+                  stock={totalStock}
                   onQuickView={() =>
                     setSelectedProduct({
                       id: product.id,
@@ -191,7 +220,7 @@ export default function CatalogPage() {
                       image: imageUrl,
                       images: product.images,
                       oldPrice: product.oldPrice ?? undefined,
-                      variants: product.variants, // 🔥 CRÍTICO
+                      variants: product.variants,
                     })
                   }
                 />
