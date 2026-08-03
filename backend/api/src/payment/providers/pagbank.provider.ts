@@ -155,10 +155,12 @@ export class PagbankProvider {
       console.error('\n=========================================');
       console.error('[PAGBANK] - ERRO NA REQUISIÇÃO PIX');
       console.error('[PAGBANK] - RESPONSE ERROR:');
-      if (axios.isAxiosError(error)) {
-        console.error(JSON.stringify(error.response?.data || error.message, null, 2));
-      } else if (error instanceof Error) {
-        console.error(error.message);
+
+      const err = error as { response?: { data?: unknown }; message?: string };
+      if (err.response) {
+        console.error(JSON.stringify(err.response.data, null, 2));
+      } else if (err.message) {
+        console.error(err.message);
       } else {
         console.error(error);
       }
@@ -261,10 +263,12 @@ export class PagbankProvider {
       console.error('\n=========================================');
       console.error('[PAGBANK] - ERRO NA REQUISIÇÃO CARTÃO');
       console.error('[PAGBANK] - RESPONSE ERROR:');
-      if (axios.isAxiosError(error)) {
-        console.error(JSON.stringify(error.response?.data || error.message, null, 2));
-      } else if (error instanceof Error) {
-        console.error(error.message);
+
+      const err = error as { response?: { data?: unknown }; message?: string };
+      if (err.response) {
+        console.error(JSON.stringify(err.response.data, null, 2));
+      } else if (err.message) {
+        console.error(err.message);
       } else {
         console.error(error);
       }
