@@ -4,16 +4,28 @@ import Image from "next/image";
 import Link from "next/link";
 import { ShoppingBag, User } from "lucide-react";
 import { useCart } from "@/store/cart";
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { useEffect, useState, startTransition } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Header() {
   const count = useCart((s) => s.count());
   const [scrolled, setScrolled] = useState(false);
 
+  // Otimização de Performance: Scroll listener limpo e performático
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 40);
-    window.addEventListener("scroll", handleScroll);
+    let ticking = false;
+
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setScrolled(window.scrollY > 40);
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -21,72 +33,68 @@ export default function Header() {
     <header
       className={`fixed top-0 w-full z-50 transition-all duration-500 ${
         scrolled
-          ? "backdrop-blur-xl bg-gradient-to-b from-black/70 via-black/50 to-black/30 border-b border-white/10"
-          : "bg-transparent"
+          ? "backdrop-blur-xl bg-black/80 border-b border-white/10 shadow-2xl"
+          : "bg-gradient-to-b from-black/80 via-black/40 to-transparent"
       }`}
     >
-      {/* TOP ROW */}
       <div
         className={`
           max-w-7xl mx-auto px-4 md:px-6
           flex items-center justify-between
-          ${scrolled ? "h-12 md:h-16" : "h-14 md:h-20"}
+          transition-all duration-500
+          ${scrolled ? "h-16 md:h-20" : "h-20 md:h-24"}
         `}
       >
         {/* LOGO */}
-        <Link href="/" className="flex items-center">
+        <Link href="/" className="flex items-center group focus:outline-none" aria-label="Blackstore Home">
           <Image
             src="/images/logo-v2.png"
             alt="Blackstore"
             width={120}
             height={40}
-            className="object-contain h-[28px] md:h-[42px] w-auto"
+            className="object-contain h-[32px] md:h-[42px] w-auto transition-transform duration-300 group-hover:scale-105"
             priority
           />
         </Link>
 
-        {/* NAV DESKTOP */}
-        <nav className="hidden md:flex items-center gap-12 text-[11px] tracking-[0.35em] uppercase">
-
+        {/* NAV DESKTOP & MOBILE INTEGRADA (Clean UX) */}
+        <nav className="flex items-center gap-8 md:gap-12 text-[11px] md:text-xs tracking-[0.3em] md:tracking-[0.35em] uppercase font-medium">
           <Link
             href="/"
-            className="relative group text-white/70 hover:text-white transition"
+            className="relative group text-white/80 hover:text-white transition-colors py-1"
           >
             Home
-            <span className="absolute left-0 -bottom-2 w-0 h-[1px] bg-[var(--gold)] transition-all duration-300 group-hover:w-full" />
+            <span className="absolute left-0 bottom-0 w-0 h-[1px] bg-[var(--gold)] transition-all duration-300 group-hover:w-full" />
           </Link>
 
           <Link
             href="/catalog"
-            className="relative group text-white/70 hover:text-white transition"
+            className="relative group text-white/80 hover:text-white transition-colors py-1"
           >
             Catálogo
-            <span className="absolute left-0 -bottom-2 w-0 h-[1px] bg-[var(--gold)] transition-all duration-300 group-hover:w-full" />
+            <span className="absolute left-0 bottom-0 w-0 h-[1px] bg-[var(--gold)] transition-all duration-300 group-hover:w-full" />
           </Link>
-
         </nav>
 
-        {/* RIGHT */}
-        <div className="flex items-center gap-2 md:gap-6">
-
+        {/* RIGHT ACTIONS */}
+        <div className="flex items-center gap-3 md:gap-6">
           {/* CONTA */}
           <Link
             href="/login"
+            aria-label="Minha Conta"
             className="
               flex items-center justify-center
-              w-9 h-9 md:w-auto md:h-auto
-              md:px-3 md:py-2
-
+              w-10 h-10 md:w-auto md:h-auto
+              md:px-4 md:py-2
               rounded-full md:rounded-none
-
-              text-white/70 hover:text-[var(--gold)]
-
+              bg-white/5 md:bg-transparent
+              border border-white/10 md:border-none
+              text-white/80 hover:text-[var(--gold)]
               transition-all duration-300
             "
           >
-            <User size={17} />
-
-            <span className="hidden md:inline text-xs uppercase tracking-[0.3em] ml-2">
+            <User size={18} />
+            <span className="hidden md:inline text-xs uppercase tracking-[0.3em] ml-2 font-medium">
               Conta
             </span>
           </Link>
@@ -94,70 +102,48 @@ export default function Header() {
           {/* CART */}
           <Link
             href="/cart"
+            aria-label="Carrinho de Compras"
             className="
-              relative w-9 h-9 md:w-10 md:h-10
+              relative w-10 h-10 md:w-11 md:h-11
               flex items-center justify-center
-
               rounded-full
-
               bg-white/5
               backdrop-blur-sm
-
               border border-white/10
-              hover:border-[var(--gold)]/40
-
+              hover:border-[var(--gold)]/50
+              hover:bg-white/10
               transition-all duration-300
             "
           >
-            <ShoppingBag size={17} />
+            <ShoppingBag size={18} className="text-white/90" />
 
-            {count > 0 && (
-              <motion.span
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                className="
-                  absolute -top-1 -right-1
-                  text-[10px]
-                  bg-[var(--gold)]
-                  text-black
-                  w-5 h-5
-                  flex items-center justify-center
-                  rounded-full
-                  font-medium
-                  shadow-[0_0_10px_rgba(212,175,55,0.6)]
-                "
-              >
-                {count}
-              </motion.span>
-            )}
+            <AnimatePresence>
+              {count > 0 && (
+                <motion.span
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0, opacity: 0 }}
+                  className="
+                    absolute -top-1.5 -right-1.5
+                    text-[10px] font-bold
+                    bg-[var(--gold)]
+                    text-black
+                    w-5 h-5
+                    flex items-center justify-center
+                    rounded-full
+                    shadow-[0_0_12px_rgba(212,175,55,0.7)]
+                  "
+                >
+                  {count}
+                </motion.span>
+              )}
+            </AnimatePresence>
           </Link>
-
         </div>
       </div>
 
-      {/* MOBILE NAV */}
-      <div className="md:hidden px-4 pb-2">
-        <div className="flex justify-center gap-8 text-[11px] tracking-[0.35em] uppercase">
-
-          <Link
-            href="/"
-            className="text-white/70 hover:text-[var(--gold)] transition"
-          >
-            Home
-          </Link>
-
-          <Link
-            href="/catalog"
-            className="text-white/70 hover:text-[var(--gold)] transition"
-          >
-            Catálogo
-          </Link>
-
-        </div>
-      </div>
-
-      {/* LINHA PREMIUM */}
-      <div className="h-px w-full bg-gradient-to-r from-transparent via-[var(--gold)]/30 to-transparent opacity-70" />
+      {/* LINHA PREMIUM DE DESTAQUE */}
+      <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-[var(--gold)]/40 to-transparent opacity-60" />
     </header>
   );
 }

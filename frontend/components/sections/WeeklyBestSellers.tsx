@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import ProductCard from "@/components/ui/ProductCard";
+import { Trophy } from "lucide-react";
 
 type Media = {
   id: string;
@@ -56,45 +57,53 @@ export default function WeeklyBestSellers({
   const others = items.slice(1, 4);
 
   return (
-    <section className="relative">
-
-      {/* HEADER */}
-      <div className="mb-8 border-b border-white/10 pb-6">
-        <p className="text-[10px] uppercase tracking-[0.42em] text-white/45 md:text-xs">
-          Ranking Blackstore
-        </p>
+    <section className="relative py-12 md:py-16">
+      
+      {/* HEADER DA SEÇÃO */}
+      <div className="mb-10 md:mb-12 border-b border-white/10 pb-6 flex items-center justify-between">
+        <div>
+          <div className="inline-flex items-center gap-2 mb-2">
+            <Trophy size={14} className="text-[var(--gold)]" />
+            <span className="text-[10px] md:text-xs uppercase tracking-[0.42em] text-[var(--gold)] font-medium">
+              Destaques da Semana
+            </span>
+          </div>
+          <h2 className="text-2xl md:text-3xl font-light text-white tracking-wide">
+            Ranking <span className="bs-title">Blackstore</span>
+          </h2>
+        </div>
       </div>
 
-      {/* GRID */}
+      {/* GRID PRINCIPAL */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
 
-        {/* TOP 1 */}
+        {/* TOP 1 - DESTAQUE MÁXIMO */}
         {topOne && (
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45 }}
+            transition={{ duration: 0.5 }}
             viewport={{ once: true }}
             className="group relative"
           >
+            {/* Glow sofisticado */}
+            <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition duration-700 pointer-events-none bg-[radial-gradient(circle_at_30%_20%,rgba(212,175,55,0.12),transparent_70%)]" />
 
-            {/* glow sutil */}
-            <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition duration-500 bg-[radial-gradient(circle_at_30%_20%,rgba(212,175,55,0.15),transparent_60%)]" />
-
-            {/* número */}
-            <div className="absolute top-4 left-4 z-20">
+            {/* Badge de Posição Top 1 */}
+            <div className="absolute top-4 left-4 z-20 pointer-events-none">
               <motion.div
                 whileHover={{ scale: 1.1 }}
-                className="w-10 h-10 flex items-center justify-center rounded-full bg-[var(--gold)] text-black text-sm font-semibold shadow-lg"
+                className="w-11 h-11 flex items-center justify-center rounded-full bg-[var(--gold)] text-black text-sm font-bold shadow-[0_0_15px_rgba(212,175,55,0.6)]"
               >
                 {rankLabel(1)}
               </motion.div>
             </div>
 
-            {/* card */}
+            {/* Container do Card */}
             <motion.div
-              whileHover={{ y: -4, scale: 1.02 }}
-              className="rounded-2xl overflow-hidden border border-white/10 group-hover:border-[var(--gold)]/40 transition-all duration-300"
+              whileHover={{ y: -4, scale: 1.01 }}
+              transition={{ duration: 0.3 }}
+              className="rounded-2xl overflow-hidden border border-white/10 group-hover:border-[var(--gold)]/50 bg-neutral-950/40 backdrop-blur-sm transition-all duration-300 shadow-xl"
             >
               <ProductCard
                 id={topOne.product.id}
@@ -110,9 +119,8 @@ export default function WeeklyBestSellers({
           </motion.div>
         )}
 
-        {/* OUTROS */}
-        <div className="grid grid-cols-2 gap-4 sm:gap-5">
-
+        {/* OUTROS COLOCADOS (POSIÇÕES 2, 3 e 4) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 md:gap-6">
           {others.map((item, index) => {
             const product = item.product;
             const position = index + 2;
@@ -122,28 +130,28 @@ export default function WeeklyBestSellers({
                 key={item.id}
                 initial={{ opacity: 0, y: 25 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: index * 0.05 }}
+                transition={{ duration: 0.4, delay: index * 0.08 }}
                 viewport={{ once: true }}
                 className="group relative"
               >
+                {/* Glow sutil */}
+                <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition duration-500 pointer-events-none bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.06),transparent_60%)]" />
 
-                {/* glow */}
-                <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition duration-500 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.08),transparent_60%)]" />
-
-                {/* número */}
-                <div className="absolute top-3 left-3 z-20">
+                {/* Badge de Posição (2, 3, 4) */}
+                <div className="absolute top-3 left-3 z-20 pointer-events-none">
                   <motion.div
                     whileHover={{ scale: 1.1 }}
-                    className="w-8 h-8 flex items-center justify-center rounded-full bg-white text-black text-xs font-semibold shadow"
+                    className="w-9 h-9 flex items-center justify-center rounded-full bg-black/80 backdrop-blur-md border border-white/20 text-white text-xs font-semibold shadow-md"
                   >
                     {rankLabel(position)}
                   </motion.div>
                 </div>
 
-                {/* card */}
+                {/* Container do Card */}
                 <motion.div
                   whileHover={{ y: -3 }}
-                  className="rounded-2xl overflow-hidden border border-white/10 group-hover:border-white/30 transition-all duration-300"
+                  transition={{ duration: 0.3 }}
+                  className="rounded-2xl overflow-hidden border border-white/10 group-hover:border-white/30 bg-neutral-950/40 backdrop-blur-sm transition-all duration-300 shadow-lg"
                 >
                   <ProductCard
                     id={product.id}
@@ -159,8 +167,8 @@ export default function WeeklyBestSellers({
               </motion.div>
             );
           })}
-
         </div>
+
       </div>
     </section>
   );

@@ -25,7 +25,7 @@ type Props = {
   badge?: string;
   highlight?: boolean;
   stock?: number;
-  variants?: Variant[]; // 🔥 NOVO
+  variants?: Variant[];
   onQuickView?: () => void;
 };
 
@@ -55,14 +55,12 @@ export default function ProductCard({
   price,
   oldPrice,
   badge,
-  highlight,
   stock,
-  variants, // 🔥 NOVO
+  variants,
   onQuickView,
 }: Props) {
   const addItem = useCart((s) => s.addItem);
   const cardRef = useRef<HTMLDivElement>(null);
-
   const [imgIndex, setImgIndex] = useState(0);
 
   const imgs = [
@@ -78,12 +76,10 @@ export default function ProductCard({
       : null;
 
   const productUrl = slug ? `/product/${slug}` : "#";
-
   const frameRef = useRef<number | null>(null);
 
   function handleMove(e: React.MouseEvent) {
     if (typeof window !== "undefined" && window.innerWidth < 768) return;
-
     if (frameRef.current) return;
 
     frameRef.current = requestAnimationFrame(() => {
@@ -91,7 +87,6 @@ export default function ProductCard({
       if (!card) return;
 
       const rect = card.getBoundingClientRect();
-
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
 
@@ -114,31 +109,24 @@ export default function ProductCard({
     setImgIndex((prev) => (prev - 1 + imgs.length) % imgs.length);
   }
 
-  /**
-   * 🔥 REGRA CRÍTICA DE NEGÓCIO
-   */
   const hasVariants = Array.isArray(variants) && variants.length > 0;
 
   function handleAddToCart(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
 
-    // 🔥 SE TEM VARIANTES → NÃO PODE ADICIONAR DIRETO
     if (hasVariants) {
       if (onQuickView) {
         onQuickView();
         return;
       }
-
       if (slug) {
         window.location.href = `/product/${slug}`;
         return;
       }
-
       return;
     }
 
-    // 🔥 PRODUTO SIMPLES
     addItem({
       id,
       name,
@@ -160,36 +148,30 @@ export default function ProductCard({
       whileInView={{ opacity: 1, y: 0 }}
       whileHover={{
         y: -4,
-        scale:
-          typeof window !== "undefined" && window.innerWidth >= 768 ? 1.02 : 1,
+        scale: typeof window !== "undefined" && window.innerWidth >= 768 ? 1.02 : 1,
       }}
       transition={{ duration: 0.4 }}
       viewport={{ once: true }}
-      className="group relative"
+      className="group relative flex flex-col h-full"
     >
-      {/* CARD */}
+      {/* CARD CONTAINER */}
       <div
         className="relative overflow-hidden rounded-2xl
-                      bg-black border border-white/5
-                      transition-all duration-500
-                      
-                      group-hover:border-white/10
-                      group-hover:shadow-[0_20px_60px_rgba(0,0,0,0.6)]"
+                    bg-neutral-950 border border-white/5
+                    transition-all duration-500
+                    group-hover:border-white/15
+                    group-hover:shadow-[0_20px_50px_rgba(0,0,0,0.8)]"
       >
-        {/* GLOW */}
+        {/* GLOW EFFECT */}
         <div
-          className="
-    pointer-events-none absolute inset-0 z-10
-    opacity-0 group-hover:opacity-100
-    transition duration-700
-  "
+          className="pointer-events-none absolute inset-0 z-10 opacity-0 group-hover:opacity-100 transition duration-700"
           style={{
             background:
-              "radial-gradient(circle at var(--x) var(--y), rgba(212,175,55,0.18), transparent 60%)",
+              "radial-gradient(circle at var(--x) var(--y), rgba(212,175,55,0.15), transparent 60%)",
           }}
         />
 
-        {/* IMAGE */}
+        {/* IMAGE AREA */}
         {onQuickView ? (
           <button
             type="button"
@@ -198,173 +180,147 @@ export default function ProductCard({
               e.stopPropagation();
               onQuickView();
             }}
-            className="block w-full"
+            className="block w-full text-left"
           >
             <div className="relative aspect-[4/5] bg-black overflow-hidden">
               <motion.div
                 key={imgIndex}
-                initial={{ opacity: 0.6 }}
+                initial={{ opacity: 0.7 }}
                 animate={{ opacity: 1 }}
-                transition={{ duration: 0.4 }}
+                transition={{ duration: 0.3 }}
                 className="absolute inset-0"
               >
                 <Image
-                  src={imgs[imgIndex]}
+                  src={imgs[imgIndex] || "/images/placeholder.jpg"}
                   alt={name}
                   fill
                   sizes="(max-width:768px) 80vw, (max-width:1200px) 30vw, 20vw"
                   loading="lazy"
                   decoding="async"
                   draggable={false}
-                  className="
-            object-cover
-            object-center
-            transition-transform duration-[1200ms] ease-out
-            group-hover:scale-[1.08]
-          "
+                  className="object-cover object-center transition-transform duration-[1000ms] ease-out group-hover:scale-105"
                 />
               </motion.div>
-
-              <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-80 group-hover:opacity-100 transition duration-500" />
+              <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 group-hover:opacity-90 transition duration-500" />
             </div>
           </button>
         ) : (
-          <Link href={productUrl}>
+          <Link href={productUrl} className="block w-full">
             <div className="relative aspect-[4/5] bg-black overflow-hidden">
               <motion.div
                 key={imgIndex}
-                initial={{ opacity: 0.6 }}
+                initial={{ opacity: 0.7 }}
                 animate={{ opacity: 1 }}
-                transition={{ duration: 0.4 }}
+                transition={{ duration: 0.3 }}
                 className="absolute inset-0"
               >
                 <Image
-                  src={imgs[imgIndex]}
+                  src={imgs[imgIndex] || "/images/placeholder.jpg"}
                   alt={name}
                   fill
                   sizes="(max-width:768px) 80vw, (max-width:1200px) 30vw, 20vw"
                   loading="lazy"
                   decoding="async"
                   draggable={false}
-                  className="
-            object-cover
-            object-center
-            transition-transform duration-[1200ms] ease-out
-            group-hover:scale-[1.08]
-          "
+                  className="object-cover object-center transition-transform duration-[1000ms] ease-out group-hover:scale-105"
                 />
               </motion.div>
-
-              <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-80 group-hover:opacity-100 transition duration-500" />
+              <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 group-hover:opacity-90 transition duration-500" />
             </div>
           </Link>
         )}
 
-        {/* LOW STOCK */}
-        {stock !== undefined && stock <= 2 && (
-          <div className="absolute bottom-3 left-3 z-30">
-            <motion.span
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="
-                px-3 py-1.5
-                text-[10px]
-                uppercase tracking-[0.3em]
-                rounded-full
-                border border-orange-400/30
-                bg-orange-400/10
-                text-orange-300
-                backdrop-blur
-                shadow-[0_0_20px_rgba(255,120,0,0.25)]
-              "
-            >
+        {/* LOW STOCK BADGE */}
+        {stock !== undefined && stock <= 2 && stock > 0 && (
+          <div className="absolute bottom-3 left-3 z-30 pointer-events-none">
+            <span className="px-2.5 py-1 text-[9px] uppercase tracking-[0.25em] rounded-full border border-orange-400/30 bg-orange-400/10 text-orange-300 backdrop-blur-md">
               🔥 Últimas unidades
-            </motion.span>
+            </span>
           </div>
         )}
 
-        {/* SETAS */}
+        {/* SETAS DE NAVEGAÇÃO DE IMAGENS */}
         {imgs.length > 1 && (
           <>
             <button
               onClick={prevImage}
-              className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-black/60 backdrop-blur border border-white/20 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition"
+              aria-label="Imagem anterior"
+              className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/60 backdrop-blur-md border border-white/20 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black"
             >
-              <ChevronLeft size={14} />
+              <ChevronLeft size={16} />
             </button>
 
             <button
               onClick={nextImage}
-              className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-black/60 backdrop-blur border border-white/20 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition"
+              aria-label="Próxima imagem"
+              className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/60 backdrop-blur-md border border-white/20 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black"
             >
-              <ChevronRight size={14} />
+              <ChevronRight size={16} />
             </button>
           </>
         )}
 
-        {/* BADGES */}
+        {/* BADGES (DESTAQUE / DESCONTO) */}
         {(badge || discount) && (
-          <div className="absolute top-3 left-3 flex gap-2 z-20">
+          <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 z-20 pointer-events-none">
             {badge && (
-              <span className="px-2 py-1 text-[9px] uppercase tracking-[0.3em] bg-white/10 border border-white/20 rounded-full">
+              <span className="px-2.5 py-1 text-[9px] uppercase tracking-[0.25em] bg-white/10 backdrop-blur-md border border-white/20 text-white rounded-full font-medium">
                 {badge}
               </span>
             )}
-
             {discount && (
-              <span className="px-2 py-1 text-[9px] uppercase tracking-[0.3em] bg-[var(--gold)] text-black rounded-full">
+              <span className="px-2.5 py-1 text-[9px] uppercase tracking-[0.25em] bg-[var(--gold)] text-black rounded-full font-bold shadow-md">
                 {discount}% OFF
               </span>
             )}
           </div>
         )}
 
-        {/* QUICK VIEW */}
+        {/* QUICK VIEW BUTTON */}
         {onQuickView && (
-          <div className="absolute top-3 right-3 z-20 opacity-0 group-hover:opacity-100 transition duration-300">
+          <div className="absolute top-3 right-3 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             <button
               onClick={onQuickView}
-              className="w-9 h-9 rounded-full bg-black/60 backdrop-blur border border-white/20 flex items-center justify-center text-white hover:bg-[var(--gold)] hover:text-black transition"
+              aria-label="Visualização rápida"
+              className="w-9 h-9 rounded-full bg-black/60 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-[var(--gold)] hover:text-black transition-colors shadow-lg"
             >
               <Eye size={16} />
             </button>
           </div>
         )}
 
-        {/* CTA */}
-        <div className="absolute inset-0 flex items-end justify-center opacity-0 group-hover:opacity-100 transition duration-500 pointer-events-none group-hover:pointer-events-auto">
-          <div className="w-full p-3">
-            <button
-              onClick={handleAddToCart}
-              className="w-full py-2.5 rounded-full bg-[var(--gold)] text-black text-[10px] uppercase tracking-[0.35em] flex items-center justify-center gap-2 hover:scale-105 active:scale-[0.98] transition-all duration-300"
-            >
-              <ShoppingBag size={14} />
-              {hasVariants ? "Escolher opções" : "Adicionar"}
-            </button>
-          </div>
+        {/* BOTTOM CTA HOVER */}
+        <div className="absolute inset-x-0 bottom-0 p-3 z-20 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 pointer-events-none group-hover:pointer-events-auto">
+          <button
+            onClick={handleAddToCart}
+            className="w-full py-3 rounded-full bg-[var(--gold)] text-black text-[10px] uppercase tracking-[0.3em] font-semibold flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] shadow-lg transition-all duration-300"
+          >
+            <ShoppingBag size={14} />
+            {hasVariants ? "Escolher opções" : "Adicionar"}
+          </button>
         </div>
       </div>
 
-      {/* CONTENT */}
-      <div className="mt-4 px-1">
+      {/* PRODUCT INFO / DETAILS */}
+      <div className="mt-3.5 px-1 flex flex-col flex-grow">
         <p className="text-[9px] uppercase tracking-[0.35em] text-white/40">
           Blackstore
         </p>
 
-        <Link href={productUrl}>
-          <h3 className="mt-1 text-xs md:text-sm tracking-widest uppercase text-white line-clamp-2 group-hover:text-[var(--gold)] transition">
+        <Link href={productUrl} className="mt-1 flex-grow">
+          <h3 className="text-xs md:text-sm tracking-wider uppercase text-white/90 line-clamp-2 group-hover:text-[var(--gold)] transition-colors">
             {name}
           </h3>
         </Link>
 
-        <div className="mt-1.5 flex items-center gap-2">
+        <div className="mt-2 flex items-center gap-2.5">
           {oldPrice && oldPrice > price && (
-            <p className="text-[10px] text-white/40 line-through">
+            <p className="text-[11px] text-white/40 line-through">
               {brl(oldPrice)}
             </p>
           )}
 
-          <p className="text-sm md:text-base font-medium text-[var(--gold)]">
+          <p className="text-sm md:text-base font-semibold text-[var(--gold)]">
             {brl(price)}
           </p>
         </div>

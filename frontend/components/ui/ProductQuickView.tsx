@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { X, ShoppingBag, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, ShoppingBag, ChevronLeft, ChevronRight, Check } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { useCart } from "@/store/cart";
 import { motion, AnimatePresence } from "framer-motion";
@@ -44,20 +44,22 @@ export default function ProductQuickView({ product, onClose }: Props) {
 
   const [selectedVariant, setSelectedVariant] = useState<Variant | null>(null);
   const [index, setIndex] = useState(0);
+  const [isSuccess, setIsSuccess] = useState(false);
 
-  // 🔥 CONTROLE DE RESET SEM useEffect (CORRETO)
+  // Controle de reset direto no render (evitando useEffect desnecessário)
   const [productStateId, setProductStateId] = useState(product.id);
 
   if (productStateId !== product.id) {
     setProductStateId(product.id);
     setSelectedVariant(null);
     setIndex(0);
+    setIsSuccess(false);
   }
 
   const hasVariants =
     Array.isArray(product.variants) && product.variants.length > 0;
 
-  // 🔥 PERFORMANCE (MEMO)
+  // Performance otimizada com useMemo
   const images = useMemo(() => {
     return [
       resolveImage(product.image),
@@ -91,109 +93,121 @@ export default function ProductQuickView({ product, onClose }: Props) {
         variantId: selectedVariant.id,
         size: selectedVariant.size,
       });
-
-      onClose();
-      return;
+    } else {
+      addItem({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: currentImage,
+      });
     }
 
-    addItem({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      image: currentImage,
-    });
-
-    onClose();
+    setIsSuccess(true);
+    setTimeout(() => {
+      onClose();
+    }, 600);
   }
 
+  // Travar o scroll do body e fechar com a tecla ESC
   useEffect(() => {
     document.body.style.overflow = "hidden";
 
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+
     return () => {
       document.body.style.overflow = "";
+      window.removeEventListener("keydown", handleKeyDown);
     };
-  }, []);
-
+  }, [onClose]);
 
   return (
     <AnimatePresence>
       <motion.div
-        className="
-          fixed inset-0 z-[100]
-          flex items-end md:items-center justify-center
-          px-0 md:px-6
-        "
+        className="fixed inset-0 z-[100] flex items-end md:items-center justify-center px-0 md:px-6"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
       >
         <div
           onClick={onClose}
-          className="absolute inset-0 bg-black/80 backdrop-blur-md"
+          className="absolute inset-0 bg-black/80 backdrop-blur-md transition-opacity"
         />
 
         <motion.div
           initial={{ y: 80, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 60, opacity: 0 }}
-          transition={{ duration: 0.35 }}
+          transition={{ duration: 0.35, ease: "easeOut" }}
           className="
             relative z-10 w-full max-w-5xl
-            h-[92vh] md:h-auto
-            bg-[#0b0b0d]/95 backdrop-blur-xl
+            h-[92vh] md:h-auto max-h-[85vh]
+            bg-[#0b0b0d]/95 backdrop-blur-2xl
             border border-white/10
-            rounded-t-2xl md:rounded-2xl
+            rounded-t-3xl md:rounded-2xl
             flex flex-col md:grid md:grid-cols-2
-            overflow-hidden
+            overflow-hidden shadow-2xl
             will-change-transform
           "
         >
-          {/* HANDLE MOBILE */}
+          {/* HANDLE MOBILE PARA ARRASTAR */}
           <motion.div
             drag="y"
             dragConstraints={{ top: 0, bottom: 120 }}
             onDragEnd={(_, info) => {
               if (info.offset.y > 100) onClose();
             }}
-            className="md:hidden flex justify-center py-3 cursor-grab"
+            className="md:hidden flex justify-center py-3 cursor-grab active:cursor-grabbing"
           >
-            <div className="w-10 h-1.5 rounded-full bg-white/20" />
+            <div className="w-12 h-1.5 rounded-full bg-white/20" />
           </motion.div>
 
           <button
             onClick={onClose}
-            className="absolute right-5 top-5 z-20 text-white/60 hover:text-white transition"
+            aria-label="Fechar visualização rápida"
+            className="absolute right-5 top-5 z-20 w-9 h-9 rounded-full bg-black/40 border border-white/10 flex items-center justify-center text-white/70 hover:text-white hover:border-white/30 transition-all"
           >
-            <X size={22} />
+            <X size={18} />
           </button>
 
-          {/* GALERIA */}
-          <div className="relative flex min-h-[280px] flex-col bg-black">
-            <div className="relative w-full aspect-[4/5] md:h-full bg-black overflow-hidden">
-              <Image
+          {/* GALERIA DE IMAGENS */}
+          <div className="relative flex min-h-[300px] md:min-h-[450px] flex-col bg-black">
+            <div className="relative w-full aspect-[4/5] md:h-full bg-black overflow-hidden flex items-center justify-center">
+              <motion.div
                 key={currentImage}
-                src={currentImage}
-                alt={product.name}
-                fill
-                className="object-contain object-center"
-                sizes="(max-width: 768px) 100vw, 50vw"
-                priority
-              />
+                initial={{ opacity: 0.5 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+                className="absolute inset-0"
+              >
+                <Image
+                  src={currentImage}
+                  alt={product.name}
+                  fill
+                  className="object-cover object-center"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  priority
+                />
+              </motion.div>
 
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
 
               {images.length > 1 && (
                 <>
                   <button
                     onClick={prev}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/60 backdrop-blur border border-white/20 flex items-center justify-center text-white active:scale-95 touch-manipulation"
+                    aria-label="Imagem anterior"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/60 backdrop-blur-md border border-white/20 flex items-center justify-center text-white active:scale-95 transition-transform"
                   >
                     <ChevronLeft size={18} />
                   </button>
 
                   <button
                     onClick={next}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/60 backdrop-blur border border-white/20 flex items-center justify-center text-white active:scale-95 touch-manipulation"
+                    aria-label="Próxima imagem"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/60 backdrop-blur-md border border-white/20 flex items-center justify-center text-white active:scale-95 transition-transform"
                   >
                     <ChevronRight size={18} />
                   </button>
@@ -202,59 +216,74 @@ export default function ProductQuickView({ product, onClose }: Props) {
             </div>
           </div>
 
-          {/* CONTEÚDO */}
+          {/* CONTEÚDO E DETALHES */}
           <div className="p-6 md:p-10 flex flex-col overflow-y-auto overscroll-y-contain">
-            <p className="uppercase text-[10px] tracking-[0.45em] text-white/40">
+            <p className="uppercase text-[10px] tracking-[0.45em] text-white/40 font-medium">
               Blackstore
             </p>
 
-            <h2 className="mt-3 text-xl md:text-3xl font-light leading-tight">
+            <h2 className="mt-2 text-xl md:text-3xl font-light text-white tracking-wide">
               {product.name}
             </h2>
 
-            {/* 🔥 DESCRIÇÃO REAL */}
+            {/* DESCRIÇÃO DO PRODUTO */}
             {product.description ? (
-              <p className="mt-4 text-white/60 text-sm leading-relaxed whitespace-pre-line">
+              <p className="mt-4 text-white/60 text-xs md:text-sm leading-relaxed whitespace-pre-line">
                 {product.description}
               </p>
             ) : (
-              <p className="mt-4 text-white/40 text-sm">
+              <p className="mt-4 text-white/40 text-xs italic">
                 Este produto não possui descrição cadastrada.
               </p>
             )}
 
+            {/* PREÇOS */}
             <div className="mt-6 flex items-center gap-4">
-              {product.oldPrice && (
-                <span className="text-white/40 line-through">
-                  R$ {product.oldPrice.toLocaleString("pt-BR")}
+              {product.oldPrice && product.oldPrice > product.price && (
+                <span className="text-white/40 text-sm line-through">
+                  R$ {product.oldPrice.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                 </span>
               )}
 
-              <span className="text-xl md:text-3xl font-semibold text-[var(--gold)]">
-                R$ {product.price.toLocaleString("pt-BR")}
+              <span className="text-xl md:text-2xl font-semibold text-[var(--gold)]">
+                R$ {product.price.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
               </span>
             </div>
 
+            {/* SELEÇÃO DE VARIANTES (TAMANHOS) */}
             {hasVariants && (
-              <div className="mt-8">
-                <p className="text-[10px] uppercase tracking-[0.4em] text-white/50 mb-4">
-                  Tamanho
-                </p>
+              <div className="mt-6">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-[10px] uppercase tracking-[0.4em] text-white/60 font-medium">
+                    Selecione o Tamanho
+                  </p>
+                  {hasVariants && !selectedVariant && (
+                    <span className="text-[11px] text-amber-400/90 tracking-wide">
+                      Obrigatório
+                    </span>
+                  )}
+                </div>
 
                 <div className="flex gap-3 flex-wrap">
                   {product.variants!.map((v) => {
                     const disabled = v.stock <= 0;
+                    const isSelected = selectedVariant?.id === v.id;
 
                     return (
                       <button
                         key={v.id}
                         disabled={disabled}
                         onClick={() => setSelectedVariant(v)}
-                        className={`w-10 h-10 rounded-full border text-sm flex items-center justify-center transition ${
-                          selectedVariant?.id === v.id
-                            ? "bg-[var(--gold)] text-black border-[var(--gold)]"
-                            : "border-white/20 text-white hover:border-white"
-                        } ${disabled ? "opacity-30 cursor-not-allowed" : ""}`}
+                        aria-label={`Tamanho ${v.size}`}
+                        className={`
+                          w-11 h-11 rounded-full border text-xs font-semibold flex items-center justify-center transition-all duration-300
+                          ${
+                            isSelected
+                              ? "bg-[var(--gold)] text-black border-[var(--gold)] shadow-[0_0_15px_rgba(212,175,55,0.4)] scale-105"
+                              : "border-white/20 text-white hover:border-white/60 bg-white/5"
+                          }
+                          ${disabled ? "opacity-20 cursor-not-allowed border-dashed" : ""}
+                        `}
                       >
                         {v.size}
                       </button>
@@ -264,44 +293,50 @@ export default function ProductQuickView({ product, onClose }: Props) {
               </div>
             )}
 
-            {hasVariants && !selectedVariant && (
-              <p className="text-xs text-red-400 mt-4">
-                Selecione um tamanho
-              </p>
-            )}
-
-            <div className="mt-10 flex gap-4 flex-col sm:flex-row">
+            {/* BOTÕES DE AÇÃO */}
+            <div className="mt-8 pt-6 border-t border-white/10 flex gap-3 flex-col sm:flex-row">
               <button
                 onClick={handleAddToCart}
                 disabled={
-                  hasVariants
-                    ? !selectedVariant || selectedVariant.stock <= 0
-                    : false
+                  (hasVariants && (!selectedVariant || selectedVariant.stock <= 0)) ||
+                  isSuccess
                 }
-                className="
+                className={`
                   flex-1 inline-flex items-center justify-center gap-3
-                  px-10 py-4 rounded-full
-                  bg-[var(--gold)] text-black
-                  text-xs uppercase tracking-[0.35em]
-                  shadow-[0_10px_30px_rgba(212,175,55,0.25)]
-                  hover:scale-105 transition
-                  disabled:opacity-40 disabled:cursor-not-allowed
-                "
+                  px-8 py-4 rounded-full
+                  text-xs uppercase tracking-[0.3em] font-bold
+                  transition-all duration-300 shadow-xl
+                  ${
+                    isSuccess
+                      ? "bg-emerald-500 text-black shadow-emerald-500/20"
+                      : "bg-[var(--gold)] text-black hover:scale-[1.02] active:scale-95 shadow-[0_0_20px_rgba(212,175,55,0.3)]"
+                  }
+                  disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100
+                `}
               >
-                <ShoppingBag size={18} />
-                Adicionar
+                {isSuccess ? (
+                  <>
+                    <Check size={16} className="stroke-[3]" />
+                    Adicionado
+                  </>
+                ) : (
+                  <>
+                    <ShoppingBag size={16} />
+                    Adicionar à sacola
+                  </>
+                )}
               </button>
 
               <button
                 onClick={onClose}
                 className="
-                  flex-1 px-10 py-4 rounded-full
+                  px-6 py-4 rounded-full
                   border border-white/20
-                  text-xs uppercase tracking-[0.35em]
-                  hover:border-white transition
+                  text-xs uppercase tracking-[0.3em] font-medium text-white/80
+                  hover:border-white hover:text-white transition-all
                 "
               >
-                Continuar
+                Continuar comprando
               </button>
             </div>
           </div>
