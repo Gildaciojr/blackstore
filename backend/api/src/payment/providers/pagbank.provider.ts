@@ -86,7 +86,7 @@ export class PagbankProvider {
     const notificationUrl = `${process.env.API_URL}/payment/webhook/${process.env.PAGBANK_WEBHOOK_SECRET}`;
     const cleanCpf = data.customer.tax_id.replace(/\D/g, '');
 
-    // 🔥 Data de expiração do Pix para daqui a 2 horas (Formato ISO 8601 exigido pelo PagBank)
+    // 🔥 Ajustado para o nome correto exigido pelo contrato da API do PagBank: expiration_date
     const expirationDate = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
 
     const payload = {
@@ -116,7 +116,7 @@ export class PagbankProvider {
           payment_method: {
             type: 'PIX',
             pix: {
-              qr_code_expiration_date: expirationDate,
+              expiration_date: expirationDate,
             },
           },
         },
