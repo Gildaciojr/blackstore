@@ -54,7 +54,6 @@ export class PagbankProvider {
 
   private readonly token = process.env.PAGBANK_TOKEN;
 
-  // Função auxiliar para formatar telefone para o PagBank (DDD + Número)
   private formatPhone(phone?: string | null) {
     if (!phone) return undefined;
     const digits = phone.replace(/\D/g, '');
@@ -87,13 +86,16 @@ export class PagbankProvider {
     const notificationUrl = `${process.env.API_URL}/payment/webhook/${process.env.PAGBANK_WEBHOOK_SECRET}`;
     const cleanCpf = data.customer.tax_id.replace(/\D/g, '');
 
+    // 🔥 Data de expiração do Pix para daqui a 2 horas (Formato ISO 8601 exigido pelo PagBank)
+    const expirationDate = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
+
     const payload = {
       reference_id: data.referenceId,
       notification_urls: [notificationUrl],
       customer: {
         name: data.customer.name,
         email: data.customer.email,
-        tax_id: cleanCpf, // 🔥 CORREÇÃO: Enviando como string direta, conforme documentação do PagBank
+        tax_id: cleanCpf,
         phones: this.formatPhone(data.customer.phone),
       },
       items: [
@@ -113,6 +115,9 @@ export class PagbankProvider {
           },
           payment_method: {
             type: 'PIX',
+            pix: {
+              qr_code_expiration_date: expirationDate,
+            },
           },
         },
       ],
@@ -187,7 +192,7 @@ export class PagbankProvider {
       customer: {
         name: data.customer.name,
         email: data.customer.email,
-        tax_id: cleanCpf, // 🔥 CORREÇÃO: Enviando como string direta, conforme documentação do PagBank
+        tax_id: cleanCpf,
         phones: this.formatPhone(data.customer.phone),
       },
       items: [
