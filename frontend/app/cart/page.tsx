@@ -321,14 +321,6 @@ export default function CartPage() {
                 OK
               </button>
             </div>
-
-            {/* 🔥 FEEDBACK PROFISSIONAL */}
-            {shippingOptions.length === 0 &&
-              zip.replace(/\D/g, "").length === 8 && (
-                <p className="text-xs text-red-400 mt-3">
-                  Nenhuma opção de frete encontrada para este CEP.
-                </p>
-              )}
           </div>
 
           {/* FRETE */}
