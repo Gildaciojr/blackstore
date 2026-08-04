@@ -85,8 +85,6 @@ export class PagbankProvider {
 
     const notificationUrl = `${process.env.API_URL}/payment/webhook/${process.env.PAGBANK_WEBHOOK_SECRET}`;
     const cleanCpf = data.customer.tax_id.replace(/\D/g, '');
-
-    // 🔥 Ajustado para o nome correto exigido pelo contrato da API do PagBank: expiration_date
     const expirationDate = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
 
     const payload = {
@@ -212,6 +210,7 @@ export class PagbankProvider {
           },
           payment_method: {
             type: 'CREDIT_CARD',
+            capture: true, // 🔥 ADICIONADO: Obrigatório pela API v4 do PagBank para cartões
             installments: data.installments,
             card: {
               encrypted: data.cardToken,
