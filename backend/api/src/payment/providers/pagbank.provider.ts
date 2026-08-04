@@ -93,12 +93,7 @@ export class PagbankProvider {
       customer: {
         name: data.customer.name,
         email: data.customer.email,
-        tax_id: [
-          {
-            tax_id: cleanCpf,
-            type: cleanCpf.length === 14 ? 'CNPJ' : 'CPF',
-          },
-        ],
+        tax_id: cleanCpf, // 🔥 CORREÇÃO: Enviando como string direta, conforme documentação do PagBank
         phones: this.formatPhone(data.customer.phone),
       },
       items: [
@@ -192,12 +187,7 @@ export class PagbankProvider {
       customer: {
         name: data.customer.name,
         email: data.customer.email,
-        tax_id: [
-          {
-            tax_id: cleanCpf,
-            type: cleanCpf.length === 14 ? 'CNPJ' : 'CPF',
-          },
-        ],
+        tax_id: cleanCpf, // 🔥 CORREÇÃO: Enviando como string direta, conforme documentação do PagBank
         phones: this.formatPhone(data.customer.phone),
       },
       items: [
