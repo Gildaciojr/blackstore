@@ -6,9 +6,6 @@ export class ShippingService {
   constructor(private prisma: PrismaService) {}
 
   async calculateShipping(cep: string) {
-    /**
-     * 🔥 NORMALIZAÇÃO
-     */
     const normalizedCep = (cep || '').replace(/\D/g, '');
 
     if (normalizedCep.length !== 8) {
@@ -24,8 +21,22 @@ export class ShippingService {
       orderBy: [{ cepPrefix: 'desc' }, { price: 'asc' }],
     });
 
+    // 🔥 FIX: Se o banco não achar regras para o CEP, retorna as opções fixas direto
     if (!rates.length) {
-      throw new BadRequestException('Nenhuma opção de frete disponível');
+      return [
+        {
+          name: 'Padrão',
+          method: 'standard',
+          price: 29.9, // Ajuste para o valor que você deseja
+          deadline: '7 a 14 dias',
+        },
+        {
+          name: 'Expresso',
+          method: 'express',
+          price: 39.9, // Ajuste para o valor que você deseja
+          deadline: '3 a 5 dias',
+        },
+      ];
     }
 
     return rates.map((rate) => ({

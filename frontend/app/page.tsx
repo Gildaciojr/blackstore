@@ -129,9 +129,7 @@ export default function HomePage() {
     async function loadHome() {
       try {
         setLoading(true);
-
         const data = await apiFetch<HomeResponse>("/home");
-
         setHome(data);
       } catch (err) {
         console.error("Erro ao carregar dados da home", err);
@@ -146,12 +144,10 @@ export default function HomePage() {
   const scroll = useCallback((direction: "left" | "right") => {
     if (!scrollRef.current) return;
 
-    const firstChild = scrollRef.current
-      .firstElementChild as HTMLElement | null;
-
+    const firstChild = scrollRef.current.firstElementChild as HTMLElement | null;
     if (!firstChild) return;
 
-    const cardWidth = firstChild.offsetWidth + 24;
+    const cardWidth = firstChild.offsetWidth + 24; // 24 = md:gap-6
 
     scrollRef.current.scrollBy({
       left: direction === "left" ? -cardWidth : cardWidth,
@@ -161,7 +157,6 @@ export default function HomePage() {
 
   const resolveImage = useCallback((url: string) => {
     if (!url) return "";
-
     if (url.startsWith("http")) return url;
     if (url.startsWith("/images")) return url;
 
@@ -170,39 +165,31 @@ export default function HomePage() {
   }, []);
 
   const getCover = useCallback(
-    (product: Product) => {
-      return resolveImage(product.image);
-    },
-    [resolveImage],
+    (product: Product) => resolveImage(product.image),
+    [resolveImage]
   );
 
   const getImages = useCallback(
-    (product: Product) => {
-      return product.medias?.map((m) => resolveImage(m.url)) ?? [];
-    },
-    [resolveImage],
+    (product: Product) => product.medias?.map((m) => resolveImage(m.url)) ?? [],
+    [resolveImage]
   );
 
   const normalizeProduct = useCallback(
-    (product: Product): QuickProduct => {
-      return {
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        image: getCover(product),
-        images: getImages(product),
-        oldPrice: product.oldPrice ?? undefined,
-        variants: product.variants ?? [],
-        description: product.description ?? "",
-      };
-    },
-    [getCover, getImages],
+    (product: Product): QuickProduct => ({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: getCover(product),
+      images: getImages(product),
+      oldPrice: product.oldPrice ?? undefined,
+      variants: product.variants ?? [],
+      description: product.description ?? "",
+    }),
+    [getCover, getImages]
   );
 
   const heroSlides = useMemo<HeroSlide[]>(() => {
-    if (!home?.hero || home.hero.length === 0) {
-      return [];
-    }
+    if (!home?.hero || home.hero.length === 0) return [];
 
     return home.hero.map<HeroSlide>((item) => {
       const normalizedType: HeroSlide["type"] =
@@ -229,46 +216,27 @@ export default function HomePage() {
     });
   }, [home, resolveImage]);
 
-  const launchProducts = useMemo(() => {
-    return home?.launches?.map((item) => item.product) ?? [];
-  }, [home]);
-
-  const promotionItems = useMemo(() => {
-    return home?.promotions ?? [];
-  }, [home]);
-
-  const featuredPromotion = useMemo(() => {
-    if (!promotionItems.length) return null;
-    return promotionItems[0]?.product ?? null;
-  }, [promotionItems]);
+  const launchProducts = useMemo(() => home?.launches?.map((item) => item.product) ?? [], [home]);
+  const promotionItems = useMemo(() => home?.promotions ?? [], [home]);
+  const featuredPromotion = useMemo(() => promotionItems[0]?.product ?? null, [promotionItems]);
 
   const featuredPromotionBanner = useMemo(() => {
-    if (!promotionItems.length) {
-      return null;
-    }
-
+    if (!promotionItems.length) return null;
     const firstPromotion = promotionItems[0].product;
     const promotionImages = getImages(firstPromotion);
 
-    if (promotionImages.length > 0) {
-      return promotionImages[0];
-    }
-
+    if (promotionImages.length > 0) return promotionImages[0];
     return getCover(firstPromotion);
   }, [promotionItems, getCover, getImages]);
-  function generateFallbackLookbook(
-    products: HomeSectionItem[],
-  ): LookbookItem[] {
+
+  function generateFallbackLookbook(products: HomeSectionItem[]): LookbookItem[] {
     if (!products || products.length === 0) return [];
 
-    // 🔥 limita e garante previsibilidade
     const safeProducts = products.slice(0, 6);
-
     const result: LookbookItem[] = [];
 
     safeProducts.forEach((p, i) => {
       const isTop = i % 2 === 0;
-
       result.push({
         id: `${isTop ? "top" : "bottom"}-${p.product.id}`,
         position: i + 1,
@@ -284,12 +252,8 @@ export default function HomePage() {
   }
 
   const lookbookItems = useMemo(() => {
-    // 🔥 prioridade: backend (se existir)
-    if (home?.lookbook && home.lookbook.length > 0) {
-      return home.lookbook;
-    }
-
-    // 🔥 fallback inteligente (launches + promotions)
+    if (home?.lookbook && home.lookbook.length > 0) return home.lookbook;
+    
     const fallback = generateFallbackLookbook([
       ...(home?.launches ?? []),
       ...(home?.promotions ?? []),
@@ -298,12 +262,12 @@ export default function HomePage() {
     return fallback.length > 0 ? fallback : [];
   }, [home]);
 
+  // 🔥 LOADING PREMIUM
   if (loading) {
     return (
-      <section className="min-h-[70vh] bg-black">
-        <div className="mx-auto max-w-7xl px-6 py-20 md:px-8">
-          <div className="h-[70vh] rounded-3xl border border-white/10 bg-white/[0.03] animate-pulse" />
-        </div>
+      <section className="min-h-screen bg-[#0b0b0d] flex flex-col items-center justify-center">
+        <div className="w-8 h-8 border-2 border-[var(--gold)] border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-white/60 text-xs tracking-[0.35em] uppercase">Carregando Blackstore...</p>
       </section>
     );
   }
@@ -340,31 +304,29 @@ export default function HomePage() {
               <div
                 ref={scrollRef}
                 className="
-    scrollbar-hide
-    flex gap-4
-    overflow-x-auto
-    overflow-y-hidden
-    px-4
-    scroll-smooth
-    snap-x snap-proximity
-    sm:px-6
-    md:gap-6 md:px-8
-    lg:px-10
-  "
-                style={{
-                  WebkitOverflowScrolling: "touch",
-                }}
+                  scrollbar-hide
+                  flex gap-4
+                  overflow-x-auto
+                  overflow-y-hidden
+                  px-4
+                  scroll-smooth
+                  snap-x snap-mandatory 
+                  sm:px-6
+                  md:gap-6 md:px-8
+                  lg:px-10
+                "
+                style={{ WebkitOverflowScrolling: "touch" }}
               >
                 {launchProducts.map((product, index) => (
                   <div
                     key={product.id}
                     className="
-                    min-w-[85%] snap-start
-                    sm:min-w-[48%]
-                    md:min-w-[32%]
-                    lg:min-w-[24%]
-                    xl:min-w-[20%]
-                  "
+                      min-w-[85%] snap-start snap-always
+                      sm:min-w-[48%]
+                      md:min-w-[32%]
+                      lg:min-w-[24%]
+                      xl:min-w-[20%]
+                    "
                   >
                     <Reveal delay={0.06 * (index + 1)}>
                       <ProductCard
@@ -377,9 +339,7 @@ export default function HomePage() {
                         oldPrice={product.oldPrice ?? undefined}
                         stock={product.stock}
                         variants={product.variants}
-                        onQuickView={() =>
-                          setQuickProduct(normalizeProduct(product))
-                        }
+                        onQuickView={() => setQuickProduct(normalizeProduct(product))}
                       />
                     </Reveal>
                   </div>
@@ -400,9 +360,7 @@ export default function HomePage() {
               items={home?.bestSellers ?? []}
               getCover={getCover}
               getImages={getImages}
-              onQuickView={(product: Product) =>
-                setQuickProduct(normalizeProduct(product))
-              }
+              onQuickView={(product: Product) => setQuickProduct(normalizeProduct(product))}
             />
           </Section>
         </Reveal>
@@ -421,12 +379,10 @@ export default function HomePage() {
               <p className="text-xs uppercase tracking-[0.4em] text-white/50">
                 Conecte-se
               </p>
-
               <h2 className="mt-6 text-4xl font-light leading-tight md:text-5xl lg:text-6xl">
                 <span className="block text-white">Muito além</span>
                 <span className="bs-title block">de uma loja online</span>
               </h2>
-
               <p className="mt-8 max-w-xl leading-relaxed text-white/65">
                 Mais do que vestir, é sobre presença, atitude e identidade.
               </p>
@@ -437,24 +393,11 @@ export default function HomePage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="
-      group
-      inline-flex items-center justify-center
-      rounded-full
-
-      border border-white/20
-
-      px-6 py-3 sm:px-8 sm:py-4
-
-      text-[10px] sm:text-xs
-      uppercase
-      tracking-[0.25em] sm:tracking-[0.35em]
-
-      text-white/80
-
-      transition-colors duration-200
-      hover:border-[var(--gold)]
-      hover:text-[var(--gold)]
-    "
+                    group inline-flex items-center justify-center rounded-full border border-white/20
+                    px-6 py-4 sm:px-8
+                    text-xs uppercase tracking-[0.35em] text-white/80
+                    transition-colors duration-200 hover:border-[var(--gold)] hover:text-[var(--gold)]
+                  "
                 >
                   Instagram Blackstore
                 </a>
@@ -464,25 +407,11 @@ export default function HomePage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="
-      group
-      inline-flex items-center justify-center
-      rounded-full
-
-      bg-[var(--gold)]
-
-      px-6 py-3 sm:px-10 sm:py-4
-
-      text-[10px] sm:text-xs
-      font-medium
-      uppercase
-      tracking-[0.25em] sm:tracking-[0.35em]
-
-      text-black
-
-      transition-transform duration-200
-      sm:hover:scale-[1.05]
-      active:scale-[0.97]
-    "
+                    group inline-flex items-center justify-center rounded-full bg-[var(--gold)]
+                    px-6 py-4 sm:px-10
+                    text-xs font-medium uppercase tracking-[0.35em] text-black
+                    transition-transform duration-200 sm:hover:scale-[1.05] active:scale-[0.97]
+                  "
                 >
                   Atendimento via WhatsApp
                 </a>
@@ -496,17 +425,9 @@ export default function HomePage() {
               <div className="absolute left-0 top-0 h-[2px] w-full bg-gradient-to-r from-transparent via-[var(--gold)] to-transparent opacity-60" />
 
               <div className="relative px-6 text-center">
-                <p className="text-xs uppercase tracking-[0.5em] text-white/40">
-                  Comunidade
-                </p>
-
-                <h3 className="mt-6 text-2xl font-light text-white md:text-3xl">
-                  Blackstore Experience
-                </h3>
-
-                <p className="mt-4 text-sm text-white/50">
-                  Faça parte. Vista atitude.
-                </p>
+                <p className="text-xs uppercase tracking-[0.5em] text-white/40">Comunidade</p>
+                <h3 className="mt-6 text-2xl font-light text-white md:text-3xl">Blackstore Experience</h3>
+                <p className="mt-4 text-sm text-white/50">Faça parte. Vista atitude.</p>
               </div>
             </div>
           </Reveal>
@@ -517,18 +438,12 @@ export default function HomePage() {
         <InstagramShowcase />
       </Reveal>
 
-      <section
-        id="promocao"
-        className="relative overflow-hidden py-24 md:py-32"
-      >
+      <section id="promocao" className="relative overflow-hidden py-24 md:py-32">
         <div className="absolute inset-0 bg-gradient-to-br from-black via-[#1a1408] to-black" />
 
         <div className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 items-center gap-14 px-6 md:gap-20 md:px-8 lg:grid-cols-2">
           <div>
-            <p className="text-xs uppercase tracking-[0.4em] text-white/50">
-              Oferta especial
-            </p>
-
+            <p className="text-xs uppercase tracking-[0.4em] text-white/50">Oferta especial</p>
             <h2 className="mt-6 text-4xl font-light leading-tight md:text-5xl lg:text-6xl">
               <span className="block">Promoção</span>
               <span className="bs-title block">da semana</span>
@@ -548,30 +463,20 @@ export default function HomePage() {
                   variants={featuredPromotion.variants}
                   highlight
                   badge="OFERTA"
-                  onQuickView={() =>
-                    setQuickProduct(normalizeProduct(featuredPromotion))
-                  }
+                  onQuickView={() => setQuickProduct(normalizeProduct(featuredPromotion))}
                 />
               </div>
             )}
           </div>
 
-          <div className="relative h-[420px] overflow-hidden rounded-3xl md:h-[520px] lg:h-[600px]">
-            {featuredPromotionBanner ? (
-              <Image
-                src={featuredPromotionBanner}
-                alt="Promoção"
-                fill
-                className="object-cover"
-              />
-            ) : (
-              <Image
-                src="/images/product-3.jpg"
-                alt="Promoção"
-                fill
-                className="object-cover"
-              />
-            )}
+          <div className="relative h-[360px] sm:h-[420px] md:h-[520px] lg:h-[600px] overflow-hidden rounded-3xl">
+            <Image
+              src={featuredPromotionBanner || "/images/product-3.jpg"}
+              alt="Promoção"
+              fill
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              className="object-cover"
+            />
           </div>
         </div>
       </section>

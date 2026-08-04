@@ -120,6 +120,13 @@ function normalizeZipCode(value: string) {
   return value.replace(/\D/g, "").slice(0, 8);
 }
 
+// 🔥 NOVO: Formatador de CEP visual para o input do novo endereço
+function formatZipCode(value: string) {
+  const digits = normalizeZipCode(value);
+  if (digits.length > 5) return `${digits.slice(0, 5)}-${digits.slice(5)}`;
+  return digits;
+}
+
 function formatCPF(value: string) {
   return value
     .replace(/\D/g, "")
@@ -163,6 +170,19 @@ export default function CheckoutPage() {
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [selectedAddress, setSelectedAddress] = useState<string | null>(null);
 
+  // 🔥 NOVOS ESTADOS: Controle do formulário interno de endereço e ViaCEP
+  const [isAddingAddress, setIsAddingAddress] = useState(false);
+  const [searchingCep, setSearchingCep] = useState(false);
+  const [newAddress, setNewAddress] = useState({
+    zipCode: "",
+    street: "",
+    number: "",
+    complement: "",
+    district: "",
+    city: "",
+    state: "",
+  });
+
   const [payment, setPayment] = useState<"pix" | "card">("pix");
   const [loading, setLoading] = useState(false);
 
@@ -196,9 +216,15 @@ export default function CheckoutPage() {
       const customerId = getCustomerId();
       const data = await apiFetch<Address[]>(`/address/${customerId}`);
       setAddresses(data);
+      
+      // Se não tem endereço, abre o formulário automaticamente
+      if (data.length === 0) {
+        setIsAddingAddress(true);
+      }
     } catch (err) {
       console.error(err);
       setAddresses([]);
+      setIsAddingAddress(true);
     }
   }, []);
 
@@ -220,10 +246,10 @@ export default function CheckoutPage() {
   }, [zipCode]);
 
   useEffect(() => {
-    if (addresses.length > 0 && !selectedAddress) {
+    if (addresses.length > 0 && !selectedAddress && !isAddingAddress) {
       setSelectedAddress(addresses[0].id);
     }
-  }, [addresses, selectedAddress]);
+  }, [addresses, selectedAddress, isAddingAddress]);
 
   useEffect(() => {
     if (!selectedAddress) return;
@@ -258,6 +284,75 @@ export default function CheckoutPage() {
       }
     })();
   }, [zip, calculateShipping]);
+
+  // 🔥 INTEGRAÇÃO VIACEP
+  async function handleCepSearch(value: string) {
+    const formatted = formatZipCode(value);
+    setNewAddress((prev) => ({ ...prev, zipCode: formatted }));
+    
+    const cleanCep = normalizeZipCode(value);
+    if (cleanCep.length === 8) {
+      setSearchingCep(true);
+      try {
+        const res = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
+        const data = await res.json();
+        
+        if (!data.erro) {
+          setNewAddress((prev) => ({
+            ...prev,
+            street: data.logradouro || "",
+            district: data.bairro || "",
+            city: data.localidade || "",
+            state: data.uf || "", 
+          }));
+        }
+      } catch (e) {
+        console.error("Erro ViaCEP:", e);
+      } finally {
+        setSearchingCep(false);
+      }
+    }
+  }
+
+  // 🔥 SALVAR NOVO ENDEREÇO
+  async function handleSaveNewAddress() {
+    if (!newAddress.zipCode || !newAddress.street || !newAddress.number || !newAddress.city || !newAddress.state) {
+      alert("Preencha todos os campos obrigatórios do endereço.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const customerId = getCustomerId();
+      
+      const payload = {
+        name: "Principal",
+        street: newAddress.street,
+        number: newAddress.number,
+        complement: newAddress.complement,
+        district: newAddress.district,
+        city: newAddress.city,
+        state: newAddress.state.toUpperCase(), 
+        zipCode: normalizeZipCode(newAddress.zipCode), 
+        customerId
+      };
+
+      const saved = await apiFetch<Address>("/address", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+
+      await loadAddresses();
+      setIsAddingAddress(false);
+      setSelectedAddress(saved.id);
+      
+      setNewAddress({ zipCode: "", street: "", number: "", complement: "", district: "", city: "", state: "" });
+    } catch (e) {
+      alert("Erro ao salvar endereço. Verifique os dados.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   async function handleApplyCoupon() {
     if (!couponCode.trim()) return;
@@ -547,61 +642,182 @@ export default function CheckoutPage() {
             </div>
           </div>
 
-          {/* ENDEREÇO */}
+          {/* ENDEREÇO (REFORMULADO) */}
           <div>
-            <h2 className="uppercase tracking-widest text-xs mb-6">
-              Endereço de entrega
-            </h2>
-
-            {addresses.length === 0 && (
-              <div className="border border-red-500/30 bg-red-500/10 p-5 rounded-xl">
-                <p className="text-red-400 text-sm mb-4">
-                  Nenhum endereço encontrado.
-                </p>
-
-                <a
-                  href="/account/addresses"
-                  className="inline-block px-6 py-3 bg-[var(--gold)] text-black text-xs uppercase tracking-[0.35em] rounded-full"
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="uppercase tracking-widest text-xs">
+                Endereço de entrega
+              </h2>
+              {addresses.length > 0 && !isAddingAddress && (
+                <button
+                  onClick={() => setIsAddingAddress(true)}
+                  className="text-[10px] uppercase tracking-widest text-[var(--gold)]"
                 >
-                  Adicionar endereço
-                </a>
+                  + Adicionar Novo
+                </button>
+              )}
+            </div>
+
+            {isAddingAddress ? (
+              <div className="rounded-xl border border-[var(--gold)]/30 p-4 sm:p-5 bg-[var(--gold)]/5 backdrop-blur-xl">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="sm:col-span-2 flex gap-4 items-end">
+                    <div className="flex-1">
+                      <label className="block text-[10px] uppercase tracking-widest text-[var(--gold)]/80 mb-2">
+                        CEP
+                      </label>
+                      <input
+                        value={newAddress.zipCode}
+                        onChange={(e) => handleCepSearch(e.target.value)}
+                        placeholder="00000-000"
+                        className="w-full bg-black border border-white/20 p-3 rounded-md text-sm focus:border-[var(--gold)] transition-colors"
+                        inputMode="numeric"
+                        maxLength={9}
+                      />
+                    </div>
+                    {searchingCep && (
+                      <div className="text-xs text-[var(--gold)] mb-3 animate-pulse">
+                        Buscando...
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label className="block text-[10px] uppercase tracking-widest text-white/50 mb-2">
+                      Rua / Avenida
+                    </label>
+                    <input
+                      value={newAddress.street}
+                      onChange={(e) => setNewAddress((prev) => ({...prev, street: e.target.value}))}
+                      placeholder="Ex: Avenida Paulista"
+                      className="w-full bg-black border border-white/20 p-3 rounded-md text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase tracking-widest text-white/50 mb-2">
+                      Número
+                    </label>
+                    <input
+                      value={newAddress.number}
+                      onChange={(e) => setNewAddress((prev) => ({...prev, number: e.target.value}))}
+                      placeholder="Ex: 1000"
+                      className="w-full bg-black border border-white/20 p-3 rounded-md text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase tracking-widest text-white/50 mb-2">
+                      Complemento
+                    </label>
+                    <input
+                      value={newAddress.complement}
+                      onChange={(e) => setNewAddress((prev) => ({...prev, complement: e.target.value}))}
+                      placeholder="Ex: Apto 42"
+                      className="w-full bg-black border border-white/20 p-3 rounded-md text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase tracking-widest text-white/50 mb-2">
+                      Bairro
+                    </label>
+                    <input
+                      value={newAddress.district}
+                      onChange={(e) => setNewAddress((prev) => ({...prev, district: e.target.value}))}
+                      className="w-full bg-black border border-white/20 p-3 rounded-md text-sm"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="col-span-2">
+                      <label className="block text-[10px] uppercase tracking-widest text-white/50 mb-2">
+                        Cidade
+                      </label>
+                      <input
+                        value={newAddress.city}
+                        onChange={(e) => setNewAddress((prev) => ({...prev, city: e.target.value}))}
+                        className="w-full bg-black border border-white/20 p-3 rounded-md text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] uppercase tracking-widest text-white/50 mb-2">
+                        UF
+                      </label>
+                      <select
+                        value={newAddress.state}
+                        onChange={(e) => setNewAddress((prev) => ({...prev, state: e.target.value}))}
+                        className="w-full bg-black border border-white/20 p-3 rounded-md text-sm h-[46px]"
+                      >
+                        <option value="">UF</option>
+                        {["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"].map(uf => (
+                          <option key={uf} value={uf}>{uf}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-6 flex flex-col sm:flex-row gap-3">
+                  <button
+                    onClick={handleSaveNewAddress}
+                    disabled={loading}
+                    className="
+                      px-6 py-3 bg-[var(--gold)] text-black text-xs uppercase tracking-widest rounded-md 
+                      hover:scale-105 active:scale-[0.98] transition-all
+                    "
+                  >
+                    {loading ? "Salvando..." : "Salvar Endereço"}
+                  </button>
+                  {addresses.length > 0 && (
+                    <button
+                      onClick={() => setIsAddingAddress(false)}
+                      className="
+                        px-6 py-3 border border-white/20 text-white text-xs uppercase tracking-widest rounded-md 
+                        hover:border-white/50 transition-colors
+                      "
+                    >
+                      Cancelar
+                    </button>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {addresses.map((address) => (
+                  <button
+                    key={address.id}
+                    onClick={() => setSelectedAddress(address.id)}
+                    className={`
+                      w-full text-left p-4 sm:p-5 rounded-xl border transition
+                      ${
+                        selectedAddress === address.id
+                          ? "border-[var(--gold)] bg-white/[0.02]"
+                          : "border-white/10 hover:border-white/30"
+                      }
+                    `}
+                  >
+                    <p className="text-sm">
+                      {address.street}, {address.number}
+                    </p>
+
+                    {address.complement && (
+                      <p className="text-xs text-white/60 mt-1">
+                        {address.complement}
+                      </p>
+                    )}
+
+                    <p className="text-xs text-white/60 mt-1">
+                      {address.district} - {address.city} - {address.state}
+                    </p>
+
+                    <p className="text-xs text-white/60 mt-1">
+                      CEP {address.zipCode}
+                    </p>
+                  </button>
+                ))}
               </div>
             )}
-
-            <div className="space-y-4">
-              {addresses.map((address) => (
-                <button
-                  key={address.id}
-                  onClick={() => setSelectedAddress(address.id)}
-                  className={`
-                    w-full text-left p-4 sm:p-5 rounded-xl border transition
-                    ${
-                      selectedAddress === address.id
-                        ? "border-[var(--gold)] bg-white/[0.02]"
-                        : "border-white/10 hover:border-white/30"
-                    }
-                  `}
-                >
-                  <p className="text-sm">
-                    {address.street}, {address.number}
-                  </p>
-
-                  {address.complement && (
-                    <p className="text-xs text-white/60 mt-1">
-                      {address.complement}
-                    </p>
-                  )}
-
-                  <p className="text-xs text-white/60 mt-1">
-                    {address.district} - {address.city} - {address.state}
-                  </p>
-
-                  <p className="text-xs text-white/60 mt-1">
-                    CEP {address.zipCode}
-                  </p>
-                </button>
-              ))}
-            </div>
           </div>
 
           {/* FRETE */}
@@ -834,6 +1050,7 @@ export default function CheckoutPage() {
           </div>
         </div>{" "}
         {/* FECHA COLUNA */}
+
         <div className="lg:col-span-1">
           <div className="lg:sticky lg:top-28 p-5 sm:p-6 md:p-8 border border-white/10 rounded-2xl bg-black/40 backdrop-blur-xl">
             <h2 className="uppercase tracking-widest text-xs mb-6">
@@ -886,9 +1103,9 @@ export default function CheckoutPage() {
                 relative w-full mt-8 py-4 rounded-full text-xs tracking-[0.35em] uppercase
                 transition-all duration-300 overflow-hidden
                 ${
-                  loading
-                    ? "bg-[var(--gold)] opacity-70 cursor-not-allowed"
-                    : "bg-[var(--gold)] hover:scale-[1.02] active:scale-[0.98]"
+                  loading || checkoutLock || !selectedAddress || !selectedShipping || items.length === 0
+                    ? "bg-[var(--gold)] opacity-50 cursor-not-allowed"
+                    : "bg-[var(--gold)] text-black hover:scale-[1.02] active:scale-[0.98]"
                 }
               `}
             >
