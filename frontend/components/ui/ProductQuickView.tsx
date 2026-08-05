@@ -31,10 +31,8 @@ type Props = {
 
 function resolveImage(url: string) {
   if (!url) return "";
-
   if (url.startsWith("http")) return url;
   if (url.startsWith("/images")) return url;
-
   const normalizedPath = url.startsWith("/") ? url : `/${url}`;
   return `${API_URL}${normalizedPath}`;
 }
@@ -46,7 +44,6 @@ export default function ProductQuickView({ product, onClose }: Props) {
   const [index, setIndex] = useState(0);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  // Controle de reset direto no render (evitando useEffect desnecessário)
   const [productStateId, setProductStateId] = useState(product.id);
 
   if (productStateId !== product.id) {
@@ -59,7 +56,6 @@ export default function ProductQuickView({ product, onClose }: Props) {
   const hasVariants =
     Array.isArray(product.variants) && product.variants.length > 0;
 
-  // Performance otimizada com useMemo
   const images = useMemo(() => {
     return [
       resolveImage(product.image),
@@ -108,7 +104,6 @@ export default function ProductQuickView({ product, onClose }: Props) {
     }, 600);
   }
 
-  // Travar o scroll do body e fechar com a tecla ESC
   useEffect(() => {
     document.body.style.overflow = "hidden";
 
@@ -130,6 +125,7 @@ export default function ProductQuickView({ product, onClose }: Props) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
+        transition={{ duration: 0.15 }}
       >
         <div
           onClick={onClose}
@@ -137,10 +133,10 @@ export default function ProductQuickView({ product, onClose }: Props) {
         />
 
         <motion.div
-          initial={{ y: 80, opacity: 0 }}
+          initial={{ y: 40, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 60, opacity: 0 }}
-          transition={{ duration: 0.35, ease: "easeOut" }}
+          exit={{ y: 40, opacity: 0 }}
+          transition={{ duration: 0.15, ease: "easeOut" }}
           className="
             relative z-10 w-full max-w-5xl
             h-[92vh] md:h-auto max-h-[85vh]
@@ -179,7 +175,7 @@ export default function ProductQuickView({ product, onClose }: Props) {
                 key={currentImage}
                 initial={{ opacity: 0.5 }}
                 animate={{ opacity: 1 }}
-                transition={{ duration: 0.3 }}
+                transition={{ duration: 0.2 }}
                 className="absolute inset-0"
               >
                 <Image

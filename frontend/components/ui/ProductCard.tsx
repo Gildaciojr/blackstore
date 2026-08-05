@@ -38,10 +38,8 @@ function brl(v: number) {
 
 function resolveImage(url: string) {
   if (!url) return "";
-
   if (url.startsWith("http")) return url;
   if (url.startsWith("/images")) return url;
-
   const normalizedPath = url.startsWith("/") ? url : `/${url}`;
   return `${API_URL}${normalizedPath}`;
 }
@@ -230,10 +228,10 @@ export default function ProductCard({
           </Link>
         )}
 
-        {/* LOW STOCK BADGE */}
+        {/* LOW STOCK BADGE - Ajustado com whitespace-nowrap para nunca quebrar a linha de forma feia */}
         {stock !== undefined && stock <= 2 && stock > 0 && (
           <div className="absolute bottom-3 left-3 z-30 pointer-events-none">
-            <span className="px-2.5 py-1 text-[9px] uppercase tracking-[0.25em] rounded-full border border-orange-400/30 bg-orange-400/10 text-orange-300 backdrop-blur-md">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[8px] sm:text-[9px] uppercase tracking-[0.2em] rounded-full border border-orange-400/30 bg-orange-400/10 text-orange-300 backdrop-blur-md whitespace-nowrap">
               🔥 Últimas unidades
             </span>
           </div>
