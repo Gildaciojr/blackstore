@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ShoppingBag, User } from "lucide-react";
 import { useCart } from "@/store/cart";
-import { useEffect, useState, startTransition } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function Header() {
@@ -33,8 +33,8 @@ export default function Header() {
     <header
       className={`fixed top-0 w-full z-50 transition-all duration-500 ${
         scrolled
-          ? "backdrop-blur-xl bg-black/80 border-b border-white/10 shadow-2xl"
-          : "bg-gradient-to-b from-black/80 via-black/40 to-transparent"
+          ? "backdrop-blur-xl bg-black/85 border-b border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.8)]"
+          : "bg-gradient-to-b from-black/85 via-black/40 to-transparent"
       }`}
     >
       <div
@@ -45,16 +45,32 @@ export default function Header() {
           ${scrolled ? "h-16 md:h-20" : "h-20 md:h-24"}
         `}
       >
-        {/* LOGO */}
-        <Link href="/" className="flex items-center group focus:outline-none" aria-label="Blackstore Home">
-          <Image
-            src="/images/logo-v2.png"
-            alt="Blackstore"
-            width={120}
-            height={40}
-            className="object-contain h-[32px] md:h-[42px] w-auto transition-transform duration-300 group-hover:scale-105"
-            priority
-          />
+        {/* LOGO REFINADA E PREMIUM */}
+        <Link
+          href="/"
+          className="relative flex items-center group focus:outline-none py-2"
+          aria-label="Blackstore Home"
+        >
+          {/* Aura de brilho dourado sutil ao fundo da logo (Efeito de luxo) */}
+          <div className="absolute -inset-2 bg-[var(--gold)] opacity-0 group-hover:opacity-15 blur-xl transition-opacity duration-500 rounded-full pointer-events-none" />
+
+          <div className="relative flex items-center">
+            <Image
+              src="/images/logo-v2.png"
+              alt="Blackstore"
+              width={130}
+              height={44}
+              className="
+                object-contain
+                h-[34px] md:h-[44px]
+                w-auto
+                transition-all duration-500
+                group-hover:scale-105
+                filter drop-shadow-[0_2px_10px_rgba(212,175,55,0.25)]
+              "
+              priority
+            />
+          </div>
         </Link>
 
         {/* NAV DESKTOP & MOBILE INTEGRADA (Clean UX) */}

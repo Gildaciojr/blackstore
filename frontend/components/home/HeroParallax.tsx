@@ -25,7 +25,7 @@ const fallbackSlides: Slide[] = [
     type: "collection",
     image: "/images/hero.jpg",
     focus: "center 20%",
-    focusDesktop: "center 18%",
+    focusDesktop: "center 10%", // 🔥 Ancorado no topo para nunca cortar a cabeça da modelo no notebook
     title1: "Moda que",
     title2: "impõe presença",
     subtitle:
@@ -37,7 +37,7 @@ const fallbackSlides: Slide[] = [
     type: "product",
     image: "/images/product-3.jpg",
     focus: "center 20%",
-    focusDesktop: "center 18%",
+    focusDesktop: "center 10%", // 🔥 Ancorado no topo para nunca cortar a cabeça da modelo no notebook
     title1: "Elegância em",
     title2: "movimento",
     subtitle: "Peças criadas para performance e sofisticação em cada detalhe.",
@@ -127,7 +127,7 @@ export default function HeroParallax({
 
   const objectPosition = useMemo(() => {
     if (!slide) return "center";
-    return isDesktop ? slide.focusDesktop : slide.focus;
+    return isDesktop ? "center 10%" : slide.focus;
   }, [isDesktop, slide]);
 
   if (!slide) return null;
@@ -138,7 +138,7 @@ export default function HeroParallax({
       onMouseLeave={() => setPaused(false)}
       className="relative w-full h-[88vh] md:h-[92vh] overflow-hidden bg-black"
     >
-      {/* BACKGROUND DA HERO: Imagem imersiva preenchendo a tela com elegância e sem tarjas pretas */}
+      {/* BACKGROUND DA HERO */}
       <AnimatePresence mode="wait">
         <motion.div
           key={slide.image}
@@ -163,11 +163,11 @@ export default function HeroParallax({
         </motion.div>
       </AnimatePresence>
 
-      {/* OVERLAY DE LEITURA (GRADIENTE LUXO PARA DESTAQUE DOS TEXTOS) */}
+      {/* OVERLAY DE LEITURA (GRADIENTE LUXO) */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/30 md:bg-gradient-to-r md:from-black/85 md:via-black/50 md:to-transparent pointer-events-none" />
 
-      {/* 🔥 CUPOM ULTRA-OTIMIZADO PARA TELAS PEQUENAS E GRANDES */}
-      <div className="absolute top-20 right-3 sm:top-22 sm:right-6 md:top-28 md:right-12 z-30">
+      {/* 🔥 CUPOM: Visível APENAS em telas médias/grandes (md:flex), totalmente oculto no celular para não cobrir o rosto */}
+      <div className="hidden md:flex absolute top-28 right-12 z-30">
         <motion.div
           initial={{ opacity: 0, y: -10, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -176,25 +176,25 @@ export default function HeroParallax({
             relative
             bg-black/80 backdrop-blur-2xl
             border border-[var(--gold)]/40
-            rounded-2xl px-3 py-2 md:px-5 md:py-3.5
+            rounded-2xl px-5 py-3.5
             shadow-[0_10px_30px_rgba(0,0,0,0.8)]
-            flex items-center gap-2.5 md:gap-3
+            flex items-center gap-3
           "
         >
-          <div className="w-7 h-7 md:w-8 md:h-8 rounded-xl bg-[var(--gold)]/10 border border-[var(--gold)]/30 flex items-center justify-center text-[var(--gold)] shrink-0">
-            <Tag size={13} />
+          <div className="w-8 h-8 rounded-xl bg-[var(--gold)]/10 border border-[var(--gold)]/30 flex items-center justify-center text-[var(--gold)] shrink-0">
+            <Tag size={14} />
           </div>
 
           <div className="flex flex-col leading-tight">
-            <span className="text-[7px] md:text-[9px] uppercase tracking-widest text-white/50">
+            <span className="text-[9px] uppercase tracking-widest text-white/50">
               Desconto VIP
             </span>
-            <div className="flex items-center gap-1.5 mt-0.5">
-              <span className="text-[11px] md:text-sm font-bold text-[var(--gold)] tracking-wider">
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className="text-sm font-bold text-[var(--gold)] tracking-wider">
                 10% OFF
               </span>
-              <span className="text-[8px] text-white/30">•</span>
-              <span className="text-[9px] md:text-xs font-mono text-white/90">
+              <span className="text-[9px] text-white/30">•</span>
+              <span className="text-xs font-mono text-white/90">
                 BLACK10
               </span>
             </div>
@@ -208,7 +208,7 @@ export default function HeroParallax({
               setTimeout(() => setCouponCopied(false), 2000);
             }}
             className={`
-              ml-1 md:ml-2 px-2.5 py-1 md:px-3 md:py-1.5 rounded-xl text-[8px] md:text-[10px] uppercase tracking-widest font-semibold transition-all duration-300 shadow-md
+              ml-2 px-3 py-1.5 rounded-xl text-[10px] uppercase tracking-widest font-semibold transition-all duration-300 shadow-md
               ${
                 couponCopied
                   ? "bg-emerald-500 text-black font-bold"

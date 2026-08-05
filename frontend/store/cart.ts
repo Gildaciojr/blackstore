@@ -81,20 +81,16 @@ type CartState = {
 
 function getCustomerId() {
   const id = localStorage.getItem("bs_customer");
-
   if (!id) {
     throw new Error("Usuário não autenticado");
   }
-
   return id;
 }
 
 function resolveImage(url: string) {
   if (!url) return "";
-
   if (url.startsWith("/images")) return url;
   if (url.startsWith("http")) return url;
-
   return `${process.env.NEXT_PUBLIC_API_URL}${url}`;
 }
 
@@ -111,7 +107,6 @@ export const useCart = create<CartState>((set, get) => ({
   loadCart: async () => {
     try {
       const customerId = getCustomerId();
-
       const data = await apiFetch<CartApiItem[]>(`/cart/${customerId}`);
 
       const items: CartItem[] = data.map((i: CartApiItem) => ({
@@ -123,7 +118,7 @@ export const useCart = create<CartState>((set, get) => ({
         image: resolveImage(i.product.image),
         quantity: i.quantity,
         variantId: i.variantId ?? null,
-        size: i.variant?.size ?? null
+        size: i.variant?.size ?? null,
       }));
 
       set({ items });
@@ -132,25 +127,46 @@ export const useCart = create<CartState>((set, get) => ({
     }
   },
 
+  // 🔥 ADIÇÃO OTIMIZADA COM ATUALIZAÇÃO INSTANTÂNEA DE UI
   addItem: async (item) => {
     try {
       const customerId = getCustomerId();
 
-      const existing = get().items.find(
+      const existingIndex = get().items.findIndex(
         (i) =>
           i.id === item.id &&
           (i.variantId ?? null) === (item.variantId ?? null),
       );
 
-      if (existing) {
+      // Atualização otimista imediata na UI
+      if (existingIndex > -1) {
+        const updated = [...get().items];
+        updated[existingIndex].quantity += 1;
+        set({ items: updated });
+
         await apiFetch("/cart/update", {
           method: "PATCH",
           body: JSON.stringify({
-            cartItemId: existing.cartItemId,
-            quantity: existing.quantity + 1,
+            cartItemId: updated[existingIndex].cartItemId,
+            quantity: updated[existingIndex].quantity,
           }),
         });
       } else {
+        const tempId = `temp-${Date.now()}`;
+        const newItem: CartItem = {
+          id: item.id,
+          cartItemId: tempId,
+          name: item.name,
+          price: item.price,
+          oldPrice: item.oldPrice,
+          image: item.image,
+          quantity: 1,
+          variantId: item.variantId ?? null,
+          size: item.size ?? null,
+        };
+
+        set({ items: [...get().items, newItem] });
+
         await apiFetch("/cart/add", {
           method: "POST",
           body: JSON.stringify({
@@ -163,63 +179,65 @@ export const useCart = create<CartState>((set, get) => ({
         });
       }
 
-      await get().loadCart();
+      // Sincroniza em background sem bloquear
+      void get().loadCart();
     } catch (err) {
       console.error("Erro ao adicionar item:", err);
+      void get().loadCart(); // Reverte se falhar
       throw err;
     }
   },
 
   removeItem: async (id) => {
     try {
-      const item = get().items.find((i) => i.cartItemId === id);
-
-      if (!item) return;
-
-      await apiFetch(`/cart/${item.cartItemId}`, {
-        method: "DELETE",
-      });
-
-      await get().loadCart();
+      set({ items: get().items.filter((i) => i.cartItemId !== id) });
+      await apiFetch(`/cart/${id}`, { method: "DELETE" });
+      void get().loadCart();
     } catch (err) {
       console.error("Erro ao remover item:", err);
-      throw err;
+      void get().loadCart();
     }
   },
 
   increase: async (id) => {
     try {
-      const item = get().items.find((i) => i.cartItemId === id);
+      const updated = get().items.map((i) =>
+        i.cartItemId === id ? { ...i, quantity: i.quantity + 1 } : i
+      );
+      set({ items: updated });
 
+      const item = updated.find((i) => i.cartItemId === id);
       if (!item) return;
 
       await apiFetch("/cart/update", {
         method: "PATCH",
         body: JSON.stringify({
           cartItemId: item.cartItemId,
-          quantity: item.quantity + 1,
+          quantity: item.quantity,
         }),
       });
-
-      await get().loadCart();
+      void get().loadCart();
     } catch (err) {
       console.error("Erro ao aumentar quantidade:", err);
-      throw err;
+      void get().loadCart();
     }
   },
 
   decrease: async (id) => {
     try {
       const item = get().items.find((i) => i.cartItemId === id);
-
       if (!item) return;
 
       const qty = item.quantity - 1;
-
       if (qty <= 0) {
         await get().removeItem(id);
         return;
       }
+
+      const updated = get().items.map((i) =>
+        i.cartItemId === id ? { ...i, quantity: qty } : i
+      );
+      set({ items: updated });
 
       await apiFetch("/cart/update", {
         method: "PATCH",
@@ -228,18 +246,16 @@ export const useCart = create<CartState>((set, get) => ({
           quantity: qty,
         }),
       });
-
-      await get().loadCart();
+      void get().loadCart();
     } catch (err) {
       console.error("Erro ao diminuir quantidade:", err);
-      throw err;
+      void get().loadCart();
     }
   },
 
   calculateShipping: async (zip: string) => {
     try {
       const normalizedZip = zip.replace(/\D/g, "");
-
       const data = await apiFetch<ShippingOption[]>("/shipping/calculate", {
         method: "POST",
         body: JSON.stringify({ cep: normalizedZip }),
@@ -248,7 +264,7 @@ export const useCart = create<CartState>((set, get) => ({
       set({
         zipCode: normalizedZip,
         shippingOptions: data,
-        selectedShipping: null,
+        selectedShipping: data[0] || null, // Seleciona automaticamente a primeira opção para agilizar o checkout
       });
     } catch (err) {
       console.error("Erro ao calcular frete:", err);
@@ -258,23 +274,15 @@ export const useCart = create<CartState>((set, get) => ({
 
   selectShipping: (method: string) => {
     const option = get().shippingOptions.find((s) => s.method === method);
-
     if (!option) return;
-
-    set({
-      selectedShipping: option,
-    });
+    set({ selectedShipping: option });
   },
 
   applyCoupon: async (code: string) => {
     const normalizedCode = code.trim().toUpperCase();
-
-    if (!normalizedCode) {
-      throw new Error("Cupom inválido");
-    }
+    if (!normalizedCode) throw new Error("Cupom inválido");
 
     const coupon = await apiFetch<CouponResponse>(`/coupons/${normalizedCode}`);
-
     set({
       appliedCouponCode: coupon.code,
       couponPercent: coupon.discount,
@@ -304,15 +312,10 @@ export const useCart = create<CartState>((set, get) => ({
   discount: () => {
     const subtotal = get().subtotal();
     const percent = get().couponPercent;
-
     if (subtotal <= 0 || percent <= 0) return 0;
-
     const raw = subtotal * (percent / 100);
     const value = Number(raw.toFixed(2));
-
-    if (value > subtotal) return subtotal;
-
-    return value;
+    return value > subtotal ? subtotal : value;
   },
 
   shipping: () => get().selectedShipping?.price || 0,
@@ -321,9 +324,7 @@ export const useCart = create<CartState>((set, get) => ({
     const subtotal = get().subtotal();
     const discount = get().discount();
     const shipping = get().shipping();
-
     const total = subtotal - discount + shipping;
-
     return total < 0 ? 0 : total;
   },
 }));
