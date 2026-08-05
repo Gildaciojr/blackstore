@@ -25,7 +25,7 @@ const fallbackSlides: Slide[] = [
     type: "collection",
     image: "/images/hero.jpg",
     focus: "center 20%",
-    focusDesktop: "center 18%",
+    focusDesktop: "center top",
     title1: "Moda que",
     title2: "impõe presença",
     subtitle:
@@ -37,7 +37,7 @@ const fallbackSlides: Slide[] = [
     type: "product",
     image: "/images/product-3.jpg",
     focus: "center 20%",
-    focusDesktop: "center 16%",
+    focusDesktop: "center top",
     title1: "Elegância em",
     title2: "movimento",
     subtitle: "Peças criadas para performance e sofisticação em cada detalhe.",
@@ -127,7 +127,8 @@ export default function HeroParallax({
 
   const objectPosition = useMemo(() => {
     if (!slide) return "center";
-    return isDesktop ? slide.focusDesktop : slide.focus;
+    // No desktop, travamos no topo centralizado para evitar que o corte suba demais na cabeça da modelo
+    return isDesktop ? "center 15%" : slide.focus;
   }, [isDesktop, slide]);
 
   if (!slide) return null;
@@ -136,9 +137,9 @@ export default function HeroParallax({
     <section
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
-      className="relative w-full h-[90vh] md:h-[92vh] overflow-hidden bg-black"
+      className="relative w-full h-[88vh] md:h-[90vh] overflow-hidden bg-black"
     >
-      {/* BACKGROUND DA HERO COM ENQUADRAMENTO PERFEITO */}
+      {/* BACKGROUND DA HERO COM CONTROLE DE PROPORÇÃO PARA TELA GRANDE */}
       <AnimatePresence mode="wait">
         <motion.div
           key={slide.image}
@@ -146,7 +147,7 @@ export default function HeroParallax({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 1 }}
-          className="absolute inset-0 w-full h-full overflow-hidden"
+          className="absolute inset-0 w-full h-full overflow-hidden flex items-center justify-center bg-black"
         >
           <Image
             src={slide.image}
@@ -155,7 +156,10 @@ export default function HeroParallax({
             priority
             quality={100}
             sizes="100vw"
-            className="object-cover w-full h-full"
+            /* 🔥 CORREÇÃO DEFINITIVA DO ZOOM ESTOURADO NO NOTEBOOK: 
+               Em telas grandes (md), usamos object-contain com largura máxima para a foto respeitar 
+               as proporções originais da modelo sem esticar e cortar o rosto. No mobile continua object-cover preenchendo a tela. */
+            className="w-full h-full object-cover md:object-contain md:max-h-[90vh]"
             style={{
               objectPosition,
             }}
@@ -164,9 +168,9 @@ export default function HeroParallax({
       </AnimatePresence>
 
       {/* OVERLAY DE LEITURA (GRADIENTE LUXO) */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/40 md:bg-gradient-to-r md:from-black/80 md:via-black/30 md:to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/40 md:bg-gradient-to-r md:from-black/90 md:via-black/50 md:to-transparent" />
 
-      {/* 🔥 CARD DE CUPOM REPOSICIONADO (Flutuando perfeitamente sem cobrir rostos ou o header) */}
+      {/* CARD DE CUPOM REPOSICIONADO */}
       <div className="absolute top-24 md:top-28 right-4 md:right-12 z-30">
         <motion.div
           initial={{ opacity: 0, y: -10, scale: 0.95 }}
