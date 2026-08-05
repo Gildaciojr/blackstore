@@ -43,7 +43,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR" className="scroll-smooth">
-      <body className="bg-black text-white antialiased selection:bg-[var(--gold)] selection:text-black">
+      <body className="text-white antialiased selection:bg-[var(--gold)] selection:text-black">
         {/* ✅ SCRIPT OFICIAL PAGBANK (SDK v4) */}
         <Script
           src="https://assets.pagseguro.com.br/checkout-sdk-js/rc/dist/browser/pagseguro.min.js"
