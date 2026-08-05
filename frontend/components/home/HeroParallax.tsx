@@ -139,8 +139,8 @@ export default function HeroParallax({
   function handleMouseMove(e: React.MouseEvent) {
     if (!isDesktop) return;
     
-    // 🔥 LIMITADOR DO PARALLAX PARA EVITAR ZOOM ESTOURADO
-    const MAX_OFFSET = 15; 
+    // 🔥 LIMITADOR SUAVE DO PARALLAX PARA EVITAR QUALQUER CORTE NAS BORDAS
+    const MAX_OFFSET = 10; 
     
     const x = (e.clientX / window.innerWidth - 0.5) * MAX_OFFSET;
     const y = (e.clientY / window.innerHeight - 0.5) * MAX_OFFSET;
@@ -159,7 +159,7 @@ export default function HeroParallax({
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
-      className="relative w-full h-[85vh] md:h-[95vh] overflow-hidden" 
+      className="relative w-full h-[85vh] md:h-[95vh] overflow-hidden bg-black" 
     >
       {/* BACKGROUND */}
       <AnimatePresence mode="wait">
@@ -171,14 +171,14 @@ export default function HeroParallax({
           transition={{ duration: 1.1 }}
           className="absolute inset-0"
         >
-          {/* 🔥 ANIMAÇÃO DO PARALLAX CORRIGIDA PARA MANTÊ-LA PROPORCIONAL E SEM ZOOM EXTREMO */}
+          {/* 🔥 CORREÇÃO DE ZOOM/ESTOURO: Removido o inset agressivo e ajustado o translate para fluir dentro da proporção ideal */}
           <motion.div
             animate={{ x: mouse.x, y: mouse.y }}
             transition={{
-              duration: 2, // Movimento mais responsivo e rápido
+              duration: 2,
               ease: "easeOut",
             }}
-            className="absolute inset-[-30px] transform-gpu" // O negativo (inset) evita o buraco na tela quando a imagem se move, substituindo a necessidade do zoom `scale: 1.05`
+            className="absolute inset-[-15px] transform-gpu"
           >
             <div className="relative w-full h-full">
               <Image
@@ -186,7 +186,7 @@ export default function HeroParallax({
                 alt="Blackstore"
                 fill
                 priority
-                quality={100} // 🔥 ALTA DEFINIÇÃO PARA RESOLVER O PROBLEMA DE RESOLUÇÃO BAIXA
+                quality={100} // 🔥 ALTA DEFINIÇÃO PARA MONITORES RETINA E IPHONES PRO MAX
                 sizes="100vw"
                 className="object-cover md:object-cover will-change-transform"
                 style={{ objectPosition }}
@@ -427,105 +427,57 @@ export default function HeroParallax({
         ))}
       </div>
 
-      {/* CUPOM */}
-      <div className="absolute top-24 md:top-10 right-4 md:right-10 z-30">
+      {/* 🔥 CUPOM COMPACTO E RESPONSIVO (Não polui a tela do celular nem cobre rostos) */}
+      <div className="absolute top-20 right-3 md:top-6 md:right-10 z-30">
         <motion.div
-          initial={{ opacity: 0, y: -30, scale: 0.95 }}
+          initial={{ opacity: 0, y: -20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.4 }}
           className="
             relative
-            bg-black/60 backdrop-blur-xl
+            bg-black/70 backdrop-blur-xl
             border border-[var(--gold)]/30
-            rounded-xl px-4 py-3 md:px-5 md:py-4
-            shadow-[0_15px_50px_rgba(0,0,0,0.7)]
-            flex flex-col gap-2
-            overflow-hidden
+            rounded-xl px-3 py-2 md:px-4 md:py-3
+            shadow-[0_10px_30px_rgba(0,0,0,0.6)]
+            flex items-center gap-2.5
+            max-w-[210px] md:max-w-none
           "
         >
-          <motion.div
-            animate={{ opacity: [0.2, 0.5, 0.2] }}
-            transition={{ duration: 3, repeat: Infinity }}
-            className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(212,175,55,0.2),transparent_60%)] pointer-events-none"
-          />
-
-          <div className="relative z-10 flex flex-col gap-1.5 md:gap-3">
-            <div className="leading-tight">
-              <span className="text-[8px] md:text-[10px] uppercase tracking-[0.2em] md:tracking-widest text-white/35">
-                Ganhe agora
-              </span>
-
-              <div className="text-[11px] md:text-[14px] font-semibold text-[var(--gold)] mt-[1px]">
-                10% OFF
-              </div>
+          <div className="leading-tight">
+            <span className="text-[7px] md:text-[9px] uppercase tracking-widest text-white/40 block">
+              Ganhe agora
+            </span>
+            <div className="text-[10px] md:text-xs font-semibold text-[var(--gold)]">
+              10% OFF <span className="text-white/60 font-mono text-[9px]">BLACK10</span>
             </div>
-
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-[10px] md:text-[12px] tracking-[0.2em] md:tracking-widest text-white">
-                BLACK10
-              </span>
-
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText("BLACK10");
-                  setCouponCopied(true);
-                  localStorage.setItem("applied_coupon", "BLACK10");
-
-                  setTimeout(() => {
-                    setCouponCopied(false);
-                  }, 2000);
-                }}
-                className={`
-                  text-[8px] md:text-[10px]
-                  uppercase tracking-[0.2em] md:tracking-widest
-                  px-2 py-1 md:px-3 md:py-1.5
-                  rounded-md
-                  border
-                  transition-all duration-300
-                  ${
-                    couponCopied
-                      ? "border-green-400 text-green-400"
-                      : "border-white/20 hover:border-[var(--gold)] hover:text-[var(--gold)]"
-                  }
-                `}
-              >
-                {couponCopied ? "Aplicado ✓" : "Aplicar"}
-              </button>
-            </div>
-
-            <Link
-              href="/catalog"
-              className="hidden md:block text-[10px] uppercase tracking-widest text-white/60 hover:text-[var(--gold)] transition mt-1"
-            >
-              Usar no catálogo →
-            </Link>
           </div>
 
-          <AnimatePresence>
-            {couponCopied && (
-              <motion.div
-                initial={{ opacity: 0, y: 8, scale: 0.9 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 8, scale: 0.9 }}
-                transition={{ duration: 0.25 }}
-                className="
-                  absolute
-                  right-0
-                  mt-2 md:mt-3
-                  bg-green-500/10
-                  border border-green-400/30
-                  text-green-400
-                  text-[8px] md:text-[10px]
-                  px-2 py-1 md:px-3 md:py-2
-                  rounded-md
-                  shadow-[0_10px_30px_rgba(0,0,0,0.4)]
-                  backdrop-blur-md
-                "
-              >
-                Cupom aplicado ✦
-              </motion.div>
-            )}
-          </AnimatePresence>
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText("BLACK10");
+              setCouponCopied(true);
+              localStorage.setItem("applied_coupon", "BLACK10");
+
+              setTimeout(() => {
+                setCouponCopied(false);
+              }, 2000);
+            }}
+            className={`
+              text-[8px] md:text-[10px]
+              uppercase tracking-widest
+              px-2.5 py-1 md:px-3 md:py-1.5
+              rounded-lg
+              font-medium
+              transition-all duration-300
+              ${
+                couponCopied
+                  ? "bg-emerald-500 text-black"
+                  : "bg-white/10 text-white hover:bg-[var(--gold)] hover:text-black"
+              }
+            `}
+          >
+            {couponCopied ? "Copiado!" : "Copiar"}
+          </button>
         </motion.div>
       </div>
     </section>
