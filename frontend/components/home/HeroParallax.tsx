@@ -25,7 +25,7 @@ const fallbackSlides: Slide[] = [
     type: "collection",
     image: "/images/hero.jpg",
     focus: "center 20%",
-    focusDesktop: "center 15%",
+    focusDesktop: "center 18%",
     title1: "Moda que",
     title2: "impõe presença",
     subtitle:
@@ -37,7 +37,7 @@ const fallbackSlides: Slide[] = [
     type: "product",
     image: "/images/product-3.jpg",
     focus: "center 20%",
-    focusDesktop: "center 15%",
+    focusDesktop: "center 18%",
     title1: "Elegância em",
     title2: "movimento",
     subtitle: "Peças criadas para performance e sofisticação em cada detalhe.",
@@ -138,7 +138,7 @@ export default function HeroParallax({
       onMouseLeave={() => setPaused(false)}
       className="relative w-full h-[88vh] md:h-[92vh] overflow-hidden bg-black"
     >
-      {/* 🔥 TÉCNICA CINEMATOGRÁFICA DE FUNDO AMBIENTE (Elimina tarjas pretas laterais mantendo imersão de luxo) */}
+      {/* BACKGROUND DA HERO: Imagem imersiva preenchendo a tela com elegância e sem tarjas pretas */}
       <AnimatePresence mode="wait">
         <motion.div
           key={slide.image}
@@ -146,42 +146,27 @@ export default function HeroParallax({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 1 }}
-          className="absolute inset-0 w-full h-full overflow-hidden"
+          className="absolute inset-0 w-full h-full overflow-hidden bg-black"
         >
-          {/* Fundo Desfocado Ambientado */}
-          <div className="absolute inset-0 w-full h-full overflow-hidden filter blur-3xl opacity-35 scale-110 pointer-events-none">
-            <Image
-              src={slide.image}
-              alt=""
-              fill
-              priority
-              className="object-cover w-full h-full"
-            />
-          </div>
-          <div className="absolute inset-0 bg-black/60" />
-
-          {/* Imagem Central Principal */}
-          <div className="absolute inset-0 w-full h-full flex items-center justify-center">
-            <Image
-              src={slide.image}
-              alt="Blackstore"
-              fill
-              priority
-              quality={100}
-              sizes="100vw"
-              className="w-full h-full object-cover md:object-contain md:max-h-[92vh]"
-              style={{
-                objectPosition,
-              }}
-            />
-          </div>
+          <Image
+            src={slide.image}
+            alt="Blackstore"
+            fill
+            priority
+            quality={100}
+            sizes="100vw"
+            className="w-full h-full object-cover object-center"
+            style={{
+              objectPosition,
+            }}
+          />
         </motion.div>
       </AnimatePresence>
 
-      {/* OVERLAY DE LEITURA */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/40 md:bg-gradient-to-r md:from-black/90 md:via-black/50 md:to-transparent pointer-events-none" />
+      {/* OVERLAY DE LEITURA (GRADIENTE LUXO PARA DESTAQUE DOS TEXTOS) */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/30 md:bg-gradient-to-r md:from-black/85 md:via-black/50 md:to-transparent pointer-events-none" />
 
-      {/* 🔥 CUPOM ULTRA OTIMIZADO PARA TELAS PEQUENAS E GRANDES */}
+      {/* 🔥 CUPOM ULTRA-OTIMIZADO PARA TELAS PEQUENAS E GRANDES */}
       <div className="absolute top-20 right-3 sm:top-22 sm:right-6 md:top-28 md:right-12 z-30">
         <motion.div
           initial={{ opacity: 0, y: -10, scale: 0.95 }}
