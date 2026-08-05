@@ -1,527 +1,357 @@
 "use client";
 
-import HeroParallax from "@/components/home/HeroParallax";
-import ProductCard from "@/components/ui/ProductCard";
-import Reveal from "@/components/ui/Reveal";
 import Image from "next/image";
 import Link from "next/link";
-import Lookbook from "@/components/sections/Lookbook";
-import InstagramShowcase from "@/components/sections/InstagramShowcase";
-import { apiFetch } from "@/lib/api";
-import ProductQuickView from "@/components/ui/ProductQuickView";
-import WeeklyBestSellers from "@/components/sections/WeeklyBestSellers";
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ComponentProps,
-} from "react";
-import { ChevronLeft, ChevronRight, ArrowRight, Sparkles } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Tag, Check } from "lucide-react";
 
-type Media = {
-  id: string;
-  type?: string;
-  title?: string | null;
-  url: string;
-  productId?: string | null;
-  createdAt?: string;
-};
+type SlideType = "collection" | "product" | "promo";
 
-type Variant = {
-  id: string;
-  size: string;
-  stock: number;
-};
-
-type Product = {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string | null;
-  price: number;
-  oldPrice?: number | null;
+type Slide = {
+  type: SlideType;
   image: string;
-  medias?: Media[];
-  variants?: Variant[];
-  stock: number;
-  categoryId: string;
-  createdAt: string;
+  focus: string;
+  focusDesktop: string;
+  title1: string;
+  title2: string;
+  subtitle: string;
+  cta1: string;
+  cta2: string;
 };
 
-type QuickProduct = {
-  id: string;
-  name: string;
-  price: number;
-  image: string;
-  images: string[];
-  oldPrice?: number;
-  variants?: Variant[];
-  description?: string;
+const fallbackSlides: Slide[] = [
+  {
+    type: "collection",
+    image: "/images/hero.jpg",
+    focus: "center 20%",
+    focusDesktop: "center 18%",
+    title1: "Moda que",
+    title2: "impõe presença",
+    subtitle:
+      "Performance, estética e atitude. A nova coleção redefine o conceito premium.",
+    cta1: "#lancamentos",
+    cta2: "/catalog",
+  },
+  {
+    type: "product",
+    image: "/images/product-3.jpg",
+    focus: "center 20%",
+    focusDesktop: "center 18%",
+    title1: "Elegância em",
+    title2: "movimento",
+    subtitle: "Peças criadas para performance e sofisticação em cada detalhe.",
+    cta1: "/catalog",
+    cta2: "/catalog",
+  },
+];
+
+type HeroParallaxProps = {
+  slides?: Slide[];
 };
 
-type WeeklyBestSellerItem = {
-  id: string;
-  position: number;
-  productId: string;
-  product: Product;
-};
+export default function HeroParallax({
+  slides: externalSlides,
+}: HeroParallaxProps) {
+  const [index, setIndex] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
+  const [couponCopied, setCouponCopied] = useState(false);
 
-type HeroSlideApi = {
-  id: string;
-  position: number;
-  product: Product;
-  hero: {
-    type?: "COLLECTION" | "PRODUCT" | "PROMO" | null;
-    image?: string | null;
-    focus?: string | null;
-    focusDesktop?: string | null;
-    title1?: string | null;
-    title2?: string | null;
-    subtitle?: string | null;
-    cta1?: string | null;
-    cta2?: string | null;
-  };
-};
+  const startRef = useRef<number | null>(null);
+  const progressRef = useRef(0);
 
-type HomeSectionItem = {
-  id: string;
-  position: number;
-  product: Product;
-};
+  const slidesState = useMemo(() => {
+    if (externalSlides && externalSlides.length > 0) {
+      return externalSlides;
+    }
+    return fallbackSlides;
+  }, [externalSlides]);
 
-type LookbookItem = {
-  id: string;
-  position: number;
-  type: "TOP" | "BOTTOM";
-  label?: string | null;
-  top?: string | null;
-  left?: string | null;
-  fabric?: string | null;
-  active: boolean;
-  product: Product;
-};
+  const safeIndex =
+    slidesState.length > 0
+      ? ((index % slidesState.length) + slidesState.length) % slidesState.length
+      : 0;
 
-type HomeResponse = {
-  hero: HeroSlideApi[];
-  launches: HomeSectionItem[];
-  promotions: HomeSectionItem[];
-  lookbook: LookbookItem[];
-  bestSellers: WeeklyBestSellerItem[];
-};
-
-type HeroParallaxSlides = ComponentProps<typeof HeroParallax>["slides"];
-type HeroSlide = NonNullable<HeroParallaxSlides>[number];
-
-const LookbookTyped = Lookbook as unknown as React.ComponentType<{
-  items: LookbookItem[];
-}>;
-
-export default function HomePage() {
-  const [home, setHome] = useState<HomeResponse | null>(null);
-  const [quickProduct, setQuickProduct] = useState<QuickProduct | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const slide = slidesState[safeIndex];
 
   useEffect(() => {
-    async function loadHome() {
-      try {
-        setLoading(true);
-        const data = await apiFetch<HomeResponse>("/home");
-        setHome(data);
-      } catch (err) {
-        console.error("Erro ao carregar dados da home", err);
-      } finally {
-        setLoading(false);
+    function syncBreakpoint() {
+      setIsDesktop(window.innerWidth >= 768);
+    }
+    syncBreakpoint();
+    window.addEventListener("resize", syncBreakpoint);
+    return () => {
+      window.removeEventListener("resize", syncBreakpoint);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (slidesState.length === 0) return;
+
+    const duration = 5200;
+    let raf = 0;
+
+    function loop(timestamp: number) {
+      if (!startRef.current) {
+        startRef.current = timestamp;
       }
+
+      if (paused) {
+        startRef.current = timestamp - progressRef.current * duration;
+      }
+
+      const elapsed = timestamp - startRef.current;
+      const progressValue = Math.min(elapsed / duration, 1);
+
+      progressRef.current = progressValue;
+
+      if (progressValue >= 1) {
+        setIndex((prev) =>
+          slidesState.length > 0 ? (prev + 1) % slidesState.length : 0,
+        );
+        startRef.current = timestamp;
+        progressRef.current = 0;
+        setProgress(0);
+      } else {
+        setProgress(progressValue);
+      }
+
+      raf = requestAnimationFrame(loop);
     }
 
-    void loadHome();
-  }, []);
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
+  }, [paused, slidesState.length]);
 
-  const scroll = useCallback((direction: "left" | "right") => {
-    if (!scrollRef.current) return;
+  const objectPosition = useMemo(() => {
+    if (!slide) return "center";
+    return isDesktop ? slide.focusDesktop : slide.focus;
+  }, [isDesktop, slide]);
 
-    const firstChild = scrollRef.current.firstElementChild as HTMLElement | null;
-    if (!firstChild) return;
-
-    const cardWidth = firstChild.offsetWidth + 24;
-
-    scrollRef.current.scrollBy({
-      left: direction === "left" ? -cardWidth : cardWidth,
-      behavior: "smooth",
-    });
-  }, []);
-
-  const resolveImage = useCallback((url: string) => {
-    if (!url) return "";
-    if (url.startsWith("http")) return url;
-    if (url.startsWith("/images")) return url;
-
-    const normalizedPath = url.startsWith("/") ? url : `/${url}`;
-    return `${process.env.NEXT_PUBLIC_API_URL}${normalizedPath}`;
-  }, []);
-
-  const getCover = useCallback(
-    (product: Product) => resolveImage(product.image),
-    [resolveImage]
-  );
-
-  const getImages = useCallback(
-    (product: Product) => product.medias?.map((m) => resolveImage(m.url)) ?? [],
-    [resolveImage]
-  );
-
-  const normalizeProduct = useCallback(
-    (product: Product): QuickProduct => ({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      image: getCover(product),
-      images: getImages(product),
-      oldPrice: product.oldPrice ?? undefined,
-      variants: product.variants ?? [],
-      description: product.description ?? "",
-    }),
-    [getCover, getImages]
-  );
-
-  const heroSlides = useMemo<HeroSlide[]>(() => {
-    if (!home?.hero || home.hero.length === 0) return [];
-
-    return home.hero.map<HeroSlide>((item) => {
-      const normalizedType: HeroSlide["type"] =
-        item.hero.type === "PROMO"
-          ? "promo"
-          : item.hero.type === "PRODUCT"
-            ? "product"
-            : "collection";
-
-      return {
-        type: normalizedType,
-        image: resolveImage(item.hero.image ?? item.product.image),
-        focus: item.hero.focus ?? "center 25%",
-        focusDesktop: item.hero.focusDesktop ?? "center 22%",
-        title1: item.hero.title1 ?? item.product.name,
-        title2: item.hero.title2 ?? "Blackstore",
-        subtitle:
-          item.hero.subtitle ??
-          item.product.description ??
-          "Peças premium selecionadas para destacar sua presença.",
-        cta1: item.hero.cta1 ?? "#lancamentos",
-        cta2: item.hero.cta2 ?? `/product/${item.product.slug}`,
-      };
-    });
-  }, [home, resolveImage]);
-
-  const launchProducts = useMemo(() => home?.launches?.map((item) => item.product) ?? [], [home]);
-  const promotionItems = useMemo(() => home?.promotions ?? [], [home]);
-  const featuredPromotion = useMemo(() => promotionItems[0]?.product ?? null, [promotionItems]);
-
-  const featuredPromotionBanner = useMemo(() => {
-    if (!promotionItems.length) return null;
-    const firstPromotion = promotionItems[0].product;
-    const promotionImages = getImages(firstPromotion);
-
-    if (promotionImages.length > 0) return promotionImages[0];
-    return getCover(firstPromotion);
-  }, [promotionItems, getCover, getImages]);
-
-  function generateFallbackLookbook(products: HomeSectionItem[]): LookbookItem[] {
-    if (!products || products.length === 0) return [];
-
-    const safeProducts = products.slice(0, 6);
-    const result: LookbookItem[] = [];
-
-    safeProducts.forEach((p, i) => {
-      const isTop = i % 2 === 0;
-      result.push({
-        id: `${isTop ? "top" : "bottom"}-${p.product.id}`,
-        position: i + 1,
-        type: isTop ? "TOP" : "BOTTOM",
-        active: true,
-        product: p.product,
-        top: isTop ? "30%" : "65%",
-        left: isTop ? "60%" : "50%",
-      });
-    });
-
-    return result;
-  }
-
-  const lookbookItems = useMemo(() => {
-    if (home?.lookbook && home.lookbook.length > 0) return home.lookbook;
-
-    const fallback = generateFallbackLookbook([
-      ...(home?.launches ?? []),
-      ...(home?.promotions ?? []),
-    ]);
-
-    return fallback.length > 0 ? fallback : [];
-  }, [home]);
-
-  if (loading) {
-    return (
-      <section className="min-h-screen bg-[#0b0b0d] flex flex-col items-center justify-center">
-        <div className="w-8 h-8 border-2 border-[var(--gold)] border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="text-white/60 text-xs tracking-[0.35em] uppercase">Carregando Blackstore...</p>
-      </section>
-    );
-  }
+  if (!slide) return null;
 
   return (
-    <>
-      <HeroParallax slides={heroSlides.length > 0 ? heroSlides : undefined} />
+    <section
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      className="relative w-full h-[88vh] md:h-[92vh] overflow-hidden bg-black"
+    >
+      {/* BACKGROUND DA HERO: Imagem imersiva preenchendo a tela com elegância e sem tarjas pretas */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={slide.image}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 1 }}
+          className="absolute inset-0 w-full h-full overflow-hidden bg-black"
+        >
+          <Image
+            src={slide.image}
+            alt="Blackstore"
+            fill
+            priority
+            quality={100}
+            sizes="100vw"
+            className="w-full h-full object-cover object-center"
+            style={{
+              objectPosition,
+            }}
+          />
+        </motion.div>
+      </AnimatePresence>
 
-      {/* 🔥 LANÇAMENTOS COM SANGRIA FLUIDA SEM MÁSCARAS ESCURAS */}
-      <section id="lancamentos" className="relative overflow-hidden py-16 sm:py-20 md:py-24 lg:py-28">
-        <div className="max-w-[1500px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10">
-          <Reveal>
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 md:mb-14">
-              <div>
-                <div className="flex items-center gap-3 mb-3">
-                  <span className="h-px w-8 bg-[var(--gold)]/60" />
-                  <p className="text-[10px] tracking-[0.45em] uppercase text-[var(--gold)] font-semibold flex items-center gap-1.5">
-                    <Sparkles size={12} /> Edição Exclusiva
-                  </p>
-                </div>
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-light leading-tight">
-                  <span className="bs-title">Lançamentos</span>
-                </h2>
-                <p className="mt-3 text-white/60 text-xs sm:text-sm md:text-base max-w-xl leading-relaxed">
-                  Novidades selecionadas que redefinem o estilo e destacam sua presença nesta temporada.
-                </p>
-              </div>
+      {/* OVERLAY DE LEITURA (GRADIENTE LUXO PARA DESTAQUE DOS TEXTOS) */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/30 md:bg-gradient-to-r md:from-black/85 md:via-black/50 md:to-transparent pointer-events-none" />
 
-              <div className="flex items-center justify-between md:justify-end gap-4 border-t border-white/10 pt-4 md:border-none md:pt-0">
-                <Link
-                  href="/catalog"
-                  className="group inline-flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-white/70 hover:text-[var(--gold)] transition-colors"
-                >
-                  Ver Tudo no Catálogo
-                  <ArrowRight size={14} className="transform group-hover:translate-x-1 transition-transform" />
-                </Link>
+      {/* 🔥 CUPOM ULTRA-OTIMIZADO PARA TELAS PEQUENAS E GRANDES */}
+      <div className="absolute top-20 right-3 sm:top-22 sm:right-6 md:top-28 md:right-12 z-30">
+        <motion.div
+          initial={{ opacity: 0, y: -10, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.4 }}
+          className="
+            relative
+            bg-black/80 backdrop-blur-2xl
+            border border-[var(--gold)]/40
+            rounded-2xl px-3 py-2 md:px-5 md:py-3.5
+            shadow-[0_10px_30px_rgba(0,0,0,0.8)]
+            flex items-center gap-2.5 md:gap-3
+          "
+        >
+          <div className="w-7 h-7 md:w-8 md:h-8 rounded-xl bg-[var(--gold)]/10 border border-[var(--gold)]/30 flex items-center justify-center text-[var(--gold)] shrink-0">
+            <Tag size={13} />
+          </div>
 
-                <div className="hidden md:flex items-center gap-2 pl-4 border-l border-white/10">
-                  <button
-                    onClick={() => scroll("left")}
-                    aria-label="Rolar para a esquerda"
-                    className="w-11 h-11 rounded-full border border-white/15 bg-white/5 backdrop-blur-xl flex items-center justify-center text-white hover:border-[var(--gold)] hover:text-[var(--gold)] hover:bg-white/10 transition-all active:scale-95 shadow-lg"
-                  >
-                    <ChevronLeft size={18} />
-                  </button>
-                  <button
-                    onClick={() => scroll("right")}
-                    aria-label="Rolar para a direita"
-                    className="w-11 h-11 rounded-full border border-white/15 bg-white/5 backdrop-blur-xl flex items-center justify-center text-white hover:border-[var(--gold)] hover:text-[var(--gold)] hover:bg-white/10 transition-all active:scale-95 shadow-lg"
-                  >
-                    <ChevronRight size={18} />
-                  </button>
-                </div>
-              </div>
+          <div className="flex flex-col leading-tight">
+            <span className="text-[7px] md:text-[9px] uppercase tracking-widest text-white/50">
+              Desconto VIP
+            </span>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span className="text-[11px] md:text-sm font-bold text-[var(--gold)] tracking-wider">
+                10% OFF
+              </span>
+              <span className="text-[8px] text-white/30">•</span>
+              <span className="text-[9px] md:text-xs font-mono text-white/90">
+                BLACK10
+              </span>
             </div>
+          </div>
 
-            {/* TRACK FLUIDO: Sem máscaras escuras artificiais nas pontas */}
-            <div className="relative -mx-4 sm:-mx-6 md:-mx-8 lg:-mx-10 px-4 sm:px-6 md:px-8 lg:px-10">
-              <div
-                ref={scrollRef}
-                className="
-                  scrollbar-hide
-                  flex gap-4 sm:gap-6 md:gap-8
-                  overflow-x-auto
-                  overflow-y-hidden
-                  scroll-smooth
-                  snap-x snap-mandatory
-                  py-2
-                "
-                style={{ WebkitOverflowScrolling: "touch" }}
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText("BLACK10");
+              setCouponCopied(true);
+              localStorage.setItem("applied_coupon", "BLACK10");
+              setTimeout(() => setCouponCopied(false), 2000);
+            }}
+            className={`
+              ml-1 md:ml-2 px-2.5 py-1 md:px-3 md:py-1.5 rounded-xl text-[8px] md:text-[10px] uppercase tracking-widest font-semibold transition-all duration-300 shadow-md
+              ${
+                couponCopied
+                  ? "bg-emerald-500 text-black font-bold"
+                  : "bg-white/10 text-white hover:bg-[var(--gold)] hover:text-black"
+              }
+            `}
+          >
+            {couponCopied ? <Check size={12} /> : "Copiar"}
+          </button>
+        </motion.div>
+      </div>
+
+      {/* CONTEÚDO DA HERO */}
+      <div className="relative z-10 flex items-center h-full pt-10">
+        <div className="w-full max-w-7xl mx-auto px-5 md:px-10">
+          <motion.div
+            key={index}
+            initial="hidden"
+            animate="show"
+            variants={{
+              hidden: {},
+              show: {
+                transition: {
+                  staggerChildren: 0.12,
+                  delayChildren: 0.2,
+                },
+              },
+            }}
+            className="w-full max-w-full sm:max-w-sm md:max-w-lg lg:max-w-xl"
+          >
+            {/* LABEL */}
+            <motion.p
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                show: { opacity: 1, y: 0 },
+              }}
+              transition={{ duration: 0.6 }}
+              className="uppercase text-[10px] tracking-[0.4em] text-white/70 drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]"
+            >
+              {slide.type === "promo"
+                ? "Últimas unidades"
+                : slide.type === "product"
+                  ? "Alta performance"
+                  : "Nova coleção"}
+            </motion.p>
+
+            {/* TITLE */}
+            <motion.h1
+              variants={{
+                hidden: { opacity: 0, y: 40 },
+                show: { opacity: 1, y: 0 },
+              }}
+              transition={{ duration: 0.8 }}
+              className="mt-3 text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-light leading-tight"
+            >
+              <span className="block text-white drop-shadow-[0_4px_20px_rgba(0,0,0,0.9)]">
+                {slide.title1}
+              </span>
+              <span className="block bg-gradient-to-r from-[var(--gold)] via-[#f5d07a] to-white bg-clip-text text-transparent drop-shadow-[0_6px_25px_rgba(212,175,55,0.35)]">
+                {slide.title2}
+              </span>
+            </motion.h1>
+
+            {/* SUBTITLE */}
+            <motion.p
+              variants={{
+                hidden: { opacity: 0, y: 30 },
+                show: { opacity: 1, y: 0 },
+              }}
+              transition={{ duration: 0.7 }}
+              className="mt-4 text-white/90 text-xs sm:text-sm md:text-lg max-w-lg leading-relaxed drop-shadow-[0_4px_18px_rgba(0,0,0,0.85)]"
+            >
+              {slide.subtitle}
+            </motion.p>
+
+            {/* BUTTONS */}
+            <motion.div
+              variants={{
+                hidden: { opacity: 0, y: 30 },
+                show: { opacity: 1, y: 0 },
+              }}
+              transition={{ duration: 0.7 }}
+              className="mt-6 flex flex-col sm:flex-row gap-3.5"
+            >
+              <Link
+                href={slide.cta1}
+                className="px-6 py-3.5 rounded-full bg-[var(--gold)] text-black text-[10px] tracking-[0.3em] uppercase font-semibold text-center hover:scale-[1.02] active:scale-95 transition shadow-xl"
               >
-                {launchProducts.map((product, index) => (
-                  <div
-                    key={product.id}
-                    className="
-                      w-[78%] 
-                      sm:w-[calc(50%-12px)] 
-                      md:w-[calc(33.333%-16px)] 
-                      lg:w-[calc(25%-18px)] 
-                      xl:w-[calc(20%-20px)]
-                      shrink-0 
-                      snap-start snap-always
-                    "
-                  >
-                    <Reveal delay={0.05 * (index + 1)}>
-                      <ProductCard
-                        id={product.id}
-                        slug={product.slug}
-                        image={getCover(product)}
-                        images={getImages(product)}
-                        name={product.name}
-                        price={product.price}
-                        oldPrice={product.oldPrice ?? undefined}
-                        stock={product.stock}
-                        variants={product.variants}
-                        badge="NOVO"
-                        onQuickView={() => setQuickProduct(normalizeProduct(product))}
-                      />
-                    </Reveal>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </Reveal>
+                {slide.type === "promo" ? "Aproveitar agora" : "Quero essa coleção"}
+              </Link>
+              <Link
+                href={slide.cta2}
+                className="px-6 py-3.5 rounded-full border border-white/20 text-[10px] tracking-[0.3em] uppercase text-center hover:bg-white/10 hover:border-white/50 transition"
+              >
+                Explorar catálogo
+              </Link>
+            </motion.div>
+          </motion.div>
         </div>
-      </section>
+      </div>
 
-      {/* MAIS VENDIDOS */}
-      <section className="relative py-24 md:py-32">
-        <Reveal>
-          <div className="max-w-[1500px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10">
-            <div className="mb-12">
-              <div className="flex items-center gap-3 mb-3">
-                <span className="h-px w-8 bg-[var(--gold)]/60" />
-                <p className="text-[10px] tracking-[0.45em] uppercase text-white/40">Blackstore</p>
-              </div>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-light leading-tight">
-                <span className="bs-title">Mais vendidos da semana</span>
-              </h2>
-              <p className="mt-3 text-white/60 text-xs sm:text-sm md:text-base leading-relaxed">
-                As peças que mais conquistaram nossas clientes.
-              </p>
+      {/* BENEFÍCIOS BAR */}
+      <div className="absolute bottom-16 w-full z-20 px-4 md:px-0">
+        <div className="max-w-7xl mx-auto px-0 md:px-10">
+          <div className="bg-black/50 backdrop-blur-md border border-white/10 rounded-2xl grid grid-cols-3 gap-2 px-3 py-3 md:px-5 md:py-4 text-center md:text-left shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
+            <div className="flex flex-col items-center md:items-start leading-tight">
+              <p className="text-[11px] md:text-sm font-medium text-white">Compra segura</p>
+              <p className="text-[9px] md:text-xs text-white/50">dados protegidos</p>
             </div>
+            <div className="flex flex-col items-center md:items-start leading-tight">
+              <p className="text-[11px] md:text-sm font-medium text-white">Parcele em até 3x</p>
+              <p className="text-[9px] md:text-xs text-white/50">sem juros</p>
+            </div>
+            <div className="flex flex-col items-center md:items-start leading-tight">
+              <p className="text-[11px] md:text-sm font-medium text-white">Qualidade premium</p>
+              <p className="text-[9px] md:text-xs text-white/50">alta durabilidade</p>
+            </div>
+          </div>
+        </div>
+      </div>
 
-            <WeeklyBestSellers
-              items={home?.bestSellers ?? []}
-              getCover={getCover}
-              getImages={getImages}
-              onQuickView={(product: Product) => setQuickProduct(normalizeProduct(product))}
+      {/* BARRA DE PROGRESSO DO SLIDE */}
+      <div className="absolute bottom-8 left-0 w-full px-6 md:px-10">
+        <div className="h-[2px] bg-white/10 w-full rounded-full overflow-hidden">
+          <motion.div
+            className="h-full bg-[var(--gold)]"
+            style={{ width: `${progress * 100}%` }}
+          />
+        </div>
+      </div>
+
+      {/* INDICADORES (DOTS) */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-3">
+        {slidesState.map((_, i) => (
+          <button key={i} onClick={() => setIndex(i)} aria-label={`Slide ${i + 1}`}>
+            <span
+              className={`block h-[2px] transition-all duration-300 ${
+                i === index ? "bg-[var(--gold)] w-10" : "bg-white/30 w-6"
+              }`}
             />
-          </div>
-        </Reveal>
-      </section>
-
-      <Reveal>
-        <LookbookTyped items={lookbookItems} />
-      </Reveal>
-
-      {/* SEÇÃO CONECTE-SE */}
-      <section className="relative overflow-hidden py-24 md:py-32">
-        <div className="pointer-events-none absolute -top-40 left-1/2 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-[var(--gold)] opacity-[0.03] blur-[120px]" />
-
-        <div className="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-16 px-6 md:gap-24 md:px-8 lg:grid-cols-2">
-          <Reveal>
-            <div>
-              <p className="text-xs uppercase tracking-[0.4em] text-white/50">
-                Conecte-se
-              </p>
-              <h2 className="mt-6 text-4xl font-light leading-tight md:text-5xl lg:text-6xl">
-                <span className="block text-white">Muito além</span>
-                <span className="bs-title block">de uma loja online</span>
-              </h2>
-              <p className="mt-8 max-w-xl leading-relaxed text-white/65">
-                Mais do que vestir, é sobre presença, atitude e identidade.
-              </p>
-
-              <div className="mt-12 flex flex-col gap-4 sm:flex-row sm:gap-6">
-                <a
-                  href="https://instagram.com/blackstoreloja1"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="
-                    group inline-flex items-center justify-center rounded-full border border-white/20
-                    px-6 py-4 sm:px-8
-                    text-xs uppercase tracking-[0.35em] text-white/80
-                    transition-colors duration-200 hover:border-[var(--gold)] hover:text-[var(--gold)]
-                  "
-                >
-                  Instagram Blackstore
-                </a>
-
-                <a
-                  href="https://wa.me/5562994694804"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="
-                    group inline-flex items-center justify-center rounded-full bg-[var(--gold)]
-                    px-6 py-4 sm:px-10
-                    text-xs font-medium uppercase tracking-[0.35em] text-black
-                    transition-transform duration-200 sm:hover:scale-[1.05] active:scale-[0.97]
-                  "
-                >
-                  Atendimento via WhatsApp
-                </a>
-              </div>
-            </div>
-          </Reveal>
-
-          <Reveal delay={0.2}>
-            <div className="bs-glass relative flex h-[420px] items-center justify-center overflow-hidden rounded-3xl md:h-[520px]">
-              <div className="absolute inset-0 bg-gradient-to-br from-[#0b0b0d] via-[#1a1408] to-[#0b0b0d] opacity-50" />
-              <div className="absolute left-0 top-0 h-[2px] w-full bg-gradient-to-r from-transparent via-[var(--gold)] to-transparent opacity-60" />
-
-              <div className="relative px-6 text-center">
-                <p className="text-xs uppercase tracking-[0.5em] text-white/40">Comunidade</p>
-                <h3 className="mt-6 text-2xl font-light text-white md:text-3xl">Blackstore Experience</h3>
-                <p className="mt-4 text-sm text-white/50">Faça parte. Vista atitude.</p>
-              </div>
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
-      <Reveal>
-        <InstagramShowcase />
-      </Reveal>
-
-      {/* PROMOÇÃO DA SEMANA */}
-      <section id="promocao" className="relative overflow-hidden py-24 md:py-32">
-        <div className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 items-center gap-14 px-6 md:gap-20 md:px-8 lg:grid-cols-2">
-          <div>
-            <p className="text-xs uppercase tracking-[0.4em] text-white/50">Oferta especial</p>
-            <h2 className="mt-6 text-4xl font-light leading-tight md:text-5xl lg:text-6xl">
-              <span className="block">Promoção</span>
-              <span className="bs-title block">da semana</span>
-            </h2>
-
-            {featuredPromotion && (
-              <div className="mt-10 max-w-sm md:mt-12">
-                <ProductCard
-                  id={featuredPromotion.id}
-                  slug={featuredPromotion.slug}
-                  image={getCover(featuredPromotion)}
-                  images={getImages(featuredPromotion)}
-                  name={featuredPromotion.name}
-                  price={featuredPromotion.price}
-                  oldPrice={featuredPromotion.oldPrice ?? undefined}
-                  stock={featuredPromotion.stock}
-                  variants={featuredPromotion.variants}
-                  highlight
-                  badge="OFERTA"
-                  onQuickView={() => setQuickProduct(normalizeProduct(featuredPromotion))}
-                />
-              </div>
-            )}
-          </div>
-
-          <div className="relative h-[360px] sm:h-[420px] md:h-[520px] lg:h-[600px] overflow-hidden rounded-3xl border border-white/5">
-            <Image
-              src={featuredPromotionBanner || "/images/product-3.jpg"}
-              alt="Promoção"
-              fill
-              sizes="(max-width: 1024px) 100vw, 50vw"
-              className="object-cover"
-            />
-          </div>
-        </div>
-      </section>
-
-      {quickProduct && (
-        <ProductQuickView
-          product={quickProduct}
-          onClose={() => setQuickProduct(null)}
-        />
-      )}
-    </>
+          </button>
+        ))}
+      </div>
+    </section>
   );
 }

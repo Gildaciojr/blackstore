@@ -25,7 +25,7 @@ const fallbackSlides: Slide[] = [
     type: "collection",
     image: "/images/hero.jpg",
     focus: "center 20%",
-    focusDesktop: "center top",
+    focusDesktop: "center 15%",
     title1: "Moda que",
     title2: "impõe presença",
     subtitle:
@@ -37,7 +37,7 @@ const fallbackSlides: Slide[] = [
     type: "product",
     image: "/images/product-3.jpg",
     focus: "center 20%",
-    focusDesktop: "center top",
+    focusDesktop: "center 15%",
     title1: "Elegância em",
     title2: "movimento",
     subtitle: "Peças criadas para performance e sofisticação em cada detalhe.",
@@ -127,8 +127,7 @@ export default function HeroParallax({
 
   const objectPosition = useMemo(() => {
     if (!slide) return "center";
-    // No desktop, travamos no topo centralizado para evitar que o corte suba demais na cabeça da modelo
-    return isDesktop ? "center 15%" : slide.focus;
+    return isDesktop ? slide.focusDesktop : slide.focus;
   }, [isDesktop, slide]);
 
   if (!slide) return null;
@@ -137,9 +136,9 @@ export default function HeroParallax({
     <section
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
-      className="relative w-full h-[88vh] md:h-[90vh] overflow-hidden bg-black"
+      className="relative w-full h-[88vh] md:h-[92vh] overflow-hidden bg-black"
     >
-      {/* BACKGROUND DA HERO COM CONTROLE DE PROPORÇÃO PARA TELA GRANDE */}
+      {/* 🔥 TÉCNICA CINEMATOGRÁFICA DE FUNDO AMBIENTE (Elimina tarjas pretas laterais mantendo imersão de luxo) */}
       <AnimatePresence mode="wait">
         <motion.div
           key={slide.image}
@@ -147,58 +146,70 @@ export default function HeroParallax({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 1 }}
-          className="absolute inset-0 w-full h-full overflow-hidden flex items-center justify-center bg-black"
+          className="absolute inset-0 w-full h-full overflow-hidden"
         >
-          <Image
-            src={slide.image}
-            alt="Blackstore"
-            fill
-            priority
-            quality={100}
-            sizes="100vw"
-            /* 🔥 CORREÇÃO DEFINITIVA DO ZOOM ESTOURADO NO NOTEBOOK: 
-               Em telas grandes (md), usamos object-contain com largura máxima para a foto respeitar 
-               as proporções originais da modelo sem esticar e cortar o rosto. No mobile continua object-cover preenchendo a tela. */
-            className="w-full h-full object-cover md:object-contain md:max-h-[90vh]"
-            style={{
-              objectPosition,
-            }}
-          />
+          {/* Fundo Desfocado Ambientado */}
+          <div className="absolute inset-0 w-full h-full overflow-hidden filter blur-3xl opacity-35 scale-110 pointer-events-none">
+            <Image
+              src={slide.image}
+              alt=""
+              fill
+              priority
+              className="object-cover w-full h-full"
+            />
+          </div>
+          <div className="absolute inset-0 bg-black/60" />
+
+          {/* Imagem Central Principal */}
+          <div className="absolute inset-0 w-full h-full flex items-center justify-center">
+            <Image
+              src={slide.image}
+              alt="Blackstore"
+              fill
+              priority
+              quality={100}
+              sizes="100vw"
+              className="w-full h-full object-cover md:object-contain md:max-h-[92vh]"
+              style={{
+                objectPosition,
+              }}
+            />
+          </div>
         </motion.div>
       </AnimatePresence>
 
-      {/* OVERLAY DE LEITURA (GRADIENTE LUXO) */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/40 md:bg-gradient-to-r md:from-black/90 md:via-black/50 md:to-transparent" />
+      {/* OVERLAY DE LEITURA */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/40 md:bg-gradient-to-r md:from-black/90 md:via-black/50 md:to-transparent pointer-events-none" />
 
-      {/* CARD DE CUPOM REPOSICIONADO */}
-      <div className="absolute top-24 md:top-28 right-4 md:right-12 z-30">
+      {/* 🔥 CUPOM ULTRA OTIMIZADO PARA TELAS PEQUENAS E GRANDES */}
+      <div className="absolute top-20 right-3 sm:top-22 sm:right-6 md:top-28 md:right-12 z-30">
         <motion.div
           initial={{ opacity: 0, y: -10, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.4 }}
           className="
             relative
-            bg-black/75 backdrop-blur-2xl
+            bg-black/80 backdrop-blur-2xl
             border border-[var(--gold)]/40
-            rounded-2xl px-3.5 py-2.5 md:px-5 md:py-3.5
+            rounded-2xl px-3 py-2 md:px-5 md:py-3.5
             shadow-[0_10px_30px_rgba(0,0,0,0.8)]
-            flex items-center gap-3
+            flex items-center gap-2.5 md:gap-3
           "
         >
-          <div className="w-8 h-8 rounded-xl bg-[var(--gold)]/10 border border-[var(--gold)]/30 flex items-center justify-center text-[var(--gold)] shrink-0">
-            <Tag size={14} />
+          <div className="w-7 h-7 md:w-8 md:h-8 rounded-xl bg-[var(--gold)]/10 border border-[var(--gold)]/30 flex items-center justify-center text-[var(--gold)] shrink-0">
+            <Tag size={13} />
           </div>
 
           <div className="flex flex-col leading-tight">
-            <span className="text-[8px] md:text-[9px] uppercase tracking-widest text-white/50">
-              Desconto exclusivo
+            <span className="text-[7px] md:text-[9px] uppercase tracking-widest text-white/50">
+              Desconto VIP
             </span>
-            <div className="flex items-center gap-2 mt-0.5">
-              <span className="text-xs md:text-sm font-bold text-[var(--gold)] tracking-wider">
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span className="text-[11px] md:text-sm font-bold text-[var(--gold)] tracking-wider">
                 10% OFF
               </span>
-              <span className="text-[9px] text-white/30">•</span>
-              <span className="text-[10px] md:text-xs font-mono text-white/90">
+              <span className="text-[8px] text-white/30">•</span>
+              <span className="text-[9px] md:text-xs font-mono text-white/90">
                 BLACK10
               </span>
             </div>
@@ -212,7 +223,7 @@ export default function HeroParallax({
               setTimeout(() => setCouponCopied(false), 2000);
             }}
             className={`
-              ml-2 px-3 py-1.5 rounded-xl text-[9px] md:text-[10px] uppercase tracking-widest font-semibold transition-all duration-300 shadow-md
+              ml-1 md:ml-2 px-2.5 py-1 md:px-3 md:py-1.5 rounded-xl text-[8px] md:text-[10px] uppercase tracking-widest font-semibold transition-all duration-300 shadow-md
               ${
                 couponCopied
                   ? "bg-emerald-500 text-black font-bold"
@@ -225,7 +236,7 @@ export default function HeroParallax({
         </motion.div>
       </div>
 
-      {/* CONTEÚDO PRINCIPAL DA HERO */}
+      {/* CONTEÚDO DA HERO */}
       <div className="relative z-10 flex items-center h-full pt-10">
         <div className="w-full max-w-7xl mx-auto px-5 md:px-10">
           <motion.div
