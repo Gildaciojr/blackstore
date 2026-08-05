@@ -12,7 +12,8 @@ export default function LoginPage() {
 
   const isAdmin = params.get("admin") === "1";
 
-  const [showRegister, setShowRegister] = useState(false);
+  // Tab state: "login" ou "register"
+  const [activeTab, setActiveTab] = useState<"login" | "register">("login");
   const [loading, setLoading] = useState(false);
 
   const [login, setLogin] = useState({
@@ -32,34 +33,33 @@ export default function LoginPage() {
     if (e) e.preventDefault();
     setLoading(true);
 
-    /**
-     * LOGIN ADMIN
-     */
     if (isAdmin) {
-      const res = await fetch("/api/admin/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(login),
-      });
+      try {
+        const res = await fetch("/api/admin/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(login),
+        });
 
-      setLoading(false);
+        setLoading(false);
 
-      if (!res.ok) {
-        alert("Credenciais inválidas");
+        if (!res.ok) {
+          alert("Credenciais inválidas");
+          return;
+        }
+
+        router.push("/dashboard");
+        return;
+      } catch (err) {
+        setLoading(false);
+        alert("Erro ao realizar login admin");
         return;
       }
-
-      router.push("/dashboard");
-      return;
     }
 
-    /**
-     * LOGIN CLIENTE (JWT)
-     */
     const success = await loginUser(login.email, login.password);
-
     setLoading(false);
 
     if (!success) {
@@ -90,28 +90,24 @@ export default function LoginPage() {
             email: register.email,
             password: register.password,
           }),
-        },
+        }
       );
 
       if (!res.ok) {
         setLoading(false);
-        alert("Erro ao criar conta");
+        alert("Erro ao criar conta. Verifique se o e-mail já está cadastrado.");
         return;
       }
 
-      /**
-       * Login automático após registro
-       */
       const success = await loginUser(register.email, register.password);
-
       setLoading(false);
 
       if (!success) {
-        alert("Conta criada, mas erro ao logar.");
+        alert("Conta criada com sucesso! Por favor, faça login.");
+        setActiveTab("login");
         return;
       }
 
-      setShowRegister(false);
       const redirect = params.get("redirect");
       router.push(redirect || "/account");
     } catch {
@@ -121,217 +117,267 @@ export default function LoginPage() {
   }
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center px-6 py-28 bg-black overflow-hidden">
+    <section className="relative min-h-screen flex items-center justify-center px-4 md:px-6 py-24 md:py-28 overflow-hidden">
       {/* GLOW DE FUNDO */}
       <div className="pointer-events-none absolute top-[-200px] left-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-[var(--gold)] opacity-10 blur-[180px]" />
-      
-      <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-20 items-center relative z-10">
+
+      <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-12 lg:gap-20 items-center relative z-10">
+        
+        {/* CARD PRINCIPAL INTEGADO */}
         <div className="w-full max-w-md mx-auto lg:mx-0">
-          <p className="uppercase text-xs tracking-[0.35em] text-white/40 font-medium">
+          <p className="uppercase text-[10px] md:text-xs tracking-[0.35em] text-white/40 font-medium">
             Blackstore
           </p>
 
-          <h1 className="mt-4 text-4xl md:text-5xl font-light bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent">
-            {isAdmin ? "Acesso restrito" : "Entrar"}
+          <h1 className="mt-3 text-3xl md:text-5xl font-light bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent">
+            {isAdmin
+              ? "Acesso Restrito"
+              : activeTab === "login"
+              ? "Bem-vinda de volta"
+              : "Criar sua Conta"}
           </h1>
 
-          <p className="mt-4 text-white/60 text-sm leading-relaxed">
+          <p className="mt-3 text-white/60 text-xs md:text-sm leading-relaxed">
             {isAdmin
-              ? "Área exclusiva do administrador Blackstore."
-              : "Entre em sua conta para acompanhar pedidos e acessar benefícios exclusivos."}
+              ? "Painel de controle do administrador Blackstore."
+              : activeTab === "login"
+              ? "Entre para acompanhar seus pedidos e acessar novidades em primeira mão."
+              : "Cadastre-se em instantes para ter um checkout agilizado e benefícios exclusivos."}
           </p>
 
-          <form onSubmit={handleLogin} className="mt-10 border border-white/10 bg-white/[0.02] backdrop-blur-xl p-8 rounded-2xl shadow-[0_20px_80px_rgba(0,0,0,0.6)]">
-            <div className="mb-6">
-              <label className="text-xs uppercase tracking-[0.3em] text-white/40 block mb-2">
-                E-mail
-              </label>
-
-              <input
-                type="email"
-                required
-                placeholder="seu@email.com"
-                className="w-full bg-black border border-white/10 px-4 py-3 rounded-lg text-sm text-white focus:outline-none focus:border-[var(--gold)] transition"
-                onChange={(e) =>
-                  setLogin({
-                    ...login,
-                    email: e.target.value,
-                  })
-                }
-              />
-            </div>
-
-            <div className="mb-2">
-              <label className="text-xs uppercase tracking-[0.3em] text-white/40 block mb-2">
-                Senha
-              </label>
-
-              <input
-                type="password"
-                required
-                placeholder="••••••••"
-                className="w-full bg-black border border-white/10 px-4 py-3 rounded-lg text-sm text-white focus:outline-none focus:border-[var(--gold)] transition"
-                onChange={(e) =>
-                  setLogin({
-                    ...login,
-                    password: e.target.value,
-                  })
-                }
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full mt-8 py-4 rounded-full bg-[var(--gold)] text-black text-xs tracking-[0.35em] uppercase font-bold hover:scale-[1.02] hover:shadow-[0_10px_40px_rgba(212,175,55,0.35)] active:scale-[0.98] transition disabled:opacity-50"
-            >
-              {loading ? "Entrando..." : "Entrar"}
-            </button>
-          </form>
-
+          {/* SELETOR DE ABAS INSTANTÂNEO (SEM MODAL / SEM DELAY) */}
           {!isAdmin && (
-            <p className="mt-6 text-sm text-white/60 text-center lg:text-left">
-              Ainda não tem conta?{" "}
+            <div className="mt-8 flex rounded-full p-1 bg-white/5 border border-white/10">
               <button
                 type="button"
-                onClick={() => setShowRegister(true)}
-                className="text-[var(--gold)] underline underline-offset-4 hover:text-white transition"
+                onClick={() => setActiveTab("login")}
+                className={`flex-1 py-2.5 text-[10px] md:text-xs uppercase tracking-[0.25em] font-medium rounded-full transition-all duration-300 ${
+                  activeTab === "login"
+                    ? "bg-[var(--gold)] text-black font-semibold shadow-lg"
+                    : "text-white/60 hover:text-white"
+                }`}
               >
-                Criar conta
+                Entrar
               </button>
-            </p>
+              <button
+                type="button"
+                onClick={() => setActiveTab("register")}
+                className={`flex-1 py-2.5 text-[10px] md:text-xs uppercase tracking-[0.25em] font-medium rounded-full transition-all duration-300 ${
+                  activeTab === "register"
+                    ? "bg-[var(--gold)] text-black font-semibold shadow-lg"
+                    : "text-white/60 hover:text-white"
+                }`}
+              >
+                Criar Conta
+              </button>
+            </div>
+          )}
+
+          {/* FORMULÁRIO DE LOGIN */}
+          {activeTab === "login" || isAdmin ? (
+            <form
+              onSubmit={handleLogin}
+              className="mt-6 border border-white/10 bg-white/[0.02] backdrop-blur-xl p-6 md:p-8 rounded-2xl shadow-[0_20px_80px_rgba(0,0,0,0.6)]"
+            >
+              <div className="mb-5">
+                <label className="text-[10px] uppercase tracking-[0.3em] text-white/50 block mb-2 font-medium">
+                  E-mail
+                </label>
+
+                <input
+                  type="email"
+                  required
+                  value={login.email}
+                  placeholder="seu@email.com"
+                  className="w-full bg-black/60 border border-white/10 px-4 py-3.5 rounded-xl text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[var(--gold)] transition-colors"
+                  onChange={(e) =>
+                    setLogin({
+                      ...login,
+                      email: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="mb-2">
+                <label className="text-[10px] uppercase tracking-[0.3em] text-white/50 block mb-2 font-medium">
+                  Senha
+                </label>
+
+                <input
+                  type="password"
+                  required
+                  value={login.password}
+                  placeholder="••••••••"
+                  className="w-full bg-black/60 border border-white/10 px-4 py-3.5 rounded-xl text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[var(--gold)] transition-colors"
+                  onChange={(e) =>
+                    setLogin({
+                      ...login,
+                      password: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full mt-6 py-4 rounded-full bg-[var(--gold)] text-black text-xs tracking-[0.35em] uppercase font-bold hover:scale-[1.02] hover:shadow-[0_10px_40px_rgba(212,175,55,0.35)] active:scale-[0.98] transition-all duration-300 disabled:opacity-50"
+              >
+                {loading ? "Processando..." : "Entrar"}
+              </button>
+            </form>
+          ) : (
+            /* FORMULÁRIO DE CADASTRO (INSTANTÂNEO) */
+            <form
+              onSubmit={handleRegister}
+              className="mt-6 border border-white/10 bg-white/[0.02] backdrop-blur-xl p-6 md:p-8 rounded-2xl shadow-[0_20px_80px_rgba(0,0,0,0.6)] space-y-4"
+            >
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[10px] uppercase tracking-[0.25em] text-white/50 block mb-1.5 font-medium">
+                    Nome
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={register.name}
+                    placeholder="Nome"
+                    className="w-full bg-black/60 border border-white/10 px-3.5 py-3 rounded-xl text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[var(--gold)] transition-colors"
+                    onChange={(e) =>
+                      setRegister({
+                        ...register,
+                        name: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] uppercase tracking-[0.25em] text-white/50 block mb-1.5 font-medium">
+                    Sobrenome
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={register.surname}
+                    placeholder="Sobrenome"
+                    className="w-full bg-black/60 border border-white/10 px-3.5 py-3 rounded-xl text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[var(--gold)] transition-colors"
+                    onChange={(e) =>
+                      setRegister({
+                        ...register,
+                        surname: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] uppercase tracking-[0.25em] text-white/50 block mb-1.5 font-medium">
+                  E-mail
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={register.email}
+                  placeholder="seu@email.com"
+                  className="w-full bg-black/60 border border-white/10 px-3.5 py-3 rounded-xl text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[var(--gold)] transition-colors"
+                  onChange={(e) =>
+                    setRegister({
+                      ...register,
+                      email: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] uppercase tracking-[0.25em] text-white/50 block mb-1.5 font-medium">
+                  Telefone / WhatsApp
+                </label>
+                <input
+                  type="tel"
+                  value={register.phone}
+                  placeholder="(62) 99999-9999"
+                  className="w-full bg-black/60 border border-white/10 px-3.5 py-3 rounded-xl text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[var(--gold)] transition-colors"
+                  onChange={(e) =>
+                    setRegister({
+                      ...register,
+                      phone: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] uppercase tracking-[0.25em] text-white/50 block mb-1.5 font-medium">
+                  Senha
+                </label>
+                <input
+                  type="password"
+                  required
+                  value={register.password}
+                  placeholder="Sua senha secreta"
+                  className="w-full bg-black/60 border border-white/10 px-3.5 py-3 rounded-xl text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[var(--gold)] transition-colors"
+                  onChange={(e) =>
+                    setRegister({
+                      ...register,
+                      password: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full mt-6 py-4 rounded-full bg-[var(--gold)] text-black text-xs tracking-[0.35em] uppercase font-bold hover:scale-[1.02] hover:shadow-[0_10px_40px_rgba(212,175,55,0.35)] active:scale-[0.98] transition-all duration-300 disabled:opacity-50"
+              >
+                {loading ? "Criando Conta..." : "Criar Minha Conta"}
+              </button>
+            </form>
           )}
         </div>
 
+        {/* PAINEL LATERAL INFORMATIVO */}
         <div className="hidden lg:block">
-          <div className="border border-white/10 rounded-2xl p-12 bg-gradient-to-br from-black/60 via-[#1a1408] to-black shadow-2xl">
-            <h2 className="text-lg uppercase tracking-[0.35em] text-white/80 font-medium">
-              Experiência Blackstore
+          <div className="border border-white/10 rounded-3xl p-10 md:p-12 bg-gradient-to-br from-white/[0.03] via-[#1a1408]/40 to-transparent backdrop-blur-2xl shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--gold)] opacity-10 rounded-full blur-2xl" />
+
+            <span className="h-px w-10 bg-[var(--gold)]/60 block mb-4" />
+
+            <h2 className="text-xl uppercase tracking-[0.35em] text-white font-light leading-snug">
+              Experiência <br />
+              <span className="bs-title font-normal">Blackstore</span>
             </h2>
 
             <p className="mt-4 text-white/60 text-sm leading-relaxed">
-              Ao criar sua conta você terá acesso a uma experiência premium dentro da Blackstore.
+              Sua conta integrada dá acesso instantâneo às nossas melhores coleções e serviços exclusivos.
             </p>
 
-            <ul className="mt-8 space-y-4 text-white/60 text-sm">
-              <li>• Acesso a ofertas exclusivas</li>
-              <li>• Histórico completo de pedidos</li>
-              <li>• Checkout rápido</li>
-              <li>• Pagamento via PIX ou cartão</li>
+            <ul className="mt-8 space-y-4 text-white/70 text-xs uppercase tracking-widest">
+              <li className="flex items-center gap-3">
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--gold)]" />
+                Acesso antecipado a lançamentos
+              </li>
+              <li className="flex items-center gap-3">
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--gold)]" />
+                Histórico e rastreio de pedidos
+              </li>
+              <li className="flex items-center gap-3">
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--gold)]" />
+                Checkout agilizado
+              </li>
+              <li className="flex items-center gap-3">
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--gold)]" />
+                Pagamento seguro via PagBank (Pix / Cartão)
+              </li>
             </ul>
           </div>
         </div>
+
       </div>
-
-      {/* MODAL DE CADASTRO */}
-      {showRegister && (
-        <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-2xl overflow-y-auto flex items-center justify-center p-4">
-          <div className="pointer-events-none absolute top-[-200px] left-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-[var(--gold)] opacity-10 blur-[180px]" />
-
-          <div className="relative w-full max-w-lg rounded-2xl p-6 md:p-10 border border-white/10 bg-neutral-950 backdrop-blur-xl shadow-2xl">
-            <div className="mb-6 md:mb-8">
-              <h2 className="text-xl md:text-2xl uppercase tracking-[0.35em] bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent font-medium">
-                Criar conta
-              </h2>
-              <p className="text-white/50 text-sm mt-2">
-                Experiência premium Blackstore.
-              </p>
-            </div>
-
-            <form onSubmit={handleRegister} className="space-y-4 md:space-y-5">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <input
-                  type="text"
-                  required
-                  placeholder="Nome"
-                  className="bg-black border border-white/10 px-4 py-3 rounded-lg text-sm text-white focus:outline-none focus:border-[var(--gold)] transition"
-                  onChange={(e) =>
-                    setRegister({
-                      ...register,
-                      name: e.target.value,
-                    })
-                  }
-                />
-
-                <input
-                  type="text"
-                  required
-                  placeholder="Sobrenome"
-                  className="bg-black border border-white/10 px-4 py-3 rounded-lg text-sm text-white focus:outline-none focus:border-[var(--gold)] transition"
-                  onChange={(e) =>
-                    setRegister({
-                      ...register,
-                      surname: e.target.value,
-                    })
-                  }
-                />
-              </div>
-
-              <input
-                type="email"
-                required
-                placeholder="E-mail"
-                className="w-full bg-black border border-white/10 px-4 py-3 rounded-lg text-sm text-white focus:outline-none focus:border-[var(--gold)] transition"
-                onChange={(e) =>
-                  setRegister({
-                    ...register,
-                    email: e.target.value,
-                  })
-                }
-              />
-
-              <input
-                type="tel"
-                placeholder="Telefone"
-                className="w-full bg-black border border-white/10 px-4 py-3 rounded-lg text-sm text-white focus:outline-none focus:border-[var(--gold)] transition"
-                onChange={(e) =>
-                  setRegister({
-                    ...register,
-                    phone: e.target.value,
-                  })
-                }
-              />
-
-              <input
-                type="password"
-                required
-                placeholder="Senha"
-                className="w-full bg-black border border-white/10 px-4 py-3 rounded-lg text-sm text-white focus:outline-none focus:border-[var(--gold)] transition"
-                onChange={(e) =>
-                  setRegister({
-                    ...register,
-                    password: e.target.value,
-                  })
-                }
-              />
-
-              <div className="mt-6 p-4 rounded-xl bg-white/[0.02] border border-white/10 text-xs text-white/60 space-y-2">
-                <p>✔ Checkout mais rápido</p>
-                <p>✔ Ofertas exclusivas</p>
-                <p>✔ Histórico de pedidos</p>
-              </div>
-
-              <div className="flex flex-col md:flex-row justify-between gap-4 md:items-center pt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowRegister(false)}
-                  className="text-white/50 hover:text-white transition text-sm py-2"
-                >
-                  Cancelar
-                </button>
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full md:w-auto px-8 py-4 rounded-full bg-[var(--gold)] text-black text-xs tracking-[0.35em] uppercase font-bold transition-all duration-300 hover:scale-[1.03] active:scale-[0.98] disabled:opacity-50"
-                >
-                  {loading ? "Criando..." : "Criar conta"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </section>
   );
 }
