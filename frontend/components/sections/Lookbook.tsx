@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { Eye, ShoppingBag, Sparkles, Check } from "lucide-react";
+import { Eye, ShoppingBag, Sparkles, Check, ChevronDown, X } from "lucide-react";
 import { useCart } from "@/store/cart";
 import ProductQuickView from "@/components/ui/ProductQuickView";
 
@@ -139,6 +139,9 @@ export default function Lookbook({ items }: LookbookProps) {
   const [quickProduct, setQuickProduct] = useState<QuickProduct | null>(null);
   const [addedFeedback, setAddedFeedback] = useState(false);
 
+  // Estado para modal/drawer de troca de peça ao clicar nos hotspots
+  const [selectingType, setSelectingType] = useState<LookItemType | null>(null);
+
   const tops = useMemo(() => {
     if (!items) return [];
     return items
@@ -157,36 +160,45 @@ export default function Lookbook({ items }: LookbookProps) {
   const selectedBottom =
     manualBottom ?? bottoms.find((b) => b.type === "bottom") ?? null;
 
+  // 🔥 GERAÇÃO DE EXATAMENTE 4 LOOKS DISTINTOS
   const suggestions = useMemo<LookSuggestion[]>(() => {
     const result: LookSuggestion[] = [];
-    const topSlice = tops.slice(0, 2);
-    const bottomSlice = bottoms.slice(0, 2);
+    if (tops.length === 0 || bottoms.length === 0) return result;
 
-    topSlice.forEach((top, topIndex) => {
-      bottomSlice.forEach((bottom, bottomIndex) => {
+    for (let i = 0; i < 4; i++) {
+      const top = tops[i % tops.length];
+      const bottom = bottoms[(i + 1) % bottoms.length];
+      
+      // Evita duplicatas exatas na lista de 4
+      if (!result.some((s) => s.topId === top.id && s.bottomId === bottom.id)) {
         result.push({
-          id: `${top.id}-${bottom.id}`,
-          label: `Look ${topIndex + 1}.${bottomIndex + 1}`,
+          id: `look-${i}-${top.id}-${bottom.id}`,
+          label: `Look 0${i + 1}`,
           topId: top.id,
           bottomId: bottom.id,
         });
-      });
-    });
+      }
+    }
 
-    return result;
+    // Garante que sempre teremos 4 opções se houver estoque
+    while (result.length < 4 && tops.length > 0 && bottoms.length > 0) {
+      const idx = result.length;
+      const top = tops[idx % tops.length];
+      const bottom = bottoms[idx % bottoms.length];
+      result.push({
+        id: `look-fallback-${idx}-${top.id}-${bottom.id}`,
+        label: `Look 0${result.length + 1}`,
+        topId: top.id,
+        bottomId: bottom.id,
+      });
+    }
+
+    return result.slice(0, 4);
   }, [tops, bottoms]);
 
   const total = useMemo(() => {
     return (selectedTop?.price ?? 0) + (selectedBottom?.price ?? 0);
   }, [selectedTop, selectedBottom]);
-
-  function handleSelectItem(item: LookItem) {
-    if (item.type === "top") {
-      setManualTop(item);
-      return;
-    }
-    setManualBottom(item);
-  }
 
   function handleApplySuggestion(topId: string, bottomId: string) {
     const top = tops.find((item) => item.id === topId);
@@ -274,13 +286,13 @@ export default function Lookbook({ items }: LookbookProps) {
             </h2>
 
             <p className="mt-4 text-white/60 text-xs sm:text-sm md:text-base max-w-2xl leading-relaxed">
-              Descubra combinações exclusivas, selecione cada peça separadamente e monte sua produção em tempo real com elegância.
+              Toque nos pontos interativos na foto ou escolha um dos 4 looks exclusivos para alternar as peças em tempo real.
             </p>
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-[0.88fr_1.12fr] gap-10 md:gap-14 items-start">
             
-            {/* IMAGEM DO LOOK COM PONTOS INTERATIVOS (HOTSPOTS) */}
+            {/* IMAGEM DO LOOK COM PONTOS INTERATIVOS (HOTSPOTS) CLICÁVEIS */}
             <div className="relative max-w-sm md:max-w-md xl:max-w-[460px] mx-auto xl:mx-0 w-full">
               <div className="relative aspect-[4/5] rounded-[28px] overflow-hidden border border-white/10 bg-neutral-950 shadow-[0_20px_60px_rgba(0,0,0,0.8)]">
                 <Image
@@ -288,29 +300,38 @@ export default function Lookbook({ items }: LookbookProps) {
                   alt="Look Blackstore"
                   fill
                   sizes="(max-width:768px) 100vw, 460px"
-                  className="object-cover object-center transition-all duration-700 hover:scale-[1.02]"
+                  className="object-cover object-center transition-all duration-700"
                   onError={(e) => {
                     e.currentTarget.src = "/images/placeholder";
                   }}
                 />
 
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none" />
+
+                {/* Badge informativa na imagem */}
+                <div className="absolute bottom-4 left-4 right-4 bg-black/60 backdrop-blur-md border border-white/10 p-3 rounded-2xl flex items-center justify-between text-xs text-white/80">
+                  <span className="text-[10px] uppercase tracking-widest text-[var(--gold)]">Toque para trocar peça</span>
+                  <span className="font-mono text-[10px]">✨ Interativo</span>
+                </div>
               </div>
 
-              {/* HOTSPOTS INTERATIVOS REFINADOS */}
-              {[selectedTop, selectedBottom].map((item) => (
+              {/* 🔥 HOTSPOTS INTERATIVOS REAIS (ABREM SELETOR DE PEÇAS) */}
+              {[
+                { item: selectedTop, type: "top" as LookItemType, label: "Trocar Top" },
+                { item: selectedBottom, type: "bottom" as LookItemType, label: "Trocar Bottom" }
+              ].map(({ item, type }) => (
                 <button
-                  key={`${item.type}-${item.id}`}
-                  onClick={() => handleSelectItem(item)}
+                  key={`${type}-${item.id}`}
+                  onClick={() => setSelectingType(type)}
                   className="
                     absolute z-20
-                    w-9 h-9 rounded-full
+                    px-3.5 py-2 rounded-full
                     border-2 border-[var(--gold)]
-                    bg-black/80 backdrop-blur-xl
+                    bg-black/85 backdrop-blur-xl
                     shadow-[0_0_20px_rgba(212,175,55,0.4)]
-                    hover:scale-125 active:scale-95
+                    hover:scale-105 active:scale-95
                     transition-all duration-300
-                    flex items-center justify-center
+                    flex items-center gap-2
                     group
                   "
                   style={{
@@ -318,10 +339,12 @@ export default function Lookbook({ items }: LookbookProps) {
                     left: item.left,
                     transform: "translate(-50%, -50%)",
                   }}
-                  aria-label={`Selecionar ${item.name}`}
+                  aria-label={`Trocar ${type}`}
                 >
-                  <span className="w-2.5 h-2.5 rounded-full bg-[var(--gold)] group-hover:animate-ping absolute" />
-                  <span className="w-2 h-2 rounded-full bg-[var(--gold)] relative z-10" />
+                  <span className="w-2 h-2 rounded-full bg-[var(--gold)] animate-pulse" />
+                  <span className="text-[9px] uppercase tracking-widest text-white font-medium whitespace-nowrap">
+                    {type === "top" ? "Top ✦" : "Bottom ✦"}
+                  </span>
                 </button>
               ))}
             </div>
@@ -329,14 +352,14 @@ export default function Lookbook({ items }: LookbookProps) {
             {/* PAINEL DE CONFIGURAÇÃO E DETALHES DAS PEÇAS */}
             <div className="space-y-6 md:space-y-8">
               
-              {/* CARD DE SUGESTÕES */}
+              {/* CARD DE 4 SUGESTÕES DE LOOKS */}
               <div className="rounded-[24px] border border-white/10 bg-white/[0.02] backdrop-blur-xl p-5 md:p-6 shadow-xl">
                 <div>
                   <p className="text-[10px] uppercase tracking-[0.35em] text-white/40 font-medium">
-                    Sugestões de combinações
+                    Sugestões de Looks Exclusivos (4 Opções)
                   </p>
 
-                  <div className="mt-3.5 flex flex-wrap gap-2.5">
+                  <div className="mt-3.5 grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                     {suggestions.map((look) => {
                       const isActive =
                         selectedTop.id === look.topId &&
@@ -349,11 +372,11 @@ export default function Lookbook({ items }: LookbookProps) {
                             handleApplySuggestion(look.topId, look.bottomId)
                           }
                           className={`
-                            px-4 py-2 rounded-full text-[10px] md:text-xs uppercase tracking-[0.25em] transition-all duration-300
+                            py-2.5 px-3 rounded-xl text-[10px] uppercase tracking-[0.2em] transition-all duration-300 text-center
                             ${
                               isActive
-                                ? "bg-[var(--gold)] text-black font-bold shadow-lg"
-                                : "border border-white/15 text-white/70 hover:border-[var(--gold)] hover:text-white"
+                                ? "bg-[var(--gold)] text-black font-bold shadow-lg scale-105"
+                                : "border border-white/15 text-white/70 hover:border-[var(--gold)] hover:text-white bg-black/40"
                             }
                           `}
                         >
@@ -372,23 +395,37 @@ export default function Lookbook({ items }: LookbookProps) {
                 <div className="rounded-2xl border border-white/10 bg-black/40 backdrop-blur-xl p-4 md:p-5 flex flex-col justify-between">
                   <div>
                     <div className="flex items-start gap-4">
-                      <div className="relative w-20 h-24 rounded-xl overflow-hidden shrink-0 border border-white/10">
+                      <div 
+                        onClick={() => setSelectingType("top")}
+                        className="relative w-20 h-24 rounded-xl overflow-hidden shrink-0 border border-white/10 cursor-pointer group"
+                      >
                         <Image
                           src={selectedTop.image || "/images/placeholder"}
                           alt={selectedTop.name}
                           fill
                           sizes="80px"
-                          className="object-cover object-center"
+                          className="object-cover object-center group-hover:scale-105 transition-transform"
                           onError={(e) => {
                             e.currentTarget.src = "/images/placeholder";
                           }}
                         />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-[8px] uppercase tracking-wider text-[var(--gold)] font-bold">
+                          Trocar
+                        </div>
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <p className="text-[9px] uppercase tracking-[0.35em] text-[var(--gold)] font-medium">
-                          Parte Superior
-                        </p>
+                        <div className="flex items-center justify-between">
+                          <p className="text-[9px] uppercase tracking-[0.35em] text-[var(--gold)] font-medium">
+                            Parte Superior
+                          </p>
+                          <button 
+                            onClick={() => setSelectingType("top")}
+                            className="text-[9px] uppercase tracking-wider text-[var(--gold)] underline underline-offset-2"
+                          >
+                            Mudar
+                          </button>
+                        </div>
 
                         <h3 className="mt-1 text-xs md:text-sm font-medium leading-snug text-white truncate">
                           {selectedTop.name}
@@ -433,36 +470,43 @@ export default function Lookbook({ items }: LookbookProps) {
                       <ShoppingBag size={13} /> Adicionar
                     </button>
                   </div>
-
-                  <Link
-                    href={`/product/${selectedTop.slug}`}
-                    className="block mt-2 text-center text-[9px] uppercase tracking-[0.3em] text-white/40 hover:text-white transition-colors"
-                  >
-                    Detalhes completos →
-                  </Link>
                 </div>
 
                 {/* BOTTOM ITEM */}
                 <div className="rounded-2xl border border-white/10 bg-black/40 backdrop-blur-xl p-4 md:p-5 flex flex-col justify-between">
                   <div>
                     <div className="flex items-start gap-4">
-                      <div className="relative w-20 h-24 rounded-xl overflow-hidden shrink-0 border border-white/10">
+                      <div 
+                        onClick={() => setSelectingType("bottom")}
+                        className="relative w-20 h-24 rounded-xl overflow-hidden shrink-0 border border-white/10 cursor-pointer group"
+                      >
                         <Image
                           src={selectedBottom.image || "/images/placeholder"}
                           alt={selectedBottom.name}
                           fill
                           sizes="80px"
-                          className="object-cover object-center"
+                          className="object-cover object-center group-hover:scale-105 transition-transform"
                           onError={(e) => {
                             e.currentTarget.src = "/images/placeholder";
                           }}
                         />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-[8px] uppercase tracking-wider text-[var(--gold)] font-bold">
+                          Trocar
+                        </div>
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <p className="text-[9px] uppercase tracking-[0.35em] text-[var(--gold)] font-medium">
-                          Parte Inferior
-                        </p>
+                        <div className="flex items-center justify-between">
+                          <p className="text-[9px] uppercase tracking-[0.35em] text-[var(--gold)] font-medium">
+                            Parte Inferior
+                          </p>
+                          <button 
+                            onClick={() => setSelectingType("bottom")}
+                            className="text-[9px] uppercase tracking-wider text-[var(--gold)] underline underline-offset-2"
+                          >
+                            Mudar
+                          </button>
+                        </div>
 
                         <h3 className="mt-1 text-xs md:text-sm font-medium leading-snug text-white truncate">
                           {selectedBottom.name}
@@ -507,13 +551,6 @@ export default function Lookbook({ items }: LookbookProps) {
                       <ShoppingBag size={13} /> Adicionar
                     </button>
                   </div>
-
-                  <Link
-                    href={`/product/${selectedBottom.slug}`}
-                    className="block mt-2 text-center text-[9px] uppercase tracking-[0.3em] text-white/40 hover:text-white transition-colors"
-                  >
-                    Detalhes completos →
-                  </Link>
                 </div>
 
               </div>
@@ -587,6 +624,82 @@ export default function Lookbook({ items }: LookbookProps) {
           </div>
         </div>
       </section>
+
+      {/* 🔥 MODAL / DRAWER INTERATIVO PARA ESCOLHER PEÇAS AO CLICAR NOS HOTSPOTS */}
+      {selectingType && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-xl flex items-center justify-center p-4">
+          <div className="relative w-full max-w-2xl bg-neutral-950 border border-white/15 rounded-3xl p-6 md:p-8 shadow-2xl overflow-hidden max-h-[85vh] flex flex-col">
+            
+            <div className="flex items-center justify-between pb-4 border-b border-white/10">
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.35em] text-[var(--gold)]">
+                  Seleção interativa
+                </p>
+                <h3 className="text-lg md:text-xl font-light text-white mt-1">
+                  Escolha {selectingType === "top" ? "a Parte Superior (Top)" : "a Parte Inferior (Bottom)"}
+                </h3>
+              </div>
+
+              <button
+                onClick={() => setSelectingType(null)}
+                className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/70 hover:text-white transition"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="mt-6 overflow-y-auto space-y-3 pr-2 scrollbar-thin">
+              {(selectingType === "top" ? tops : bottoms).map((piece) => {
+                const isSelected =
+                  (selectingType === "top" && selectedTop.id === piece.id) ||
+                  (selectingType === "bottom" && selectedBottom.id === piece.id);
+
+                return (
+                  <div
+                    key={piece.id}
+                    onClick={() => {
+                      if (selectingType === "top") setManualTop(piece);
+                      else setManualBottom(piece);
+                      setSelectingType(null);
+                    }}
+                    className={`
+                      flex items-center gap-4 p-4 rounded-2xl border cursor-pointer transition-all
+                      ${
+                        isSelected
+                          ? "border-[var(--gold)] bg-[var(--gold)]/10 shadow-[0_0_20px_rgba(212,175,55,0.15)]"
+                          : "border-white/10 bg-black/40 hover:border-white/30 hover:bg-black/70"
+                      }
+                    `}
+                  >
+                    <div className="relative w-16 h-20 rounded-xl overflow-hidden shrink-0 border border-white/10">
+                      <Image
+                        src={piece.image}
+                        alt={piece.name}
+                        fill
+                        sizes="64px"
+                        className="object-cover"
+                      />
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-sm font-medium text-white truncate">{piece.name}</h4>
+                      <p className="text-[var(--gold)] font-bold text-sm mt-1">R$ {piece.price.toFixed(2)}</p>
+                      <p className="text-xs text-white/50 truncate mt-1">{piece.fabric}</p>
+                    </div>
+
+                    {isSelected && (
+                      <span className="px-3 py-1 rounded-full bg-[var(--gold)] text-black text-[9px] uppercase tracking-widest font-bold">
+                        Selecionado
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+          </div>
+        </div>
+      )}
 
       {quickProduct && (
         <ProductQuickView
