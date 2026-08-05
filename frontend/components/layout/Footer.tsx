@@ -33,7 +33,7 @@ export default function Footer() {
             </div>
             <input
               type="email"
-              placeholder="Seu melhor e-mail"
+              placeholder="Digite seu e-mail"
               required
               className="bg-transparent text-sm w-full md:w-64 px-2 py-3.5 outline-none text-white placeholder:text-white/30"
             />
@@ -64,7 +64,7 @@ export default function Footer() {
             </Link>
 
             <p className="text-sm text-white/60 leading-relaxed mb-6">
-              Moda fitness e vestidos premium. Peças desenhadas para mulheres
+              Peças desenhadas para mulheres
               que valorizam presença, performance e autenticidade.
             </p>
 
@@ -220,7 +220,7 @@ export default function Footer() {
             © {currentYear} Blackstore. Todos os direitos reservados.
             <br className="md:hidden" />
             <span className="hidden md:inline"> | </span>CNPJ:
-            00.000.000/0000-00
+            52.820702/0001-15
           </div>
 
           <div className="flex items-center gap-3 text-white/30">

@@ -56,15 +56,17 @@ export default function ProductQuickView({ product, onClose }: Props) {
   const hasVariants =
     Array.isArray(product.variants) && product.variants.length > 0;
 
+  // 🔥 CORREÇÃO: Garante que todas as imagens sejam resolvidas e formem um array sólido
   const images = useMemo(() => {
-    return [
+    const allImages = [
       resolveImage(product.image),
       ...(product.images?.map((img) => resolveImage(img)) ?? []),
-    ].filter((img, i, arr) => Boolean(img) && arr.indexOf(img) === i);
+    ];
+    // Remove qualquer duplicidade para evitar saltos iguais
+    return allImages.filter((img, i, arr) => Boolean(img) && arr.indexOf(img) === i);
   }, [product.image, product.images]);
 
-  const currentImage =
-    images[index] ?? images[0] ?? resolveImage(product.image);
+  const currentImage = images[index] ?? images[0];
 
   function next() {
     if (images.length <= 1) return;
@@ -139,7 +141,7 @@ export default function ProductQuickView({ product, onClose }: Props) {
           transition={{ duration: 0.1, ease: "easeOut" }}
           className="
             relative z-10 w-full max-w-5xl
-            h-[92vh] md:h-auto max-h-[85vh]
+            h-[92vh] md:h-[85vh]
             bg-[#0b0b0d]/95 backdrop-blur-3xl
             border border-white/10
             rounded-t-3xl md:rounded-2xl
@@ -155,7 +157,7 @@ export default function ProductQuickView({ product, onClose }: Props) {
             onDragEnd={(_, info) => {
               if (info.offset.y > 100) onClose();
             }}
-            className="md:hidden flex justify-center py-3 cursor-grab active:cursor-grabbing"
+            className="md:hidden flex justify-center py-3 cursor-grab active:cursor-grabbing absolute top-0 w-full z-30"
           >
             <div className="w-12 h-1.5 rounded-full bg-white/20" />
           </motion.div>
@@ -163,14 +165,14 @@ export default function ProductQuickView({ product, onClose }: Props) {
           <button
             onClick={onClose}
             aria-label="Fechar visualização rápida"
-            className="absolute right-5 top-5 z-20 w-9 h-9 rounded-full bg-black/40 border border-white/10 flex items-center justify-center text-white/70 hover:text-white hover:border-white/30 transition-all"
+            className="absolute right-5 top-5 z-40 w-9 h-9 rounded-full bg-black/40 border border-white/10 flex items-center justify-center text-white/70 hover:text-white hover:border-white/30 transition-all"
           >
             <X size={18} />
           </button>
 
-          {/* GALERIA DE IMAGENS - AJUSTADA PARA MOBILE */}
-          <div className="relative flex min-h-[350px] md:min-h-[450px] flex-col bg-[#0b0b0d]">
-            <div className="relative w-full h-full md:aspect-[4/5] bg-transparent overflow-hidden flex items-center justify-center">
+          {/* GALERIA DE IMAGENS - VISÍVEL EM MOBILE E DESKTOP */}
+          <div className="relative flex min-h-[400px] md:min-h-full flex-col bg-black overflow-hidden">
+            <div className="relative w-full h-full md:aspect-[4/5] bg-transparent flex items-center justify-center">
               <motion.div
                 key={currentImage}
                 initial={{ opacity: 0.5 }}
@@ -190,12 +192,13 @@ export default function ProductQuickView({ product, onClose }: Props) {
 
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none md:hidden" />
 
+              {/* 🔥 CORREÇÃO: Setas de Navegação Forçadas a Aparecer se Hover +1 Imagem */}
               {images.length > 1 && (
                 <>
                   <button
                     onClick={prev}
                     aria-label="Imagem anterior"
-                    className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/60 backdrop-blur-md border border-white/20 flex items-center justify-center text-white active:scale-95 transition-transform"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-black/60 backdrop-blur-md border border-white/20 flex items-center justify-center text-white active:scale-95 transition-transform hover:bg-black/90"
                   >
                     <ChevronLeft size={18} />
                   </button>
@@ -203,10 +206,22 @@ export default function ProductQuickView({ product, onClose }: Props) {
                   <button
                     onClick={next}
                     aria-label="Próxima imagem"
-                    className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/60 backdrop-blur-md border border-white/20 flex items-center justify-center text-white active:scale-95 transition-transform"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-black/60 backdrop-blur-md border border-white/20 flex items-center justify-center text-white active:scale-95 transition-transform hover:bg-black/90"
                   >
                     <ChevronRight size={18} />
                   </button>
+                  
+                  {/* INDICADORES (DOTS) */}
+                  <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-1.5 z-30">
+                    {images.map((_, idx) => (
+                      <div
+                        key={idx}
+                        className={`h-1.5 rounded-full transition-all duration-300 ${
+                          index === idx ? "w-4 bg-[var(--gold)]" : "w-1.5 bg-white/40"
+                        }`}
+                      />
+                    ))}
+                  </div>
                 </>
               )}
             </div>
@@ -214,7 +229,7 @@ export default function ProductQuickView({ product, onClose }: Props) {
 
           {/* CONTEÚDO E DETALHES */}
           <div className="p-6 md:p-10 flex flex-col overflow-y-auto overscroll-y-contain">
-            <p className="uppercase text-[10px] tracking-[0.45em] text-white/40 font-medium">
+            <p className="uppercase text-[10px] tracking-[0.45em] text-white/40 font-medium mt-4 md:mt-0">
               Blackstore
             </p>
 
@@ -239,13 +254,13 @@ export default function ProductQuickView({ product, onClose }: Props) {
                 </span>
               )}
 
-              <span className="text-xl md:text-2xl font-semibold text-[var(--gold)]">
+              <span className="text-xl md:text-3xl font-semibold text-[var(--gold)]">
                 R$ {product.price.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
               </span>
             </div>
 
             {hasVariants && (
-              <div className="mt-6">
+              <div className="mt-8">
                 <div className="flex items-center justify-between mb-3">
                   <p className="text-[10px] uppercase tracking-[0.4em] text-white/60 font-medium">
                     Selecione o Tamanho

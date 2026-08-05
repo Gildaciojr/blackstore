@@ -150,15 +150,15 @@ export default function ProductCard({
       }}
       transition={{ duration: 0.4 }}
       viewport={{ once: true }}
-      className="group relative flex flex-col h-full"
+      className="group relative flex flex-col h-full bg-transparent"
     >
-      {/* CARD CONTAINER */}
+      {/* 🔥 CARD CONTAINER: Removido "bg-neutral-950" e "border-white/5". Agora a imagem parece flutuar solta. */}
       <div
         className="relative overflow-hidden rounded-2xl
-                    bg-neutral-950 border border-white/5
+                    bg-white/[0.02] border border-white/10
                     transition-all duration-500
-                    group-hover:border-white/15
-                    group-hover:shadow-[0_20px_50px_rgba(0,0,0,0.8)]"
+                    group-hover:border-[var(--gold)]/30
+                    group-hover:shadow-[0_10px_40px_rgba(212,175,55,0.15)]"
       >
         {/* GLOW EFFECT */}
         <div
@@ -180,7 +180,7 @@ export default function ProductCard({
             }}
             className="block w-full text-left"
           >
-            <div className="relative aspect-[4/5] bg-black overflow-hidden">
+            <div className="relative aspect-[4/5] overflow-hidden">
               <motion.div
                 key={imgIndex}
                 initial={{ opacity: 0.7 }}
@@ -204,7 +204,7 @@ export default function ProductCard({
           </button>
         ) : (
           <Link href={productUrl} className="block w-full">
-            <div className="relative aspect-[4/5] bg-black overflow-hidden">
+            <div className="relative aspect-[4/5] overflow-hidden">
               <motion.div
                 key={imgIndex}
                 initial={{ opacity: 0.7 }}
@@ -231,7 +231,7 @@ export default function ProductCard({
         {/* LOW STOCK BADGE - Ajustado com whitespace-nowrap para nunca quebrar a linha de forma feia */}
         {stock !== undefined && stock <= 2 && stock > 0 && (
           <div className="absolute bottom-3 left-3 z-30 pointer-events-none">
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[8px] sm:text-[9px] uppercase tracking-[0.2em] rounded-full border border-orange-400/30 bg-orange-400/10 text-orange-300 backdrop-blur-md whitespace-nowrap">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[9px] uppercase tracking-[0.2em] rounded-full border border-orange-400/30 bg-orange-500/20 text-orange-300 backdrop-blur-md whitespace-nowrap shadow-lg font-bold">
               🔥 Últimas unidades
             </span>
           </div>
@@ -243,7 +243,7 @@ export default function ProductCard({
             <button
               onClick={prevImage}
               aria-label="Imagem anterior"
-              className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/60 backdrop-blur-md border border-white/20 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black"
+              className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/50 backdrop-blur-md border border-white/20 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black hover:border-[var(--gold)] hover:text-[var(--gold)]"
             >
               <ChevronLeft size={16} />
             </button>
@@ -251,7 +251,7 @@ export default function ProductCard({
             <button
               onClick={nextImage}
               aria-label="Próxima imagem"
-              className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/60 backdrop-blur-md border border-white/20 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black"
+              className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/50 backdrop-blur-md border border-white/20 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black hover:border-[var(--gold)] hover:text-[var(--gold)]"
             >
               <ChevronRight size={16} />
             </button>
@@ -262,7 +262,7 @@ export default function ProductCard({
         {(badge || discount) && (
           <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 z-20 pointer-events-none">
             {badge && (
-              <span className="px-2.5 py-1 text-[9px] uppercase tracking-[0.25em] bg-white/10 backdrop-blur-md border border-white/20 text-white rounded-full font-medium">
+              <span className="px-2.5 py-1 text-[9px] uppercase tracking-[0.25em] bg-white/10 backdrop-blur-md border border-white/20 text-white rounded-full font-medium shadow-md">
                 {badge}
               </span>
             )}
@@ -278,9 +278,13 @@ export default function ProductCard({
         {onQuickView && (
           <div className="absolute top-3 right-3 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             <button
-              onClick={onQuickView}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onQuickView();
+              }}
               aria-label="Visualização rápida"
-              className="w-9 h-9 rounded-full bg-black/60 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-[var(--gold)] hover:text-black transition-colors shadow-lg"
+              className="w-9 h-9 rounded-full bg-black/50 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-[var(--gold)] hover:text-black transition-colors shadow-lg"
             >
               <Eye size={16} />
             </button>
@@ -291,27 +295,27 @@ export default function ProductCard({
         <div className="absolute inset-x-0 bottom-0 p-3 z-20 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 pointer-events-none group-hover:pointer-events-auto">
           <button
             onClick={handleAddToCart}
-            className="w-full py-3 rounded-full bg-[var(--gold)] text-black text-[10px] uppercase tracking-[0.3em] font-semibold flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] shadow-lg transition-all duration-300"
+            className="w-full py-3 rounded-full bg-[var(--gold)] text-black text-[10px] uppercase tracking-[0.3em] font-semibold flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] shadow-xl transition-all duration-300"
           >
             <ShoppingBag size={14} />
-            {hasVariants ? "Escolher opções" : "Adicionar"}
+            {hasVariants ? "Ver opções" : "Comprar"}
           </button>
         </div>
       </div>
 
-      {/* PRODUCT INFO / DETAILS */}
-      <div className="mt-3.5 px-1 flex flex-col flex-grow">
-        <p className="text-[9px] uppercase tracking-[0.35em] text-white/40">
+      {/* PRODUCT INFO / DETAILS - 🔥 Removido Bg pra mesclar perfeitamente com o fundo global */}
+      <div className="mt-3.5 px-1 flex flex-col flex-grow bg-transparent">
+        <p className="text-[9px] uppercase tracking-[0.35em] text-white/40 font-medium">
           Blackstore
         </p>
 
-        <Link href={productUrl} className="mt-1 flex-grow">
+        <Link href={productUrl} className="mt-1.5 flex-grow">
           <h3 className="text-xs md:text-sm tracking-wider uppercase text-white/90 line-clamp-2 group-hover:text-[var(--gold)] transition-colors">
             {name}
           </h3>
         </Link>
 
-        <div className="mt-2 flex items-center gap-2.5">
+        <div className="mt-2.5 flex items-center gap-2.5">
           {oldPrice && oldPrice > price && (
             <p className="text-[11px] text-white/40 line-through">
               {brl(oldPrice)}

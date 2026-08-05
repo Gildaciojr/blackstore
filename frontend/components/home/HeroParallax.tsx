@@ -19,9 +19,6 @@ type Slide = {
   cta2: string;
 };
 
-/**
- * 🔥 FALLBACK (NUNCA QUEBRA)
- */
 const fallbackSlides: Slide[] = [
   {
     type: "collection",
@@ -141,8 +138,12 @@ export default function HeroParallax({
 
   function handleMouseMove(e: React.MouseEvent) {
     if (!isDesktop) return;
-    const x = (e.clientX / window.innerWidth - 0.5) * (isDesktop ? 10 : 4);
-    const y = (e.clientY / window.innerHeight - 0.5) * (isDesktop ? 10 : 4);
+    
+    // 🔥 LIMITADOR DO PARALLAX PARA EVITAR ZOOM ESTOURADO
+    const MAX_OFFSET = 15; 
+    
+    const x = (e.clientX / window.innerWidth - 0.5) * MAX_OFFSET;
+    const y = (e.clientY / window.innerHeight - 0.5) * MAX_OFFSET;
     setMouse({ x, y });
   }
 
@@ -158,44 +159,37 @@ export default function HeroParallax({
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
-      className="relative h-[72vh] md:h-[88vh] lg:h-[92vh] overflow-hidden"
+      className="relative w-full h-[85vh] md:h-[95vh] overflow-hidden" 
     >
       {/* BACKGROUND */}
       <AnimatePresence mode="wait">
         <motion.div
           key={slide.image}
-          initial={{ opacity: 0, scale: 1.05 }}
-          animate={{ opacity: 1, scale: 1 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 1.1 }}
           className="absolute inset-0"
         >
-          {/* 🔥 CORREÇÃO 1: -inset-[24px] evita o "estouro" nas bordas durante a animação parallax */}
+          {/* 🔥 ANIMAÇÃO DO PARALLAX CORRIGIDA PARA MANTÊ-LA PROPORCIONAL E SEM ZOOM EXTREMO */}
           <motion.div
             animate={{ x: mouse.x, y: mouse.y }}
             transition={{
-              duration: 12,
-              ease: "linear",
+              duration: 2, // Movimento mais responsivo e rápido
+              ease: "easeOut",
             }}
-            className="absolute -inset-[24px] transform-gpu"
+            className="absolute inset-[-30px] transform-gpu" // O negativo (inset) evita o buraco na tela quando a imagem se move, substituindo a necessidade do zoom `scale: 1.05`
           >
             <div className="relative w-full h-full">
-              {/* 🔥 CORREÇÃO 2: quality={100} resolve a falta de nitidez no iPhone e Monitores Retina */}
               <Image
                 src={slide.image}
                 alt="Blackstore"
                 fill
                 priority
-                quality={100}
+                quality={100} // 🔥 ALTA DEFINIÇÃO PARA RESOLVER O PROBLEMA DE RESOLUÇÃO BAIXA
                 sizes="100vw"
-                className="
-                  object-cover
-                  md:object-cover
-                  will-change-transform
-                "
-                style={{
-                  objectPosition,
-                }}
+                className="object-cover md:object-cover will-change-transform"
+                style={{ objectPosition }}
               />
             </div>
           </motion.div>
@@ -203,7 +197,7 @@ export default function HeroParallax({
       </AnimatePresence>
 
       {/* OVERLAY */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent md:bg-gradient-to-r md:from-black/70 md:via-black/30 md:to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent md:bg-gradient-to-r md:from-black/80 md:via-black/40 md:to-transparent" />
 
       {/* CONTENT */}
       <div className="relative z-10 flex items-center h-full">
@@ -254,7 +248,7 @@ export default function HeroParallax({
                 show: { opacity: 1, y: 0 },
               }}
               transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-              className="mt-4 text-2xl sm:text-4xl md:text-6xl lg:text-7xl font-light leading-tight"
+              className="mt-4 text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-light leading-tight"
             >
               <span className="block text-white drop-shadow-[0_4px_20px_rgba(0,0,0,0.9)]">
                 {slide.title1}
@@ -310,8 +304,12 @@ export default function HeroParallax({
                   text-xs
                   tracking-[0.3em]
                   uppercase
-                  hover:brightness-110
+                  font-semibold
+                  text-center
+                  hover:scale-105
+                  active:scale-95
                   transition
+                  shadow-[0_0_20px_rgba(212,175,55,0.3)]
                 "
               >
                 {slide.type === "promo"
@@ -328,7 +326,9 @@ export default function HeroParallax({
                   text-xs
                   tracking-[0.3em]
                   uppercase
-                  hover:bg-white/5
+                  text-center
+                  hover:bg-white/10
+                  hover:border-white/50
                   transition
                 "
               >
@@ -377,26 +377,26 @@ export default function HeroParallax({
             "
           >
             <div className="flex flex-col items-center md:items-start leading-tight">
-              <p className="text-[12px] md:text-sm font-medium text-white">
+              <p className="text-[11px] md:text-sm font-medium text-white">
                 Compra segura
               </p>
-              <p className="text-[10px] md:text-xs text-white/70">
+              <p className="text-[9px] md:text-xs text-white/70">
                 dados protegidos
               </p>
             </div>
 
             <div className="flex flex-col items-center md:items-start leading-tight">
-              <p className="text-[12px] md:text-sm font-medium text-white">
+              <p className="text-[11px] md:text-sm font-medium text-white">
                 Parcele em até 3x
               </p>
-              <p className="text-[10px] md:text-xs text-white/70">sem juros</p>
+              <p className="text-[9px] md:text-xs text-white/70">sem juros</p>
             </div>
 
             <div className="flex flex-col items-center md:items-start leading-tight">
-              <p className="text-[12px] md:text-sm font-medium text-white">
+              <p className="text-[11px] md:text-sm font-medium text-white">
                 Qualidade garantida
               </p>
-              <p className="text-[10px] md:text-xs text-white/70">
+              <p className="text-[9px] md:text-xs text-white/70">
                 produtos premium
               </p>
             </div>
@@ -406,7 +406,7 @@ export default function HeroParallax({
 
       {/* PROGRESS BAR */}
       <div className="absolute bottom-10 left-0 w-full px-6 md:px-10">
-        <div className="h-[2px] bg-white/10 w-full">
+        <div className="h-[2px] bg-white/10 w-full rounded-full overflow-hidden">
           <motion.div
             className="h-full bg-[var(--gold)]"
             style={{ width: `${progress * 100}%` }}
@@ -419,7 +419,7 @@ export default function HeroParallax({
         {slidesState.map((_, i) => (
           <button key={i} onClick={() => setIndex(i)}>
             <span
-              className={`h-[2px] w-8 transition-all duration-300 ${
+              className={`block h-[2px] w-8 transition-all duration-300 ${
                 i === index ? "bg-[var(--gold)] w-12" : "bg-white/30"
               }`}
             />
@@ -428,7 +428,7 @@ export default function HeroParallax({
       </div>
 
       {/* CUPOM */}
-      <div className="absolute top-16 md:top-6 right-2 md:right-10 z-30">
+      <div className="absolute top-24 md:top-10 right-4 md:right-10 z-30">
         <motion.div
           initial={{ opacity: 0, y: -30, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -437,9 +437,9 @@ export default function HeroParallax({
             relative
             bg-black/60 backdrop-blur-xl
             border border-[var(--gold)]/30
-            rounded-xl px-3 py-2 md:px-5 md:py-4
+            rounded-xl px-4 py-3 md:px-5 md:py-4
             shadow-[0_15px_50px_rgba(0,0,0,0.7)]
-            flex flex-col gap-3
+            flex flex-col gap-2
             overflow-hidden
           "
         >
@@ -460,7 +460,7 @@ export default function HeroParallax({
               </div>
             </div>
 
-            <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center justify-between gap-3">
               <span className="text-[10px] md:text-[12px] tracking-[0.2em] md:tracking-widest text-white">
                 BLACK10
               </span>
@@ -495,7 +495,7 @@ export default function HeroParallax({
 
             <Link
               href="/catalog"
-              className="hidden md:block text-[10px] uppercase tracking-widest text-white/60 hover:text-[var(--gold)] transition"
+              className="hidden md:block text-[10px] uppercase tracking-widest text-white/60 hover:text-[var(--gold)] transition mt-1"
             >
               Usar no catálogo →
             </Link>
@@ -511,7 +511,7 @@ export default function HeroParallax({
                 className="
                   absolute
                   right-0
-                  mt-1.5 md:mt-3
+                  mt-2 md:mt-3
                   bg-green-500/10
                   border border-green-400/30
                   text-green-400

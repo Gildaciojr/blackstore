@@ -1,4 +1,6 @@
-import type { Metadata, Viewport } from "next";
+"use client";
+
+import { usePathname } from "next/navigation";
 import "./globals.css";
 
 import Header from "@/components/layout/Header";
@@ -10,40 +12,23 @@ import AuthLoader from "@/components/auth/AuthLoader";
 
 import Script from "next/script";
 
-export const viewport: Viewport = {
-  themeColor: "#000000",
-  width: "device-width",
-  initialScale: 1,
-  maximumScale: 5,
-};
-
-export const metadata: Metadata = {
-  title: "Blackstore — Moda Fitness Premium",
-  description: "Moda fitness e vestidos com estética premium para mulheres que valorizam presença e autenticidade.",
-  keywords: ["moda fitness", "vestidos", "fitness premium", "roupas femininas", "blackstore"],
-  authors: [{ name: "Gildácio Júnior" }],
-  openGraph: {
-    title: "Blackstore — Moda Fitness Premium",
-    description: "Moda fitness e vestidos com estética premium",
-    url: "https://blackstore.cloud",
-    siteName: "Blackstore",
-    locale: "pt_BR",
-    type: "website",
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
-};
-
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+  // 🔥 CORREÇÃO 1: Remove o padding superior (pt-24) APENAS na Home.
+  // Isso faz com que a Hero imagem comece colada no topo (atrás do header transparente).
+  const isHome = pathname === "/";
+
   return (
     <html lang="pt-BR" className="scroll-smooth">
-      <body className="text-white antialiased selection:bg-[var(--gold)] selection:text-black">
+      <head>
+        <title>Blackstore — Moda Fitness Premium</title>
+        <meta name="description" content="Moda fitness e vestidos com estética premium para mulheres que valorizam presença e autenticidade." />
+      </head>
+      <body className="text-white antialiased selection:bg-[var(--gold)] selection:text-black min-h-screen flex flex-col">
         {/* ✅ SCRIPT OFICIAL PAGBANK (SDK v4) */}
         <Script
           src="https://assets.pagseguro.com.br/checkout-sdk-js/rc/dist/browser/pagseguro.min.js"
@@ -56,8 +41,8 @@ export default function RootLayout({
         <GlowCursor />
         <Header />
 
-        {/* Main com espaçamento adequado considerando o Header fixo */}
-        <main className="min-h-screen flex flex-col pt-24 md:pt-28">
+        {/* 🔥 CORREÇÃO: Aplica o padding flexivelmente */}
+        <main className={`flex-1 flex flex-col ${isHome ? "pt-0" : "pt-24 md:pt-28"}`}>
           {children}
         </main>
 
