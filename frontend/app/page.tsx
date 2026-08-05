@@ -275,11 +275,10 @@ export default function HomePage() {
     <>
       <HeroParallax slides={heroSlides.length > 0 ? heroSlides : undefined} />
 
-      {/* 🔥 SEÇÃO DE LANÇAMENTOS MODERNIZADA (SEM ESPAÇO MORTO) */}
+      {/* 🔥 LANÇAMENTOS COM SANGRIA FLUIDA SEM MÁSCARAS ESCURAS */}
       <section id="lancamentos" className="relative overflow-hidden py-16 sm:py-20 md:py-24 lg:py-28">
         <div className="max-w-[1500px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10">
           <Reveal>
-            {/* HEADER DA SEÇÃO COM NAVEGAÇÃO INTEGRADA */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 md:mb-14">
               <div>
                 <div className="flex items-center gap-3 mb-3">
@@ -296,7 +295,6 @@ export default function HomePage() {
                 </p>
               </div>
 
-              {/* BOTÕES DE CONTROLE DESKTOP + LINK DO CATÁLOGO */}
               <div className="flex items-center justify-between md:justify-end gap-4 border-t border-white/10 pt-4 md:border-none md:pt-0">
                 <Link
                   href="/catalog"
@@ -325,12 +323,8 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* TRACK DO CARROSSEL DE LANÇAMENTOS (LARGURA CALCULADA) */}
-            <div className="relative">
-              {/* Sombras laterais para indicação de scroll fluido */}
-              <div className="pointer-events-none absolute -left-4 top-0 z-10 h-full w-10 bg-gradient-to-r from-[#0b0b0d] to-transparent md:-left-8 md:w-16" />
-              <div className="pointer-events-none absolute -right-4 top-0 z-10 h-full w-10 bg-gradient-to-l from-[#0b0b0d] to-transparent md:-right-8 md:w-16" />
-
+            {/* TRACK FLUIDO: Sem máscaras escuras artificiais nas pontas */}
+            <div className="relative -mx-4 sm:-mx-6 md:-mx-8 lg:-mx-10 px-4 sm:px-6 md:px-8 lg:px-10">
               <div
                 ref={scrollRef}
                 className="
@@ -348,12 +342,12 @@ export default function HomePage() {
                   <div
                     key={product.id}
                     className="
-                      w-[80%] 
+                      w-[78%] 
                       sm:w-[calc(50%-12px)] 
                       md:w-[calc(33.333%-16px)] 
                       lg:w-[calc(25%-18px)] 
                       xl:w-[calc(20%-20px)]
-                      flex-shrink-0 
+                      shrink-0 
                       snap-start snap-always
                     "
                   >

@@ -152,7 +152,7 @@ export default function ProductCard({
       viewport={{ once: true }}
       className="group relative flex flex-col h-full bg-transparent"
     >
-      {/* 🔥 CARD CONTAINER: Removido "bg-neutral-950" e "border-white/5". Agora a imagem parece flutuar solta. */}
+      {/* CARD CONTAINER */}
       <div
         className="relative overflow-hidden rounded-2xl
                     bg-white/[0.02] border border-white/10
@@ -228,7 +228,7 @@ export default function ProductCard({
           </Link>
         )}
 
-        {/* LOW STOCK BADGE - Ajustado com whitespace-nowrap para nunca quebrar a linha de forma feia */}
+        {/* LOW STOCK BADGE */}
         {stock !== undefined && stock <= 2 && stock > 0 && (
           <div className="absolute bottom-3 left-3 z-30 pointer-events-none">
             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[9px] uppercase tracking-[0.2em] rounded-full border border-orange-400/30 bg-orange-500/20 text-orange-300 backdrop-blur-md whitespace-nowrap shadow-lg font-bold">
@@ -258,17 +258,17 @@ export default function ProductCard({
           </>
         )}
 
-        {/* BADGES (DESTAQUE / DESCONTO) */}
+        {/* 🔥 BADGES REDESENHADAS: Empilhamento vertical ultracompacto que NÃO cobre o rosto das modelos */}
         {(badge || discount) && (
-          <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 z-20 pointer-events-none">
-            {badge && (
-              <span className="px-2.5 py-1 text-[9px] uppercase tracking-[0.25em] bg-white/10 backdrop-blur-md border border-white/20 text-white rounded-full font-medium shadow-md">
-                {badge}
+          <div className="absolute top-2.5 left-2.5 flex flex-col items-start gap-1 z-20 pointer-events-none">
+            {discount && (
+              <span className="px-2 py-0.5 text-[9px] uppercase tracking-[0.2em] bg-[var(--gold)] text-black rounded-full font-bold shadow-md whitespace-nowrap">
+                {discount}% OFF
               </span>
             )}
-            {discount && (
-              <span className="px-2.5 py-1 text-[9px] uppercase tracking-[0.25em] bg-[var(--gold)] text-black rounded-full font-bold shadow-md">
-                {discount}% OFF
+            {badge && (
+              <span className="px-2 py-0.5 text-[8px] uppercase tracking-[0.2em] bg-black/60 text-white/90 border border-white/20 rounded-full font-medium backdrop-blur-md whitespace-nowrap">
+                {badge}
               </span>
             )}
           </div>
@@ -303,7 +303,7 @@ export default function ProductCard({
         </div>
       </div>
 
-      {/* PRODUCT INFO / DETAILS - 🔥 Removido Bg pra mesclar perfeitamente com o fundo global */}
+      {/* PRODUCT INFO / DETAILS */}
       <div className="mt-3.5 px-1 flex flex-col flex-grow bg-transparent">
         <p className="text-[9px] uppercase tracking-[0.35em] text-white/40 font-medium">
           Blackstore
