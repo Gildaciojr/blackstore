@@ -147,7 +147,7 @@ export default function HomePage() {
     const firstChild = scrollRef.current.firstElementChild as HTMLElement | null;
     if (!firstChild) return;
 
-    const cardWidth = firstChild.offsetWidth + 24; // 24 = md:gap-6
+    const cardWidth = firstChild.offsetWidth + 24; 
 
     scrollRef.current.scrollBy({
       left: direction === "left" ? -cardWidth : cardWidth,
@@ -262,7 +262,6 @@ export default function HomePage() {
     return fallback.length > 0 ? fallback : [];
   }, [home]);
 
-  // 🔥 LOADING PREMIUM
   if (loading) {
     return (
       <section className="min-h-screen bg-[#0b0b0d] flex flex-col items-center justify-center">
@@ -276,7 +275,8 @@ export default function HomePage() {
     <>
       <HeroParallax slides={heroSlides.length > 0 ? heroSlides : undefined} />
 
-      <section className="relative overflow-hidden bg-black py-14 pb-20 md:py-20">
+      {/* 🔥 REMOVIDO o bg-black para fluir com o fundo global */}
+      <section className="relative overflow-hidden py-14 pb-20 md:py-20">
         <Reveal>
           <Section
             id="lancamentos"
@@ -284,8 +284,8 @@ export default function HomePage() {
             subtitle="Novidades que definem a temporada."
           >
             <div className="relative -mx-4 sm:-mx-6 md:-mx-8 lg:-mx-10">
-              <div className="pointer-events-none absolute left-0 top-0 z-10 h-full w-10 bg-gradient-to-r from-black via-black/70 to-transparent md:w-16" />
-              <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-10 bg-gradient-to-l from-black via-black/70 to-transparent md:w-16" />
+              <div className="pointer-events-none absolute left-0 top-0 z-10 h-full w-10 bg-gradient-to-r from-[#0b0b0d] via-[#0b0b0d]/70 to-transparent md:w-16" />
+              <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-10 bg-gradient-to-l from-[#0b0b0d] via-[#0b0b0d]/70 to-transparent md:w-16" />
 
               <button
                 onClick={() => scroll("left")}
@@ -350,7 +350,8 @@ export default function HomePage() {
         </Reveal>
       </section>
 
-      <section className="relative bg-gradient-to-b from-[#0f0c06] via-[#0a0907] to-black py-24 md:py-32">
+      {/* 🔥 REMOVIDO o bg-gradient forçado */}
+      <section className="relative py-24 md:py-32">
         <Reveal>
           <Section
             title={<span className="bs-title">Mais vendidos da semana</span>}
@@ -370,8 +371,9 @@ export default function HomePage() {
         <LookbookTyped items={lookbookItems} />
       </Reveal>
 
-      <section className="relative overflow-hidden bg-gradient-to-r from-black via-[#1a1408] to-black py-24 md:py-32">
-        <div className="pointer-events-none absolute -top-40 left-1/2 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-[var(--gold)] opacity-10 blur-[120px]" />
+      {/* 🔥 DEIXANDO APENAS UM RADIAL GLOW SUTIL */}
+      <section className="relative overflow-hidden py-24 md:py-32">
+        <div className="pointer-events-none absolute -top-40 left-1/2 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-[var(--gold)] opacity-[0.03] blur-[120px]" />
 
         <div className="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-16 px-6 md:gap-24 md:px-8 lg:grid-cols-2">
           <Reveal>
@@ -421,7 +423,7 @@ export default function HomePage() {
 
           <Reveal delay={0.2}>
             <div className="bs-glass relative flex h-[420px] items-center justify-center overflow-hidden rounded-3xl md:h-[520px]">
-              <div className="absolute inset-0 bg-gradient-to-br from-black via-[#1a1408] to-black opacity-80" />
+              <div className="absolute inset-0 bg-gradient-to-br from-[#0b0b0d] via-[#1a1408] to-[#0b0b0d] opacity-50" />
               <div className="absolute left-0 top-0 h-[2px] w-full bg-gradient-to-r from-transparent via-[var(--gold)] to-transparent opacity-60" />
 
               <div className="relative px-6 text-center">
@@ -438,9 +440,8 @@ export default function HomePage() {
         <InstagramShowcase />
       </Reveal>
 
+      {/* 🔥 REMOVIDO bg-gradient forçado */}
       <section id="promocao" className="relative overflow-hidden py-24 md:py-32">
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-[#1a1408] to-black" />
-
         <div className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 items-center gap-14 px-6 md:gap-20 md:px-8 lg:grid-cols-2">
           <div>
             <p className="text-xs uppercase tracking-[0.4em] text-white/50">Oferta especial</p>
@@ -469,7 +470,7 @@ export default function HomePage() {
             )}
           </div>
 
-          <div className="relative h-[360px] sm:h-[420px] md:h-[520px] lg:h-[600px] overflow-hidden rounded-3xl">
+          <div className="relative h-[360px] sm:h-[420px] md:h-[520px] lg:h-[600px] overflow-hidden rounded-3xl border border-white/5">
             <Image
               src={featuredPromotionBanner || "/images/product-3.jpg"}
               alt="Promoção"

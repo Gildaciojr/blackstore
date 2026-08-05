@@ -125,22 +125,22 @@ export default function ProductQuickView({ product, onClose }: Props) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        transition={{ duration: 0.15 }}
+        transition={{ duration: 0.1 }}
       >
         <div
           onClick={onClose}
-          className="absolute inset-0 bg-black/80 backdrop-blur-md transition-opacity"
+          className="absolute inset-0 bg-black/90 backdrop-blur-md transition-opacity"
         />
 
         <motion.div
-          initial={{ y: 40, opacity: 0 }}
+          initial={{ y: 30, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 40, opacity: 0 }}
-          transition={{ duration: 0.15, ease: "easeOut" }}
+          exit={{ y: 20, opacity: 0 }}
+          transition={{ duration: 0.1, ease: "easeOut" }}
           className="
             relative z-10 w-full max-w-5xl
             h-[92vh] md:h-auto max-h-[85vh]
-            bg-[#0b0b0d]/95 backdrop-blur-2xl
+            bg-[#0b0b0d]/95 backdrop-blur-3xl
             border border-white/10
             rounded-t-3xl md:rounded-2xl
             flex flex-col md:grid md:grid-cols-2
@@ -168,9 +168,9 @@ export default function ProductQuickView({ product, onClose }: Props) {
             <X size={18} />
           </button>
 
-          {/* GALERIA DE IMAGENS */}
-          <div className="relative flex min-h-[300px] md:min-h-[450px] flex-col bg-black">
-            <div className="relative w-full aspect-[4/5] md:h-full bg-black overflow-hidden flex items-center justify-center">
+          {/* GALERIA DE IMAGENS - AJUSTADA PARA MOBILE */}
+          <div className="relative flex min-h-[350px] md:min-h-[450px] flex-col bg-[#0b0b0d]">
+            <div className="relative w-full h-full md:aspect-[4/5] bg-transparent overflow-hidden flex items-center justify-center">
               <motion.div
                 key={currentImage}
                 initial={{ opacity: 0.5 }}
@@ -182,13 +182,13 @@ export default function ProductQuickView({ product, onClose }: Props) {
                   src={currentImage}
                   alt={product.name}
                   fill
-                  className="object-cover object-center"
+                  className="object-contain md:object-cover object-center"
                   sizes="(max-width: 768px) 100vw, 50vw"
                   priority
                 />
               </motion.div>
 
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none md:hidden" />
 
               {images.length > 1 && (
                 <>
@@ -222,7 +222,6 @@ export default function ProductQuickView({ product, onClose }: Props) {
               {product.name}
             </h2>
 
-            {/* DESCRIÇÃO DO PRODUTO */}
             {product.description ? (
               <p className="mt-4 text-white/60 text-xs md:text-sm leading-relaxed whitespace-pre-line">
                 {product.description}
@@ -233,7 +232,6 @@ export default function ProductQuickView({ product, onClose }: Props) {
               </p>
             )}
 
-            {/* PREÇOS */}
             <div className="mt-6 flex items-center gap-4">
               {product.oldPrice && product.oldPrice > product.price && (
                 <span className="text-white/40 text-sm line-through">
@@ -246,7 +244,6 @@ export default function ProductQuickView({ product, onClose }: Props) {
               </span>
             </div>
 
-            {/* SELEÇÃO DE VARIANTES (TAMANHOS) */}
             {hasVariants && (
               <div className="mt-6">
                 <div className="flex items-center justify-between mb-3">
@@ -289,7 +286,6 @@ export default function ProductQuickView({ product, onClose }: Props) {
               </div>
             )}
 
-            {/* BOTÕES DE AÇÃO */}
             <div className="mt-8 pt-6 border-t border-white/10 flex gap-3 flex-col sm:flex-row">
               <button
                 onClick={handleAddToCart}
