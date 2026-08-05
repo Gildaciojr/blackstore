@@ -249,7 +249,7 @@ export default function Lookbook({ items }: LookbookProps) {
 
   if (!selectedTop || !selectedBottom) {
     return (
-      <section className="py-24 md:py-32 bg-black">
+      <section className="relative py-24 md:py-32">
         <div className="max-w-7xl mx-auto px-6 md:px-8">
           <div className="max-w-3xl">
             <p className="uppercase text-xs tracking-[0.4em] text-white/50">
@@ -272,7 +272,7 @@ export default function Lookbook({ items }: LookbookProps) {
 
   return (
     <>
-      <section className="py-24 md:py-32 bg-black">
+      <section className="relative z-10 py-24 md:py-32">
         <div className="max-w-7xl mx-auto px-6 md:px-8">
           <div className="mb-14 md:mb-16 max-w-3xl">
             <p className="uppercase text-xs tracking-[0.4em] text-white/50">

@@ -21,11 +21,11 @@ export default function Section({
         py-16 sm:py-20 md:py-24 lg:py-28
       "
     >
-      {/* BACKGROUND SYSTEM */}
-      <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-gradient-to-b from-black via-[#0b0906] to-black" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(212,175,55,0.06),transparent_60%)]" />
-      </div>
+      {/* 
+        🔥 CORREÇÃO: O "BACKGROUND SYSTEM" isolado foi removido daqui. 
+        Agora esta seção é 100% transparente e deixa o radial-gradient
+        do globals.css fluir perfeitamente de cima a baixo, sem listras/cortes.
+      */}
 
       <div
         className="
@@ -34,10 +34,8 @@ export default function Section({
           px-4 sm:px-6 md:px-8 lg:px-10
         "
       >
-
         {/* HEADER PREMIUM */}
         <div className="mb-12 md:mb-14 lg:mb-16">
-
           {/* label linha */}
           <div className="flex items-center gap-3 mb-4">
             <span className="h-px w-10 bg-[var(--gold)]/60" />
@@ -78,7 +76,6 @@ export default function Section({
         <div className="relative">
           {children}
         </div>
-
       </div>
     </section>
   );

@@ -76,9 +76,6 @@ export default function HeroParallax({
   const startRef = useRef<number | null>(null);
   const progressRef = useRef(0);
 
-  /**
-   * 🔥 DERIVAÇÃO CORRETA (SEM setState - EVITA WARNING DO REACT)
-   */
   const slidesState = useMemo(() => {
     if (externalSlides && externalSlides.length > 0) {
       return externalSlides;
@@ -92,26 +89,17 @@ export default function HeroParallax({
       : 0;
 
   const slide = slidesState[safeIndex];
-  /**
-   * 🔥 BREAKPOINT RESPONSIVO (DESKTOP / MOBILE)
-   */
+
   useEffect(() => {
     function syncBreakpoint() {
       setIsDesktop(window.innerWidth >= 768);
     }
-
     syncBreakpoint();
-
     window.addEventListener("resize", syncBreakpoint);
-
     return () => {
       window.removeEventListener("resize", syncBreakpoint);
     };
   }, []);
-
-  /**
-   * 🔥 LOOP AUTO SLIDE
-   */
 
   useEffect(() => {
     if (slidesState.length === 0) return;
@@ -137,7 +125,6 @@ export default function HeroParallax({
         setIndex((prev) =>
           slidesState.length > 0 ? (prev + 1) % slidesState.length : 0,
         );
-
         startRef.current = timestamp;
         progressRef.current = 0;
         setProgress(0);
@@ -149,15 +136,11 @@ export default function HeroParallax({
     }
 
     raf = requestAnimationFrame(loop);
-
     return () => cancelAnimationFrame(raf);
   }, [paused, slidesState.length]);
-  /**
-   * 🔥 PARALLAX
-   */
+
   function handleMouseMove(e: React.MouseEvent) {
     if (!isDesktop) return;
-
     const x = (e.clientX / window.innerWidth - 0.5) * (isDesktop ? 10 : 4);
     const y = (e.clientY / window.innerHeight - 0.5) * (isDesktop ? 10 : 4);
     setMouse({ x, y });
@@ -175,7 +158,7 @@ export default function HeroParallax({
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
-      className="relative h-[72vh] md:h-[88vh] lg:h-[92vh]"
+      className="relative h-[72vh] md:h-[88vh] lg:h-[92vh] overflow-hidden"
     >
       {/* BACKGROUND */}
       <AnimatePresence mode="wait">
@@ -187,26 +170,29 @@ export default function HeroParallax({
           transition={{ duration: 1.1 }}
           className="absolute inset-0"
         >
+          {/* 🔥 CORREÇÃO 1: -inset-[24px] evita o "estouro" nas bordas durante a animação parallax */}
           <motion.div
             animate={{ x: mouse.x, y: mouse.y }}
             transition={{
               duration: 12,
               ease: "linear",
             }}
-            className="absolute inset-0 transform-gpu"
+            className="absolute -inset-[24px] transform-gpu"
           >
             <div className="relative w-full h-full">
+              {/* 🔥 CORREÇÃO 2: quality={100} resolve a falta de nitidez no iPhone e Monitores Retina */}
               <Image
                 src={slide.image}
                 alt="Blackstore"
                 fill
                 priority
+                quality={100}
                 sizes="100vw"
                 className="
-        object-cover
-        md:object-cover
-        will-change-transform
-      "
+                  object-cover
+                  md:object-cover
+                  will-change-transform
+                "
                 style={{
                   objectPosition,
                 }}
