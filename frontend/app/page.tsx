@@ -1,10 +1,10 @@
 "use client";
 
 import HeroParallax from "@/components/home/HeroParallax";
-import Section from "@/components/ui/Section";
 import ProductCard from "@/components/ui/ProductCard";
 import Reveal from "@/components/ui/Reveal";
 import Image from "next/image";
+import Link from "next/link";
 import Lookbook from "@/components/sections/Lookbook";
 import InstagramShowcase from "@/components/sections/InstagramShowcase";
 import { apiFetch } from "@/lib/api";
@@ -18,7 +18,7 @@ import {
   useState,
   type ComponentProps,
 } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ArrowRight, Sparkles } from "lucide-react";
 
 type Media = {
   id: string;
@@ -147,7 +147,7 @@ export default function HomePage() {
     const firstChild = scrollRef.current.firstElementChild as HTMLElement | null;
     if (!firstChild) return;
 
-    const cardWidth = firstChild.offsetWidth + 24; 
+    const cardWidth = firstChild.offsetWidth + 24;
 
     scrollRef.current.scrollBy({
       left: direction === "left" ? -cardWidth : cardWidth,
@@ -253,7 +253,7 @@ export default function HomePage() {
 
   const lookbookItems = useMemo(() => {
     if (home?.lookbook && home.lookbook.length > 0) return home.lookbook;
-    
+
     const fallback = generateFallbackLookbook([
       ...(home?.launches ?? []),
       ...(home?.promotions ?? []),
@@ -275,45 +275,72 @@ export default function HomePage() {
     <>
       <HeroParallax slides={heroSlides.length > 0 ? heroSlides : undefined} />
 
-      {/* 🔥 REMOVIDO o bg-black para fluir com o fundo global */}
-      <section className="relative overflow-hidden py-14 pb-20 md:py-20">
-        <Reveal>
-          <Section
-            id="lancamentos"
-            title={<span className="bs-title">Lançamentos</span>}
-            subtitle="Novidades que definem a temporada."
-          >
-            <div className="relative -mx-4 sm:-mx-6 md:-mx-8 lg:-mx-10">
-              <div className="pointer-events-none absolute left-0 top-0 z-10 h-full w-10 bg-gradient-to-r from-[#0b0b0d] via-[#0b0b0d]/70 to-transparent md:w-16" />
-              <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-10 bg-gradient-to-l from-[#0b0b0d] via-[#0b0b0d]/70 to-transparent md:w-16" />
+      {/* 🔥 SEÇÃO DE LANÇAMENTOS MODERNIZADA (SEM ESPAÇO MORTO) */}
+      <section id="lancamentos" className="relative overflow-hidden py-16 sm:py-20 md:py-24 lg:py-28">
+        <div className="max-w-[1500px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10">
+          <Reveal>
+            {/* HEADER DA SEÇÃO COM NAVEGAÇÃO INTEGRADA */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 md:mb-14">
+              <div>
+                <div className="flex items-center gap-3 mb-3">
+                  <span className="h-px w-8 bg-[var(--gold)]/60" />
+                  <p className="text-[10px] tracking-[0.45em] uppercase text-[var(--gold)] font-semibold flex items-center gap-1.5">
+                    <Sparkles size={12} /> Edição Exclusiva
+                  </p>
+                </div>
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-light leading-tight">
+                  <span className="bs-title">Lançamentos</span>
+                </h2>
+                <p className="mt-3 text-white/60 text-xs sm:text-sm md:text-base max-w-xl leading-relaxed">
+                  Novidades selecionadas que redefinem o estilo e destacam sua presença nesta temporada.
+                </p>
+              </div>
 
-              <button
-                onClick={() => scroll("left")}
-                className="absolute left-3 top-1/2 z-20 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/10 bg-black/60 backdrop-blur-lg transition hover:border-[var(--gold)] md:flex"
-              >
-                <ChevronLeft size={16} />
-              </button>
+              {/* BOTÕES DE CONTROLE DESKTOP + LINK DO CATÁLOGO */}
+              <div className="flex items-center justify-between md:justify-end gap-4 border-t border-white/10 pt-4 md:border-none md:pt-0">
+                <Link
+                  href="/catalog"
+                  className="group inline-flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-white/70 hover:text-[var(--gold)] transition-colors"
+                >
+                  Ver Tudo no Catálogo
+                  <ArrowRight size={14} className="transform group-hover:translate-x-1 transition-transform" />
+                </Link>
 
-              <button
-                onClick={() => scroll("right")}
-                className="absolute right-3 top-1/2 z-20 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/10 bg-black/60 backdrop-blur-lg transition hover:border-[var(--gold)] md:flex"
-              >
-                <ChevronRight size={16} />
-              </button>
+                <div className="hidden md:flex items-center gap-2 pl-4 border-l border-white/10">
+                  <button
+                    onClick={() => scroll("left")}
+                    aria-label="Rolar para a esquerda"
+                    className="w-11 h-11 rounded-full border border-white/15 bg-white/5 backdrop-blur-xl flex items-center justify-center text-white hover:border-[var(--gold)] hover:text-[var(--gold)] hover:bg-white/10 transition-all active:scale-95 shadow-lg"
+                  >
+                    <ChevronLeft size={18} />
+                  </button>
+                  <button
+                    onClick={() => scroll("right")}
+                    aria-label="Rolar para a direita"
+                    className="w-11 h-11 rounded-full border border-white/15 bg-white/5 backdrop-blur-xl flex items-center justify-center text-white hover:border-[var(--gold)] hover:text-[var(--gold)] hover:bg-white/10 transition-all active:scale-95 shadow-lg"
+                  >
+                    <ChevronRight size={18} />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* TRACK DO CARROSSEL DE LANÇAMENTOS (LARGURA CALCULADA) */}
+            <div className="relative">
+              {/* Sombras laterais para indicação de scroll fluido */}
+              <div className="pointer-events-none absolute -left-4 top-0 z-10 h-full w-10 bg-gradient-to-r from-[#0b0b0d] to-transparent md:-left-8 md:w-16" />
+              <div className="pointer-events-none absolute -right-4 top-0 z-10 h-full w-10 bg-gradient-to-l from-[#0b0b0d] to-transparent md:-right-8 md:w-16" />
 
               <div
                 ref={scrollRef}
                 className="
                   scrollbar-hide
-                  flex gap-4
+                  flex gap-4 sm:gap-6 md:gap-8
                   overflow-x-auto
                   overflow-y-hidden
-                  px-4
                   scroll-smooth
-                  snap-x snap-mandatory 
-                  sm:px-6
-                  md:gap-6 md:px-8
-                  lg:px-10
+                  snap-x snap-mandatory
+                  py-2
                 "
                 style={{ WebkitOverflowScrolling: "touch" }}
               >
@@ -321,14 +348,16 @@ export default function HomePage() {
                   <div
                     key={product.id}
                     className="
-                      min-w-[85%] snap-start snap-always
-                      sm:min-w-[48%]
-                      md:min-w-[32%]
-                      lg:min-w-[24%]
-                      xl:min-w-[20%]
+                      w-[80%] 
+                      sm:w-[calc(50%-12px)] 
+                      md:w-[calc(33.333%-16px)] 
+                      lg:w-[calc(25%-18px)] 
+                      xl:w-[calc(20%-20px)]
+                      flex-shrink-0 
+                      snap-start snap-always
                     "
                   >
-                    <Reveal delay={0.06 * (index + 1)}>
+                    <Reveal delay={0.05 * (index + 1)}>
                       <ProductCard
                         id={product.id}
                         slug={product.slug}
@@ -339,6 +368,7 @@ export default function HomePage() {
                         oldPrice={product.oldPrice ?? undefined}
                         stock={product.stock}
                         variants={product.variants}
+                        badge="NOVO"
                         onQuickView={() => setQuickProduct(normalizeProduct(product))}
                       />
                     </Reveal>
@@ -346,24 +376,34 @@ export default function HomePage() {
                 ))}
               </div>
             </div>
-          </Section>
-        </Reveal>
+          </Reveal>
+        </div>
       </section>
 
-      {/* 🔥 REMOVIDO o bg-gradient forçado */}
+      {/* MAIS VENDIDOS */}
       <section className="relative py-24 md:py-32">
         <Reveal>
-          <Section
-            title={<span className="bs-title">Mais vendidos da semana</span>}
-            subtitle="As peças que mais conquistaram nossas clientes."
-          >
+          <div className="max-w-[1500px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10">
+            <div className="mb-12">
+              <div className="flex items-center gap-3 mb-3">
+                <span className="h-px w-8 bg-[var(--gold)]/60" />
+                <p className="text-[10px] tracking-[0.45em] uppercase text-white/40">Blackstore</p>
+              </div>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-light leading-tight">
+                <span className="bs-title">Mais vendidos da semana</span>
+              </h2>
+              <p className="mt-3 text-white/60 text-xs sm:text-sm md:text-base leading-relaxed">
+                As peças que mais conquistaram nossas clientes.
+              </p>
+            </div>
+
             <WeeklyBestSellers
               items={home?.bestSellers ?? []}
               getCover={getCover}
               getImages={getImages}
               onQuickView={(product: Product) => setQuickProduct(normalizeProduct(product))}
             />
-          </Section>
+          </div>
         </Reveal>
       </section>
 
@@ -371,7 +411,7 @@ export default function HomePage() {
         <LookbookTyped items={lookbookItems} />
       </Reveal>
 
-      {/* 🔥 DEIXANDO APENAS UM RADIAL GLOW SUTIL */}
+      {/* SEÇÃO CONECTE-SE */}
       <section className="relative overflow-hidden py-24 md:py-32">
         <div className="pointer-events-none absolute -top-40 left-1/2 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-[var(--gold)] opacity-[0.03] blur-[120px]" />
 
@@ -440,7 +480,7 @@ export default function HomePage() {
         <InstagramShowcase />
       </Reveal>
 
-      {/* 🔥 REMOVIDO bg-gradient forçado */}
+      {/* PROMOÇÃO DA SEMANA */}
       <section id="promocao" className="relative overflow-hidden py-24 md:py-32">
         <div className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 items-center gap-14 px-6 md:gap-20 md:px-8 lg:grid-cols-2">
           <div>

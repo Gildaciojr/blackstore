@@ -9,6 +9,15 @@ import ProductQuickView, {
 import { Search } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 
+type Media = {
+  id: string;
+  type?: string;
+  title?: string | null;
+  url: string;
+  productId?: string | null;
+  createdAt?: string;
+};
+
 type Variant = {
   id: string;
   size: string;
@@ -19,11 +28,11 @@ type Product = {
   id: string;
   name: string;
   slug: string;
-  description?: string | null; // Corrigido para incluir a descrição
+  description?: string | null;
   price: number;
   oldPrice?: number | null;
   image: string;
-  images?: string[];
+  medias?: Media[]; // 🔥 CORREÇÃO: Alinhado com a resposta real da API NestJS
   categoryId: string;
   stock: number;
   variants?: Variant[];
@@ -71,6 +80,16 @@ export default function CatalogPage() {
     if (url.startsWith("http")) return url;
     return `${process.env.NEXT_PUBLIC_API_URL}${url}`;
   }
+
+  // 🔥 Mapeia as mídias vindas do backend NestJS (product.medias) para URLs absolutas de imagem
+  const getImages = useCallback((product: Product): string[] => {
+    const gallery = product.medias?.map((m) => resolveImage(m.url)) ?? [];
+    const cover = resolveImage(product.image);
+
+    if (!gallery.length) return [cover];
+    if (!gallery.includes(cover)) return [cover, ...gallery];
+    return gallery;
+  }, []);
 
   // Busca otimizada usando transição para não travar a UI do mobile
   const handleSearchChange = useCallback((value: string) => {
@@ -201,6 +220,7 @@ export default function CatalogPage() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-3 md:gap-x-8 gap-y-8 md:gap-y-14">
           {filtered.map((product, index) => {
             const imageUrl = resolveImage(product.image);
+            const productGallery = getImages(product);
 
             const totalStock =
               product.variants && product.variants.length > 0
@@ -213,6 +233,7 @@ export default function CatalogPage() {
                   id={product.id}
                   slug={product.slug}
                   image={imageUrl}
+                  images={productGallery} // 🔥 Repassando as mídias para as setas internas do Card funcionarem no Catálogo
                   name={product.name}
                   price={product.price}
                   stock={totalStock}
@@ -223,10 +244,10 @@ export default function CatalogPage() {
                       name: product.name,
                       price: product.price,
                       image: imageUrl,
-                      images: product.images,
+                      images: productGallery, // 🔥 Repassando a array completa de fotos resolvidas para o QuickView
                       oldPrice: product.oldPrice ?? undefined,
                       variants: product.variants,
-                      description: product.description ?? undefined, // 🔥 Repassando a descrição corretamente para o modal
+                      description: product.description ?? undefined,
                     })
                   }
                 />
