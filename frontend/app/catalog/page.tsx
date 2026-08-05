@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition, useCallback } from "react";
 import ProductCard from "@/components/ui/ProductCard";
 import Reveal from "@/components/ui/Reveal";
 import ProductQuickView, {
@@ -19,6 +19,7 @@ type Product = {
   id: string;
   name: string;
   slug: string;
+  description?: string | null; // Corrigido para incluir a descrição
   price: number;
   oldPrice?: number | null;
   image: string;
@@ -40,6 +41,7 @@ export default function CatalogPage() {
 
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("all");
+  const [, startTransition] = useTransition();
 
   const [selectedProduct, setSelectedProduct] = useState<QuickProduct | null>(
     null,
@@ -47,13 +49,17 @@ export default function CatalogPage() {
 
   useEffect(() => {
     async function loadData() {
-      const [productsData, categoriesData] = await Promise.all([
-        apiFetch<Product[]>("/products"),
-        apiFetch<Category[]>("/categories"),
-      ]);
+      try {
+        const [productsData, categoriesData] = await Promise.all([
+          apiFetch<Product[]>("/products"),
+          apiFetch<Category[]>("/categories"),
+        ]);
 
-      setProducts(productsData);
-      setCategories(categoriesData);
+        setProducts(productsData);
+        setCategories(categoriesData);
+      } catch (err) {
+        console.error("Erro ao carregar dados do catálogo:", err);
+      }
     }
 
     loadData();
@@ -66,26 +72,22 @@ export default function CatalogPage() {
     return `${process.env.NEXT_PUBLIC_API_URL}${url}`;
   }
 
-  async function handleSearch(value: string) {
+  // Busca otimizada usando transição para não travar a UI do mobile
+  const handleSearchChange = useCallback((value: string) => {
     setQuery(value);
-
-    if (!value) {
-      const productsData = await apiFetch<Product[]>("/products");
-      setProducts(productsData);
-      return;
-    }
-
-    const results = await apiFetch<Product[]>(`/search?q=${value}`);
-    setProducts(results);
-  }
+  }, []);
 
   const filtered = products.filter((p) => {
-    if (category === "all") return true;
+    const matchesCategory =
+      category === "all" ||
+      categories.find((c) => c.slug === category)?.id === p.categoryId;
 
-    const cat = categories.find((c) => c.slug === category);
-    if (!cat) return true;
+    const matchesQuery =
+      !query.trim() ||
+      p.name.toLowerCase().includes(query.toLowerCase()) ||
+      (p.description && p.description.toLowerCase().includes(query.toLowerCase()));
 
-    return p.categoryId === cat.id;
+    return matchesCategory && matchesQuery;
   });
 
   return (
@@ -109,7 +111,7 @@ export default function CatalogPage() {
             </p>
           </div>
 
-          {/* SEARCH */}
+          {/* SEARCH OTIMIZADA (Filtragem local instantânea sem requisições excessivas) */}
           <div className="relative w-full lg:w-[320px]">
             <Search
               size={16}
@@ -120,7 +122,10 @@ export default function CatalogPage() {
               type="text"
               placeholder="Buscar produto..."
               value={query}
-              onChange={(e) => handleSearch(e.target.value)}
+              onChange={(e) => {
+                const val = e.target.value;
+                startTransition(() => handleSearchChange(val));
+              }}
               className="
                 w-full
                 pl-10 pr-4 py-3 md:py-4
@@ -144,7 +149,7 @@ export default function CatalogPage() {
             {filtered.length} produtos
           </div>
 
-          {/* 🔥 CATEGORIAS COM SCROLL HORIZONTAL NATIVO (App Feel) */}
+          {/* CATEGORIAS COM SCROLL HORIZONTAL NATIVO */}
           <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide snap-x w-full md:w-auto">
             <button
               onClick={() => setCategory("all")}
@@ -184,7 +189,6 @@ export default function CatalogPage() {
               onClick={() => {
                 setQuery("");
                 setCategory("all");
-                handleSearch("");
               }}
               className="mt-6 px-6 py-2 text-xs tracking-widest uppercase border border-white/20 rounded-full hover:bg-white/5 transition"
             >
@@ -193,7 +197,7 @@ export default function CatalogPage() {
           </div>
         )}
 
-        {/* GRID 🔥 AJUSTADO PARA MOBILE (gap-x-3) E DESKTOP (gap-x-8) */}
+        {/* GRID */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-3 md:gap-x-8 gap-y-8 md:gap-y-14">
           {filtered.map((product, index) => {
             const imageUrl = resolveImage(product.image);
@@ -204,7 +208,7 @@ export default function CatalogPage() {
                 : product.stock;
 
             return (
-              <Reveal key={product.id} delay={index * 0.05}>
+              <Reveal key={product.id} delay={index * 0.03}>
                 <ProductCard
                   id={product.id}
                   slug={product.slug}
@@ -212,6 +216,7 @@ export default function CatalogPage() {
                   name={product.name}
                   price={product.price}
                   stock={totalStock}
+                  variants={product.variants}
                   onQuickView={() =>
                     setSelectedProduct({
                       id: product.id,
@@ -221,6 +226,7 @@ export default function CatalogPage() {
                       images: product.images,
                       oldPrice: product.oldPrice ?? undefined,
                       variants: product.variants,
+                      description: product.description ?? undefined, // 🔥 Repassando a descrição corretamente para o modal
                     })
                   }
                 />
