@@ -10,6 +10,7 @@ import InstagramShowcase from "@/components/sections/InstagramShowcase";
 import { apiFetch } from "@/lib/api";
 import ProductQuickView from "@/components/ui/ProductQuickView";
 import WeeklyBestSellers from "@/components/sections/WeeklyBestSellers";
+import CouponFloatingBanner from "@/components/ui/CouponFloatingBanner";
 import {
   useCallback,
   useEffect,
@@ -273,9 +274,12 @@ export default function HomePage() {
 
   return (
     <>
+      {/* 🔥 BANNER FLUTUANTE DE CUPOM PROMOCIONAL */}
+      <CouponFloatingBanner />
+
       <HeroParallax slides={heroSlides.length > 0 ? heroSlides : undefined} />
 
-      {/* 🔥 LANÇAMENTOS COM SANGRIA FLUIDA SEM MÁSCARAS ESCURAS */}
+      {/* LANÇAMENTOS */}
       <section id="lancamentos" className="relative overflow-hidden py-16 sm:py-20 md:py-24 lg:py-28">
         <div className="max-w-[1500px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10">
           <Reveal>
@@ -323,7 +327,6 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* TRACK FLUIDO: Sem máscaras escuras artificiais nas pontas */}
             <div className="relative -mx-4 sm:-mx-6 md:-mx-8 lg:-mx-10 px-4 sm:px-6 md:px-8 lg:px-10">
               <div
                 ref={scrollRef}

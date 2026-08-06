@@ -1,9 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useMemo, useState } from "react";
-import { Eye, ShoppingBag, Sparkles, Check, ChevronDown, X } from "lucide-react";
+import { Eye, ShoppingBag, Sparkles, Check, X } from "lucide-react";
 import { useCart } from "@/store/cart";
 import ProductQuickView from "@/components/ui/ProductQuickView";
 
@@ -60,6 +59,7 @@ type LookItem = {
   sizes: string[];
   top: string;
   left: string;
+  label?: string | null;
 };
 
 type QuickProduct = {
@@ -117,6 +117,7 @@ function normalizeFromApi(item: LookbookItem): LookItem {
     sizes: type === "top" ? ["PP", "P", "M", "G"] : ["P", "M", "G", "GG"],
     top: item.top ?? (type === "top" ? "30%" : "60%"),
     left: item.left ?? (type === "top" ? "60%" : "52%"),
+    label: item.label,
   };
 }
 
@@ -160,7 +161,7 @@ export default function Lookbook({ items }: LookbookProps) {
   const selectedBottom =
     manualBottom ?? bottoms.find((b) => b.type === "bottom") ?? null;
 
-  // 🔥 GERAÇÃO DE EXATAMENTE 4 LOOKS DISTINTOS
+  // GERAÇÃO DE EXATAMENTE 4 LOOKS DISTINTOS
   const suggestions = useMemo<LookSuggestion[]>(() => {
     const result: LookSuggestion[] = [];
     if (tops.length === 0 || bottoms.length === 0) return result;
@@ -168,8 +169,7 @@ export default function Lookbook({ items }: LookbookProps) {
     for (let i = 0; i < 4; i++) {
       const top = tops[i % tops.length];
       const bottom = bottoms[(i + 1) % bottoms.length];
-      
-      // Evita duplicatas exatas na lista de 4
+
       if (!result.some((s) => s.topId === top.id && s.bottomId === bottom.id)) {
         result.push({
           id: `look-${i}-${top.id}-${bottom.id}`,
@@ -180,7 +180,6 @@ export default function Lookbook({ items }: LookbookProps) {
       }
     }
 
-    // Garante que sempre teremos 4 opções se houver estoque
     while (result.length < 4 && tops.length > 0 && bottoms.length > 0) {
       const idx = result.length;
       const top = tops[idx % tops.length];
@@ -270,7 +269,6 @@ export default function Lookbook({ items }: LookbookProps) {
         <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[500px] h-[500px] bg-[var(--gold)] opacity-[0.03] blur-[160px] pointer-events-none" />
 
         <div className="max-w-7xl mx-auto px-6 md:px-8 relative z-10">
-          
           {/* CABEÇALHO DA SEÇÃO */}
           <div className="mb-14 md:mb-16 max-w-3xl">
             <div className="flex items-center gap-3 mb-3">
@@ -291,7 +289,6 @@ export default function Lookbook({ items }: LookbookProps) {
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-[0.88fr_1.12fr] gap-10 md:gap-14 items-start">
-            
             {/* IMAGEM DO LOOK COM PONTOS INTERATIVOS (HOTSPOTS) CLICÁVEIS */}
             <div className="relative max-w-sm md:max-w-md xl:max-w-[460px] mx-auto xl:mx-0 w-full">
               <div className="relative aspect-[4/5] rounded-[28px] overflow-hidden border border-white/10 bg-neutral-950 shadow-[0_20px_60px_rgba(0,0,0,0.8)]">
@@ -310,15 +307,17 @@ export default function Lookbook({ items }: LookbookProps) {
 
                 {/* Badge informativa na imagem */}
                 <div className="absolute bottom-4 left-4 right-4 bg-black/60 backdrop-blur-md border border-white/10 p-3 rounded-2xl flex items-center justify-between text-xs text-white/80">
-                  <span className="text-[10px] uppercase tracking-widest text-[var(--gold)]">Toque para trocar peça</span>
+                  <span className="text-[10px] uppercase tracking-widest text-[var(--gold)]">
+                    Toque para trocar peça
+                  </span>
                   <span className="font-mono text-[10px]">✨ Interativo</span>
                 </div>
               </div>
 
-              {/* 🔥 HOTSPOTS INTERATIVOS REAIS (ABREM SELETOR DE PEÇAS) */}
+              {/* HOTSPOTS INTERATIVOS REAIS (COM NOMES EM PORTUGUÊS) */}
               {[
-                { item: selectedTop, type: "top" as LookItemType, label: "Trocar Top" },
-                { item: selectedBottom, type: "bottom" as LookItemType, label: "Trocar Bottom" }
+                { item: selectedTop, type: "top" as LookItemType },
+                { item: selectedBottom, type: "bottom" as LookItemType },
               ].map(({ item, type }) => (
                 <button
                   key={`${type}-${item.id}`}
@@ -339,11 +338,15 @@ export default function Lookbook({ items }: LookbookProps) {
                     left: item.left,
                     transform: "translate(-50%, -50%)",
                   }}
-                  aria-label={`Trocar ${type}`}
+                  aria-label={`Trocar ${type === "top" ? "Parte Superior" : "Parte Inferior"}`}
                 >
                   <span className="w-2 h-2 rounded-full bg-[var(--gold)] animate-pulse" />
                   <span className="text-[9px] uppercase tracking-widest text-white font-medium whitespace-nowrap">
-                    {type === "top" ? "Top ✦" : "Bottom ✦"}
+                    {item.label 
+                      ? item.label 
+                      : type === "top" 
+                        ? "Parte Superior ✦" 
+                        : "Parte Inferior ✦"}
                   </span>
                 </button>
               ))}
@@ -351,7 +354,6 @@ export default function Lookbook({ items }: LookbookProps) {
 
             {/* PAINEL DE CONFIGURAÇÃO E DETALHES DAS PEÇAS */}
             <div className="space-y-6 md:space-y-8">
-              
               {/* CARD DE 4 SUGESTÕES DE LOOKS */}
               <div className="rounded-[24px] border border-white/10 bg-white/[0.02] backdrop-blur-xl p-5 md:p-6 shadow-xl">
                 <div>
@@ -388,14 +390,13 @@ export default function Lookbook({ items }: LookbookProps) {
                 </div>
               </div>
 
-              {/* GRID DOS DETALHES DE CADA PEÇA (TOP & BOTTOM) */}
+              {/* GRID DOS DETALHES DE CADA PEÇA (PARTE SUPERIOR & PARTE INFERIOR) */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                
-                {/* TOP ITEM */}
+                {/* ITEM PARTE SUPERIOR */}
                 <div className="rounded-2xl border border-white/10 bg-black/40 backdrop-blur-xl p-4 md:p-5 flex flex-col justify-between">
                   <div>
                     <div className="flex items-start gap-4">
-                      <div 
+                      <div
                         onClick={() => setSelectingType("top")}
                         className="relative w-20 h-24 rounded-xl overflow-hidden shrink-0 border border-white/10 cursor-pointer group"
                       >
@@ -419,7 +420,7 @@ export default function Lookbook({ items }: LookbookProps) {
                           <p className="text-[9px] uppercase tracking-[0.35em] text-[var(--gold)] font-medium">
                             Parte Superior
                           </p>
-                          <button 
+                          <button
                             onClick={() => setSelectingType("top")}
                             className="text-[9px] uppercase tracking-wider text-[var(--gold)] underline underline-offset-2"
                           >
@@ -472,11 +473,11 @@ export default function Lookbook({ items }: LookbookProps) {
                   </div>
                 </div>
 
-                {/* BOTTOM ITEM */}
+                {/* ITEM PARTE INFERIOR */}
                 <div className="rounded-2xl border border-white/10 bg-black/40 backdrop-blur-xl p-4 md:p-5 flex flex-col justify-between">
                   <div>
                     <div className="flex items-start gap-4">
-                      <div 
+                      <div
                         onClick={() => setSelectingType("bottom")}
                         className="relative w-20 h-24 rounded-xl overflow-hidden shrink-0 border border-white/10 cursor-pointer group"
                       >
@@ -500,7 +501,7 @@ export default function Lookbook({ items }: LookbookProps) {
                           <p className="text-[9px] uppercase tracking-[0.35em] text-[var(--gold)] font-medium">
                             Parte Inferior
                           </p>
-                          <button 
+                          <button
                             onClick={() => setSelectingType("bottom")}
                             className="text-[9px] uppercase tracking-wider text-[var(--gold)] underline underline-offset-2"
                           >
@@ -552,7 +553,6 @@ export default function Lookbook({ items }: LookbookProps) {
                     </button>
                   </div>
                 </div>
-
               </div>
 
               {/* CARD RESUMO FINAL DO LOOK COMPLETO */}
@@ -614,29 +614,26 @@ export default function Lookbook({ items }: LookbookProps) {
                       hover:bg-white/10 hover:border-white/50 transition-all
                     "
                   >
-                    <Eye size={15} /> Inspeção Rápida
+                    <Eye size={15} /> VISUALIZAÇÃO RÁPIDA
                   </button>
                 </div>
               </div>
-
             </div>
-
           </div>
         </div>
       </section>
 
-      {/* 🔥 MODAL / DRAWER INTERATIVO PARA ESCOLHER PEÇAS AO CLICAR NOS HOTSPOTS */}
+      {/* MODAL / DRAWER INTERATIVO PARA ESCOLHER PEÇAS AO CLICAR NOS HOTSPOTS */}
       {selectingType && (
         <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-xl flex items-center justify-center p-4">
           <div className="relative w-full max-w-2xl bg-neutral-950 border border-white/15 rounded-3xl p-6 md:p-8 shadow-2xl overflow-hidden max-h-[85vh] flex flex-col">
-            
             <div className="flex items-center justify-between pb-4 border-b border-white/10">
               <div>
                 <p className="text-[10px] uppercase tracking-[0.35em] text-[var(--gold)]">
                   Seleção interativa
                 </p>
                 <h3 className="text-lg md:text-xl font-light text-white mt-1">
-                  Escolha {selectingType === "top" ? "a Parte Superior (Top)" : "a Parte Inferior (Bottom)"}
+                  Escolha {selectingType === "top" ? "a Parte Superior" : "a Parte Inferior"}
                 </h3>
               </div>
 
@@ -696,7 +693,6 @@ export default function Lookbook({ items }: LookbookProps) {
                 );
               })}
             </div>
-
           </div>
         </div>
       )}

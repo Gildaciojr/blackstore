@@ -93,24 +93,26 @@ export class CouponsService {
 
   /**
    * =========================
-   * CUPOM EM DESTAQUE
+   * CUPOM EM DESTAQUE (HERO / FLOAT BANNER)
    * =========================
    */
   async getFeatured() {
-    return this.prisma.coupon.findFirst({
+    const candidates = await this.prisma.coupon.findMany({
       where: {
         isFeatured: true,
         active: true,
         expiresAt: {
           gt: new Date(),
         },
-        used: {
-          lt: this.prisma.coupon.fields.maxUses,
-        },
       },
       orderBy: {
         createdAt: 'desc',
       },
     });
+
+    // Filtra para garantir que used < maxUses sem depender de suporte complexo do ORM
+    const available = candidates.find((coupon) => coupon.used < coupon.maxUses);
+
+    return available || null;
   }
 }
