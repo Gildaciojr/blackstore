@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import Image from "next/image";
 import Link from "next/link";
@@ -25,12 +26,6 @@ type Order = {
   items: OrderItem[];
 };
 
-type Props = {
-  params: {
-    id: string;
-  };
-};
-
 function resolveImage(url: string) {
   if (!url) return "/images/placeholder.png";
   if (url.startsWith("http")) return url;
@@ -46,16 +41,19 @@ const statusMap: Record<string, string> = {
   CANCELED: "Cancelado",
 };
 
-export default function OrderSuccessPage({ params }: Props) {
+export default function OrderSuccessPage() {
+  const params = useParams<{ id: string }>();
+  const orderId = params.id;
+
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!params?.id) return;
+    if (!orderId) return;
 
     async function loadOrder() {
       try {
-        const data = await apiFetch<Order>(`/orders/order/${params.id}`);
+        const data = await apiFetch<Order>(`/orders/order/${orderId}`);
 
         setOrder({
           ...data,
@@ -74,8 +72,8 @@ export default function OrderSuccessPage({ params }: Props) {
       }
     }
 
-    loadOrder();
-  }, [params.id]);
+    void loadOrder();
+  }, [orderId]);
 
   if (loading) {
     return (
@@ -108,7 +106,10 @@ export default function OrderSuccessPage({ params }: Props) {
     );
   }
 
-  const statusLabel = statusMap[order.status] || order.status || "Processando";
+  const statusLabel =
+    statusMap[(order.status || "").toUpperCase()] ||
+    order.status ||
+    "Processando";
 
   return (
     <section className="max-w-3xl mx-auto px-6 md:px-8 pt-32 pb-32 min-h-screen">
