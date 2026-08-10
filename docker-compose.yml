@@ -30,7 +30,11 @@ services:
       - blackstore_network
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NEXT_PUBLIC_PAGBANK_PUBLIC_KEY: ${NEXT_PUBLIC_PAGBANK_PUBLIC_KEY}
     container_name: blackstore_frontend
     restart: always
     depends_on:
