@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useParams } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import Link from "next/link";
 import {
@@ -31,12 +32,6 @@ type Order = {
   id: string;
   total: number;
   status: string;
-};
-
-type Props = {
-  params: {
-    id: string;
-  };
 };
 
 function getStatusLabel(status: string) {
@@ -94,7 +89,9 @@ function formatCurrency(value: number) {
   });
 }
 
-export default function PaymentPage({ params }: Props) {
+export default function PaymentPage() {
+  const params = useParams<{ id: string }>();
+  const orderId = params.id;
   const [payment, setPayment] = useState<Payment | null>(null);
   const [order, setOrder] = useState<Order | null>(null);
   const [copied, setCopied] = useState(false);
@@ -110,7 +107,7 @@ export default function PaymentPage({ params }: Props) {
 
   const loadAll = useCallback(
     async (background = false) => {
-      if (!params?.id) return;
+      if (!orderId) return;
       if (fetchingRef.current) return;
 
       try {
@@ -125,8 +122,8 @@ export default function PaymentPage({ params }: Props) {
         setError(null);
 
         const [paymentData, orderData] = await Promise.all([
-          apiFetch<Payment | null>(`/payment/${params.id}`),
-          apiFetch<Order | null>(`/orders/order/${params.id}`),
+          apiFetch<Payment | null>(`/payment/${orderId}`),
+          apiFetch<Order | null>(`/orders/order/${orderId}`),
         ]);
 
         if (!paymentData || !orderData) {
@@ -148,13 +145,13 @@ export default function PaymentPage({ params }: Props) {
         }
       }
     },
-    [params.id],
+    [orderId],
   );
 
   useEffect(() => {
-    if (!params?.id) return;
+    if (!orderId) return;
     void loadAll(false);
-  }, [loadAll, params.id]);
+  }, [loadAll, orderId]);
 
   const normalizedPaymentStatus = useMemo(() => {
     if (!payment) return "";
@@ -162,20 +159,22 @@ export default function PaymentPage({ params }: Props) {
   }, [payment]);
 
   const reconcile = useCallback(async () => {
-    if (!params?.id || reconcilingRef.current) return;
+    if (!orderId || reconcilingRef.current) return;
+
     const now = Date.now();
     if (now - lastReconciliationRef.current < 30000) return;
 
     reconcilingRef.current = true;
     lastReconciliationRef.current = now;
+
     try {
-      await apiFetch(`/payment/${params.id}/reconcile`, { method: "POST" });
+      await apiFetch(`/payment/${orderId}/reconcile`, { method: "POST" });
     } catch (err) {
       console.error("Reconciliação temporariamente indisponível:", err);
     } finally {
       reconcilingRef.current = false;
     }
-  }, [params.id]);
+  }, [orderId]);
 
   const normalizedOrderStatus = useMemo(() => {
     if (!order) return "";
