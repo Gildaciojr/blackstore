@@ -105,6 +105,8 @@ export default function PaymentPage({ params }: Props) {
   const intervalRef = useRef<number | null>(null);
   const redirectedRef = useRef(false);
   const fetchingRef = useRef(false);
+  const reconcilingRef = useRef(false);
+  const lastReconciliationRef = useRef(0);
 
   const loadAll = useCallback(
     async (background = false) => {
@@ -159,6 +161,22 @@ export default function PaymentPage({ params }: Props) {
     return (payment.status || "").toLowerCase();
   }, [payment]);
 
+  const reconcile = useCallback(async () => {
+    if (!params?.id || reconcilingRef.current) return;
+    const now = Date.now();
+    if (now - lastReconciliationRef.current < 30000) return;
+
+    reconcilingRef.current = true;
+    lastReconciliationRef.current = now;
+    try {
+      await apiFetch(`/payment/${params.id}/reconcile`, { method: "POST" });
+    } catch (err) {
+      console.error("Reconciliação temporariamente indisponível:", err);
+    } finally {
+      reconcilingRef.current = false;
+    }
+  }, [params.id]);
+
   const normalizedOrderStatus = useMemo(() => {
     if (!order) return "";
     return (order.status || "").toLowerCase();
@@ -198,7 +216,10 @@ export default function PaymentPage({ params }: Props) {
 
     if (!isApproved && !isFailed) {
       intervalRef.current = window.setInterval(() => {
-        void loadAll(true);
+        void (async () => {
+          await reconcile();
+          await loadAll(true);
+        })();
       }, 5000);
     }
 
@@ -208,7 +229,7 @@ export default function PaymentPage({ params }: Props) {
         intervalRef.current = null;
       }
     };
-  }, [loading, payment, order, isApproved, isFailed, loadAll]);
+  }, [loading, payment, order, isApproved, isFailed, loadAll, reconcile]);
 
   async function copyPixCode() {
     if (!payment?.qrCodeText) return;

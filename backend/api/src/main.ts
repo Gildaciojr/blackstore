@@ -5,9 +5,12 @@ import { join } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { existsSync, mkdirSync } from 'fs';
 import { ValidationPipe } from '@nestjs/common';
+import helmet from 'helmet';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    rawBody: true,
+  });
 
   /**
    * =========================
@@ -31,6 +34,8 @@ async function bootstrap() {
     prefix: '/uploads/',
   });
 
+  app.use(helmet());
+
   /**
    * =========================
    * VALIDAÇÃO GLOBAL (CRÍTICO)
@@ -49,8 +54,23 @@ async function bootstrap() {
    * CORS (necessário p/ frontend + painel)
    * =========================
    */
+  const configuredOrigins = (process.env.CORS_ORIGINS ?? '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+  const developmentOrigins =
+    process.env.NODE_ENV === 'production' ? [] : ['http://localhost:3000', 'http://localhost:3001'];
+  const allowedOrigins = new Set([...configuredOrigins, ...developmentOrigins]);
+
   app.enableCors({
-    origin: true,
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.has(origin)) {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error('Origin not allowed by CORS'));
+    },
     credentials: true,
   });
 

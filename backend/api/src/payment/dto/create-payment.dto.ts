@@ -1,4 +1,4 @@
-import { IsIn, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsIn, IsInt, IsOptional, IsString, Min } from 'class-validator';
 
 export class CreatePaymentDto {
   @IsString()
@@ -13,7 +13,8 @@ export class CreatePaymentDto {
   @IsOptional()
   cardToken?: string;
 
-  @IsNumber()
+  @IsInt()
+  @Min(1)
   @IsOptional()
   installments?: number;
 

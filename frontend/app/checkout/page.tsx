@@ -14,6 +14,27 @@ function getCustomerId() {
   return id;
 }
 
+const CHECKOUT_KEY_STORAGE = "bs_checkout_key";
+const CHECKOUT_FINGERPRINT_STORAGE = "bs_checkout_fingerprint";
+
+function getCheckoutKey(fingerprint: string) {
+  const previousFingerprint = sessionStorage.getItem(
+    CHECKOUT_FINGERPRINT_STORAGE,
+  );
+  const previousKey = sessionStorage.getItem(CHECKOUT_KEY_STORAGE);
+  if (previousFingerprint === fingerprint && previousKey) return previousKey;
+
+  const checkoutKey = crypto.randomUUID();
+  sessionStorage.setItem(CHECKOUT_FINGERPRINT_STORAGE, fingerprint);
+  sessionStorage.setItem(CHECKOUT_KEY_STORAGE, checkoutKey);
+  return checkoutKey;
+}
+
+function finishCheckoutAttempt() {
+  sessionStorage.removeItem(CHECKOUT_FINGERPRINT_STORAGE);
+  sessionStorage.removeItem(CHECKOUT_KEY_STORAGE);
+}
+
 type Address = {
   id: string;
   name: string;
@@ -29,7 +50,7 @@ type Address = {
 type CustomerProfile = {
   cpf?: string | null;
   phone?: string | null;
-}
+};
 
 type OrderResponse = {
   id: string;
@@ -203,7 +224,9 @@ export default function CheckoutPage() {
   const loadProfileData = useCallback(async () => {
     try {
       const customerId = getCustomerId();
-      const profile = await apiFetch<CustomerProfile>(`/customer/${customerId}/profile`);
+      const profile = await apiFetch<CustomerProfile>(
+        `/customer/${customerId}/profile`,
+      );
       if (profile.cpf) setCpf(formatCPF(profile.cpf));
       if (profile.phone) setPhone(formatPhone(profile.phone));
     } catch (err) {
@@ -216,7 +239,7 @@ export default function CheckoutPage() {
       const customerId = getCustomerId();
       const data = await apiFetch<Address[]>(`/address/${customerId}`);
       setAddresses(data);
-      
+
       // Se não tem endereço, abre o formulário automaticamente
       if (data.length === 0) {
         setIsAddingAddress(true);
@@ -289,21 +312,21 @@ export default function CheckoutPage() {
   async function handleCepSearch(value: string) {
     const formatted = formatZipCode(value);
     setNewAddress((prev) => ({ ...prev, zipCode: formatted }));
-    
+
     const cleanCep = normalizeZipCode(value);
     if (cleanCep.length === 8) {
       setSearchingCep(true);
       try {
         const res = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
         const data = await res.json();
-        
+
         if (!data.erro) {
           setNewAddress((prev) => ({
             ...prev,
             street: data.logradouro || "",
             district: data.bairro || "",
             city: data.localidade || "",
-            state: data.uf || "", 
+            state: data.uf || "",
           }));
         }
       } catch (e) {
@@ -316,7 +339,13 @@ export default function CheckoutPage() {
 
   // 🔥 SALVAR NOVO ENDEREÇO
   async function handleSaveNewAddress() {
-    if (!newAddress.zipCode || !newAddress.street || !newAddress.number || !newAddress.city || !newAddress.state) {
+    if (
+      !newAddress.zipCode ||
+      !newAddress.street ||
+      !newAddress.number ||
+      !newAddress.city ||
+      !newAddress.state
+    ) {
       alert("Preencha todos os campos obrigatórios do endereço.");
       return;
     }
@@ -324,7 +353,7 @@ export default function CheckoutPage() {
     try {
       setLoading(true);
       const customerId = getCustomerId();
-      
+
       const payload = {
         name: "Principal",
         street: newAddress.street,
@@ -332,9 +361,9 @@ export default function CheckoutPage() {
         complement: newAddress.complement,
         district: newAddress.district,
         city: newAddress.city,
-        state: newAddress.state.toUpperCase(), 
-        zipCode: normalizeZipCode(newAddress.zipCode), 
-        customerId
+        state: newAddress.state.toUpperCase(),
+        zipCode: normalizeZipCode(newAddress.zipCode),
+        customerId,
       };
 
       const saved = await apiFetch<Address>("/address", {
@@ -345,8 +374,16 @@ export default function CheckoutPage() {
       await loadAddresses();
       setIsAddingAddress(false);
       setSelectedAddress(saved.id);
-      
-      setNewAddress({ zipCode: "", street: "", number: "", complement: "", district: "", city: "", state: "" });
+
+      setNewAddress({
+        zipCode: "",
+        street: "",
+        number: "",
+        complement: "",
+        district: "",
+        city: "",
+        state: "",
+      });
     } catch (e) {
       alert("Erro ao salvar endereço. Verifique os dados.");
     } finally {
@@ -518,6 +555,21 @@ export default function CheckoutPage() {
       setLoading(true);
       setCheckoutLock(true);
 
+      const checkoutFingerprint = JSON.stringify({
+        customerId,
+        addressId: selectedAddress,
+        shipping: selectedShipping,
+        couponCode: appliedCouponCode ?? null,
+        payment,
+        items: items.map((item) => ({
+          cartItemId: item.cartItemId,
+          productId: item.id,
+          variantId: item.variantId ?? null,
+          quantity: item.quantity,
+        })),
+      });
+      const checkoutKey = getCheckoutKey(checkoutFingerprint);
+
       // 1. Atualizar perfil com CPF e Telefone (Exigência PagBank)
       await apiFetch(`/customer/${customerId}/profile`, {
         method: "PATCH",
@@ -528,6 +580,7 @@ export default function CheckoutPage() {
       const order = await apiFetch<OrderResponse>("/orders/checkout", {
         method: "POST",
         body: JSON.stringify({
+          checkoutKey,
           customerId,
           addressId: selectedAddress,
           shippingPrice: selectedShipping.price,
@@ -565,6 +618,7 @@ export default function CheckoutPage() {
       }
 
       clear();
+      finishCheckoutAttempt();
       redirecting = true;
 
       setTimeout(() => {
@@ -688,7 +742,12 @@ export default function CheckoutPage() {
                     </label>
                     <input
                       value={newAddress.street}
-                      onChange={(e) => setNewAddress((prev) => ({...prev, street: e.target.value}))}
+                      onChange={(e) =>
+                        setNewAddress((prev) => ({
+                          ...prev,
+                          street: e.target.value,
+                        }))
+                      }
                       placeholder="Ex: Avenida Paulista"
                       className="w-full bg-black border border-white/20 p-3 rounded-md text-sm"
                     />
@@ -700,7 +759,12 @@ export default function CheckoutPage() {
                     </label>
                     <input
                       value={newAddress.number}
-                      onChange={(e) => setNewAddress((prev) => ({...prev, number: e.target.value}))}
+                      onChange={(e) =>
+                        setNewAddress((prev) => ({
+                          ...prev,
+                          number: e.target.value,
+                        }))
+                      }
                       placeholder="Ex: 1000"
                       className="w-full bg-black border border-white/20 p-3 rounded-md text-sm"
                     />
@@ -712,7 +776,12 @@ export default function CheckoutPage() {
                     </label>
                     <input
                       value={newAddress.complement}
-                      onChange={(e) => setNewAddress((prev) => ({...prev, complement: e.target.value}))}
+                      onChange={(e) =>
+                        setNewAddress((prev) => ({
+                          ...prev,
+                          complement: e.target.value,
+                        }))
+                      }
                       placeholder="Ex: Apto 42"
                       className="w-full bg-black border border-white/20 p-3 rounded-md text-sm"
                     />
@@ -724,7 +793,12 @@ export default function CheckoutPage() {
                     </label>
                     <input
                       value={newAddress.district}
-                      onChange={(e) => setNewAddress((prev) => ({...prev, district: e.target.value}))}
+                      onChange={(e) =>
+                        setNewAddress((prev) => ({
+                          ...prev,
+                          district: e.target.value,
+                        }))
+                      }
                       className="w-full bg-black border border-white/20 p-3 rounded-md text-sm"
                     />
                   </div>
@@ -736,7 +810,12 @@ export default function CheckoutPage() {
                       </label>
                       <input
                         value={newAddress.city}
-                        onChange={(e) => setNewAddress((prev) => ({...prev, city: e.target.value}))}
+                        onChange={(e) =>
+                          setNewAddress((prev) => ({
+                            ...prev,
+                            city: e.target.value,
+                          }))
+                        }
                         className="w-full bg-black border border-white/20 p-3 rounded-md text-sm"
                       />
                     </div>
@@ -746,12 +825,47 @@ export default function CheckoutPage() {
                       </label>
                       <select
                         value={newAddress.state}
-                        onChange={(e) => setNewAddress((prev) => ({...prev, state: e.target.value}))}
+                        onChange={(e) =>
+                          setNewAddress((prev) => ({
+                            ...prev,
+                            state: e.target.value,
+                          }))
+                        }
                         className="w-full bg-black border border-white/20 p-3 rounded-md text-sm h-[46px]"
                       >
                         <option value="">UF</option>
-                        {["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"].map(uf => (
-                          <option key={uf} value={uf}>{uf}</option>
+                        {[
+                          "AC",
+                          "AL",
+                          "AP",
+                          "AM",
+                          "BA",
+                          "CE",
+                          "DF",
+                          "ES",
+                          "GO",
+                          "MA",
+                          "MT",
+                          "MS",
+                          "MG",
+                          "PA",
+                          "PB",
+                          "PR",
+                          "PE",
+                          "PI",
+                          "RJ",
+                          "RN",
+                          "RS",
+                          "RO",
+                          "RR",
+                          "SC",
+                          "SP",
+                          "SE",
+                          "TO",
+                        ].map((uf) => (
+                          <option key={uf} value={uf}>
+                            {uf}
+                          </option>
                         ))}
                       </select>
                     </div>
@@ -1050,7 +1164,6 @@ export default function CheckoutPage() {
           </div>
         </div>{" "}
         {/* FECHA COLUNA */}
-
         <div className="lg:col-span-1">
           <div className="lg:sticky lg:top-28 p-5 sm:p-6 md:p-8 border border-white/10 rounded-2xl bg-black/40 backdrop-blur-xl">
             <h2 className="uppercase tracking-widest text-xs mb-6">
@@ -1103,7 +1216,11 @@ export default function CheckoutPage() {
                 relative w-full mt-8 py-4 rounded-full text-xs tracking-[0.35em] uppercase
                 transition-all duration-300 overflow-hidden
                 ${
-                  loading || checkoutLock || !selectedAddress || !selectedShipping || items.length === 0
+                  loading ||
+                  checkoutLock ||
+                  !selectedAddress ||
+                  !selectedShipping ||
+                  items.length === 0
                     ? "bg-[var(--gold)] opacity-50 cursor-not-allowed"
                     : "bg-[var(--gold)] text-black hover:scale-[1.02] active:scale-[0.98]"
                 }

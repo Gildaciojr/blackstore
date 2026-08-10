@@ -30,6 +30,15 @@ export class AuthService {
         email: data.email,
         password: hash,
       },
+      select: {
+        id: true,
+        name: true,
+        surname: true,
+        email: true,
+        phone: true,
+        cpf: true,
+        createdAt: true,
+      },
     });
 
     return user;

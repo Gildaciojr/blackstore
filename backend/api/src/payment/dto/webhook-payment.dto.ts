@@ -8,5 +8,9 @@ export class WebhookPaymentDto {
   charges?: {
     id?: string;
     status?: string;
+    amount?: {
+      value?: number;
+      currency?: string;
+    };
   }[];
 }

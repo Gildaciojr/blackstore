@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { ProductSize, ProductVariant } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { AddToCartDto } from './dto/add-to-cart.dto';
@@ -154,7 +159,7 @@ export class CartService {
     });
   }
 
-  async updateQuantity(data: UpdateCartDto) {
+  async updateQuantity(data: UpdateCartDto, authenticatedCustomerId: string) {
     const cartItem = await this.prisma.cartItem.findUnique({
       where: { id: data.cartItemId },
       include: {
@@ -165,6 +170,10 @@ export class CartService {
 
     if (!cartItem) {
       throw new NotFoundException('Item do carrinho não encontrado');
+    }
+
+    if (cartItem.customerId !== authenticatedCustomerId) {
+      throw new ForbiddenException('Cart item does not belong to authenticated customer');
     }
 
     if (cartItem.variant) {
@@ -197,7 +206,17 @@ export class CartService {
     });
   }
 
-  async removeItem(id: string) {
+  async removeItem(id: string, authenticatedCustomerId: string) {
+    const cartItem = await this.prisma.cartItem.findUnique({ where: { id } });
+
+    if (!cartItem) {
+      throw new NotFoundException('Item do carrinho não encontrado');
+    }
+
+    if (cartItem.customerId !== authenticatedCustomerId) {
+      throw new ForbiddenException('Cart item does not belong to authenticated customer');
+    }
+
     return this.prisma.cartItem.delete({
       where: { id },
     });

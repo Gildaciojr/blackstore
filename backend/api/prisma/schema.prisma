@@ -31,6 +31,12 @@ enum LookbookItemType {
   BOTTOM
 }
 
+enum ReservationStatus {
+  RESERVED
+  COMMITTED
+  RELEASED
+}
+
 model Admin {
   id        String   @id @default(uuid())
   email     String   @unique
@@ -125,11 +131,17 @@ model CartItem {
 model Order {
   id String @id @default(uuid())
 
+  checkoutKey          String?            @unique @db.Uuid
+  reservationStatus    ReservationStatus?
+  reservationExpiresAt DateTime?
+
   subtotal      Float
   shippingPrice Float @default(0)
   total         Float
 
   couponCode String?
+  couponId   String?
+  coupon     Coupon? @relation(fields: [couponId], references: [id], onDelete: Restrict)
   discount   Float   @default(0)
 
   shippingName     String?
@@ -150,6 +162,9 @@ model Order {
   items OrderItem[]
 
   payment Payment?
+
+  @@index([reservationStatus, reservationExpiresAt])
+  @@index([couponId])
 }
 
 model OrderItem {
@@ -270,6 +285,7 @@ model Coupon {
   discount Float
   maxUses  Int
   used     Int    @default(0)
+  reserved Int    @default(0)
 
   expiresAt DateTime
 
@@ -277,6 +293,8 @@ model Coupon {
   active     Boolean @default(true)
 
   createdAt DateTime @default(now())
+
+  orders Order[]
 }
 
 model WeeklyBestSeller {

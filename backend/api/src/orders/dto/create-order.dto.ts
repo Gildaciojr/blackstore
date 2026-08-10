@@ -2,6 +2,9 @@ import { IsNumber, IsOptional, IsString, IsUUID, Min } from 'class-validator';
 
 export class CreateOrderDto {
   @IsUUID()
+  checkoutKey!: string;
+
+  @IsUUID()
   customerId!: string;
 
   @IsUUID()

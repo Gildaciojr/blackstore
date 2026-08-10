@@ -9,7 +9,14 @@ export class CustomerService {
   async getProfile(customerId: string) {
     const customer = await this.prisma.customer.findUnique({
       where: { id: customerId },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        surname: true,
+        email: true,
+        phone: true,
+        cpf: true,
+        createdAt: true,
         addresses: true,
         orders: true,
       },
@@ -26,6 +33,15 @@ export class CustomerService {
     return this.prisma.customer.update({
       where: { id: customerId },
       data,
+      select: {
+        id: true,
+        name: true,
+        surname: true,
+        email: true,
+        phone: true,
+        cpf: true,
+        createdAt: true,
+      },
     });
   }
 

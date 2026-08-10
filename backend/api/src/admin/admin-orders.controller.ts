@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Patch, UseGuards } from '@nestjs/common';
+import { BadRequestException, Controller, Get, Param, Patch, UseGuards } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AdminJwtGuard } from './guards/admin-jwt.guard';
 
@@ -47,6 +47,11 @@ export class AdminOrdersController {
 
   @Patch(':id/status/:status')
   updateStatus(@Param('id') id: string, @Param('status') status: string) {
+    if (!['processing', 'shipped', 'delivered'].includes(status)) {
+      throw new BadRequestException(
+        'Financial order status can only be changed by the payment lifecycle',
+      );
+    }
     return this.prisma.order.update({
       where: { id },
       data: { status },
