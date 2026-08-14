@@ -57,7 +57,7 @@ export default function WeeklyBestSellers({
   const others = items.slice(1, 4);
 
   return (
-    <section className="relative py-12 md:py-16">
+    <section className="relative pt-3 pb-12 md:pt-5 md:pb-16">
       
       {/* HEADER DA SEÇÃO */}
       <div className="mb-10 md:mb-12 border-b border-white/10 pb-6 flex items-center justify-between">

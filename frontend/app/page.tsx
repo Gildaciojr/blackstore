@@ -381,7 +381,7 @@ export default function HomePage() {
       <section className="relative py-24 md:py-32">
         <Reveal>
           <div className="max-w-[1500px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10">
-            <div className="mb-12">
+            <div className="mb-5 md:mb-7">
               <div className="flex items-center gap-3 mb-3">
                 <span className="h-px w-8 bg-[var(--gold)]/60" />
                 <p className="text-[10px] tracking-[0.45em] uppercase text-white/40">Blackstore</p>
