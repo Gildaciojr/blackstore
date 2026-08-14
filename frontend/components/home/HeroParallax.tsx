@@ -279,7 +279,7 @@ export default function HeroParallax({
                 show: { opacity: 1, y: 0 },
               }}
               transition={{ duration: 0.7 }}
-              className="mt-4 text-white/90 text-xs sm:text-sm md:text-lg max-w-lg leading-relaxed drop-shadow-[0_4px_18px_rgba(0,0,0,0.85)]"
+              className="mt-4 text-white/80 md:text-white/65 text-xs sm:text-sm md:text-base max-w-lg leading-relaxed drop-shadow-[0_3px_14px_rgba(0,0,0,0.70)] md:drop-shadow-[0_2px_10px_rgba(0,0,0,0.55)]"
             >
               {slide.subtitle}
             </motion.p>
