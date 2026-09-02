@@ -146,7 +146,8 @@ export default function ProductCard({
       whileInView={{ opacity: 1, y: 0 }}
       whileHover={{
         y: -4,
-        scale: typeof window !== "undefined" && window.innerWidth >= 768 ? 1.02 : 1,
+        scale:
+          typeof window !== "undefined" && window.innerWidth >= 768 ? 1.02 : 1,
       }}
       transition={{ duration: 0.4 }}
       viewport={{ once: true }}
@@ -228,12 +229,18 @@ export default function ProductCard({
           </Link>
         )}
 
-        {/* LOW STOCK BADGE */}
-        {stock !== undefined && stock <= 2 && stock > 0 && (
+        {/* STOCK STATUS BADGE */}
+        {stock !== undefined && stock <= 2 && (
           <div className="absolute bottom-3 left-3 z-30 pointer-events-none">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[9px] uppercase tracking-[0.2em] rounded-full border border-orange-400/30 bg-orange-500/20 text-orange-300 backdrop-blur-md whitespace-nowrap shadow-lg font-bold">
-              🔥 Últimas unidades
-            </span>
+            {stock <= 0 ? (
+              <span className="inline-flex items-center px-3 py-1.5 text-[9px] uppercase tracking-[0.2em] rounded-full border border-white/15 bg-black/70 text-white/70 backdrop-blur-md whitespace-nowrap shadow-lg font-medium">
+                Produto esgotado
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[9px] uppercase tracking-[0.2em] rounded-full border border-orange-400/30 bg-orange-500/20 text-orange-300 backdrop-blur-md whitespace-nowrap shadow-lg font-bold">
+                🔥 Últimas unidades
+              </span>
+            )}
           </div>
         )}
 
