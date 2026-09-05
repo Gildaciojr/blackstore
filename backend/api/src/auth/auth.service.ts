@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -28,6 +28,7 @@ export class AuthService {
         name: data.name,
         surname: data.surname,
         email: data.email,
+        phone: data.phone?.replace(/\D/g, '') || null,
         password: hash,
       },
       select: {
@@ -66,7 +67,9 @@ export class AuthService {
       throw new Error('JWT_SECRET não definido no .env');
     }
 
-    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
+      expiresIn: '7d',
+    });
 
     return {
       token,
