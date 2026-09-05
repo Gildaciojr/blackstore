@@ -13,6 +13,10 @@ import { UpdateCartDto } from './dto/update-cart.dto';
 export class CartService {
   constructor(private prisma: PrismaService) {}
 
+  private getAvailableStock(stock: number, reservedStock: number) {
+    return stock - reservedStock;
+  }
+
   private async getProductWithVariants(productId: string) {
     const product = await this.prisma.product.findUnique({
       where: { id: productId },
@@ -91,13 +95,20 @@ export class CartService {
       const nextQuantity = existing ? existing.quantity + data.quantity : data.quantity;
 
       if (selectedVariant) {
-        if (selectedVariant.stock < nextQuantity) {
+        const availableStock = this.getAvailableStock(
+          selectedVariant.stock,
+          selectedVariant.reservedStock,
+        );
+
+        if (availableStock < nextQuantity) {
           throw new BadRequestException(
             `Estoque insuficiente para o tamanho ${selectedVariant.size}`,
           );
         }
       } else {
-        if (product.stock < nextQuantity) {
+        const availableStock = this.getAvailableStock(product.stock, product.reservedStock);
+
+        if (availableStock < nextQuantity) {
           throw new BadRequestException('Produto sem estoque suficiente');
         }
       }
@@ -177,13 +188,23 @@ export class CartService {
     }
 
     if (cartItem.variant) {
-      if (cartItem.variant.stock < data.quantity) {
+      const availableStock = this.getAvailableStock(
+        cartItem.variant.stock,
+        cartItem.variant.reservedStock,
+      );
+
+      if (availableStock < data.quantity) {
         throw new BadRequestException(
           `Estoque insuficiente para o tamanho ${cartItem.variant.size}`,
         );
       }
     } else {
-      if (cartItem.product.stock < data.quantity) {
+      const availableStock = this.getAvailableStock(
+        cartItem.product.stock,
+        cartItem.product.reservedStock,
+      );
+
+      if (availableStock < data.quantity) {
         throw new BadRequestException('Produto sem estoque suficiente');
       }
     }
@@ -207,7 +228,9 @@ export class CartService {
   }
 
   async removeItem(id: string, authenticatedCustomerId: string) {
-    const cartItem = await this.prisma.cartItem.findUnique({ where: { id } });
+    const cartItem = await this.prisma.cartItem.findUnique({
+      where: { id },
+    });
 
     if (!cartItem) {
       throw new NotFoundException('Item do carrinho não encontrado');

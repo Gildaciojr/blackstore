@@ -50,9 +50,13 @@ export class OrdersService {
   private async reserveCoupon(tx: Prisma.TransactionClient, code: string, subtotal: number) {
     const normalizedCode = code.trim().toUpperCase();
     const coupon = await tx.coupon.findUnique({ where: { code: normalizedCode } });
-    if (!coupon) throw new BadRequestException('Cupom inválido');
+
+    if (!coupon) {
+      throw new BadRequestException('Cupom inválido');
+    }
 
     const now = new Date();
+
     const affected = await tx.$executeRaw(
       Prisma.sql`UPDATE "Coupon"
         SET "reserved" = "reserved" + 1
@@ -61,7 +65,10 @@ export class OrdersService {
           AND "expiresAt" > ${now}
           AND "used" + "reserved" < "maxUses"`,
     );
-    if (affected !== 1) throw new BadRequestException('Cupom indisponível ou esgotado');
+
+    if (affected !== 1) {
+      throw new BadRequestException('Cupom indisponível ou esgotado');
+    }
 
     return {
       id: coupon.id,
@@ -81,11 +88,13 @@ export class OrdersService {
     }>,
   ) {
     const variantProductIds = new Set<string>();
+
     const orderedItems = [...items].sort((left, right) =>
       `${left.productId}:${left.variantId ?? ''}`.localeCompare(
         `${right.productId}:${right.variantId ?? ''}`,
       ),
     );
+
     const productsWithVariants = [
       ...new Set(
         orderedItems
@@ -94,11 +103,19 @@ export class OrdersService {
       ),
     ].sort();
 
+    /**
+     * Serializa reservas concorrentes que envolvem variantes do mesmo produto.
+     *
+     * Product.stock continua representando o estoque físico agregado.
+     * Product.reservedStock representa o total reservado entre as variantes.
+     */
     if (productsWithVariants.length) {
       await tx.$queryRaw(
-        Prisma.sql`SELECT "id" FROM "Product"
+        Prisma.sql`SELECT "id"
+          FROM "Product"
           WHERE "id" IN (${Prisma.join(productsWithVariants)})
-          ORDER BY "id" FOR UPDATE`,
+          ORDER BY "id"
+          FOR UPDATE`,
       );
     }
 
@@ -107,33 +124,63 @@ export class OrdersService {
         if (!item.variantId || !item.variant || item.variant.productId !== item.productId) {
           throw new BadRequestException(`Variação inválida para "${item.product.name}"`);
         }
-        const reserved = await tx.productVariant.updateMany({
-          where: { id: item.variantId, productId: item.productId, stock: { gte: item.quantity } },
-          data: { stock: { decrement: item.quantity } },
-        });
-        if (reserved.count !== 1) {
+
+        /**
+         * Reserva atômica da variante.
+         *
+         * O estoque físico NÃO é diminuído no checkout.
+         * Apenas reservedStock aumenta se ainda houver disponibilidade.
+         */
+        const affected = await tx.$executeRaw(
+          Prisma.sql`UPDATE "ProductVariant"
+            SET "reservedStock" = "reservedStock" + ${item.quantity}
+            WHERE "id" = ${item.variantId}
+              AND "productId" = ${item.productId}
+              AND ("stock" - "reservedStock") >= ${item.quantity}`,
+        );
+
+        if (affected !== 1) {
           throw new BadRequestException(`Estoque insuficiente para tamanho ${item.variant.size}`);
         }
+
         variantProductIds.add(item.productId);
       } else {
-        const reserved = await tx.product.updateMany({
-          where: { id: item.productId, stock: { gte: item.quantity } },
-          data: { stock: { decrement: item.quantity } },
-        });
-        if (reserved.count !== 1) {
+        /**
+         * Produto sem variantes.
+         *
+         * Mesma proteção atômica:
+         * estoque físico - estoque reservado precisa comportar a nova reserva.
+         */
+        const affected = await tx.$executeRaw(
+          Prisma.sql`UPDATE "Product"
+            SET "reservedStock" = "reservedStock" + ${item.quantity}
+            WHERE "id" = ${item.productId}
+              AND ("stock" - "reservedStock") >= ${item.quantity}`,
+        );
+
+        if (affected !== 1) {
           throw new BadRequestException(`Produto "${item.product.name}" sem estoque suficiente`);
         }
       }
     }
 
+    /**
+     * Mantém Product.reservedStock sincronizado com a soma das reservas
+     * das variantes.
+     *
+     * Product.stock NÃO é alterado aqui.
+     */
     for (const productId of variantProductIds) {
       const aggregate = await tx.productVariant.aggregate({
         where: { productId },
-        _sum: { stock: true },
+        _sum: { reservedStock: true },
       });
+
       await tx.product.update({
         where: { id: productId },
-        data: { stock: aggregate._sum.stock ?? 0 },
+        data: {
+          reservedStock: aggregate._sum.reservedStock ?? 0,
+        },
       });
     }
   }
@@ -144,12 +191,23 @@ export class OrdersService {
   ) {
     for (const item of items) {
       const reduced = await tx.cartItem.updateMany({
-        where: { id: item.id, customerId: item.customerId, quantity: { gt: item.quantity } },
-        data: { quantity: { decrement: item.quantity } },
+        where: {
+          id: item.id,
+          customerId: item.customerId,
+          quantity: { gt: item.quantity },
+        },
+        data: {
+          quantity: { decrement: item.quantity },
+        },
       });
+
       if (reduced.count === 0) {
         await tx.cartItem.deleteMany({
-          where: { id: item.id, customerId: item.customerId, quantity: item.quantity },
+          where: {
+            id: item.id,
+            customerId: item.customerId,
+            quantity: item.quantity,
+          },
         });
       }
     }
@@ -161,6 +219,7 @@ export class OrdersService {
     }
 
     const existing = await this.findCheckout(data.checkoutKey);
+
     if (existing) {
       this.assertCheckoutOwner(existing, authenticatedCustomerId);
       return existing;
@@ -169,33 +228,60 @@ export class OrdersService {
     try {
       return await this.prisma.$transaction(async (tx) => {
         const shippingPriceRaw = Number(data.shippingPrice || 0);
+
         if (!Number.isFinite(shippingPriceRaw) || shippingPriceRaw < 0) {
           throw new BadRequestException('Frete inválido');
         }
+
         const shippingPrice = Number(shippingPriceRaw.toFixed(2));
 
         const address = await tx.address.findFirst({
-          where: { id: data.addressId, customerId: authenticatedCustomerId },
+          where: {
+            id: data.addressId,
+            customerId: authenticatedCustomerId,
+          },
         });
-        if (!address) throw new BadRequestException('Endereço inválido para este cliente');
+
+        if (!address) {
+          throw new BadRequestException('Endereço inválido para este cliente');
+        }
 
         const cartItems = await tx.cartItem.findMany({
-          where: { customerId: authenticatedCustomerId },
-          include: { product: { include: { variants: true } }, variant: true },
+          where: {
+            customerId: authenticatedCustomerId,
+          },
+          include: {
+            product: {
+              include: {
+                variants: true,
+              },
+            },
+            variant: true,
+          },
         });
-        if (!cartItems.length) throw new BadRequestException('Cart is empty');
+
+        if (!cartItems.length) {
+          throw new BadRequestException('Cart is empty');
+        }
 
         const subtotal = Number(
           cartItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0).toFixed(2),
         );
-        if (subtotal <= 0) throw new BadRequestException('Subtotal inválido');
+
+        if (subtotal <= 0) {
+          throw new BadRequestException('Subtotal inválido');
+        }
 
         await this.reserveStock(tx, cartItems);
+
         const coupon = data.couponCode
           ? await this.reserveCoupon(tx, data.couponCode, subtotal)
           : null;
+
         const discount = coupon?.discount ?? 0;
+
         const discountedSubtotal = Math.max(0, Number((subtotal - discount).toFixed(2)));
+
         const total = Number((discountedSubtotal + shippingPrice).toFixed(2));
 
         const order = await tx.order.create({
@@ -228,15 +314,29 @@ export class OrdersService {
             price: item.product.price,
           })),
         });
+
         await this.removeReservedCartSnapshot(tx, cartItems);
 
-        return tx.order.findUniqueOrThrow({ where: { id: order.id }, include: orderDetails });
+        return tx.order.findUniqueOrThrow({
+          where: {
+            id: order.id,
+          },
+          include: orderDetails,
+        });
       });
     } catch (error: unknown) {
-      if ((error as { code?: string }).code !== 'P2002') throw error;
+      if ((error as { code?: string }).code !== 'P2002') {
+        throw error;
+      }
+
       const winner = await this.findCheckout(data.checkoutKey);
-      if (!winner) throw error;
+
+      if (!winner) {
+        throw error;
+      }
+
       this.assertCheckoutOwner(winner, authenticatedCustomerId);
+
       return winner;
     }
   }
@@ -245,19 +345,31 @@ export class OrdersService {
     if (customerId !== authenticatedCustomerId) {
       throw new ForbiddenException('Customer ownership mismatch');
     }
+
     return this.prisma.order.findMany({
-      where: { customerId: authenticatedCustomerId },
+      where: {
+        customerId: authenticatedCustomerId,
+      },
       include: orderDetails,
-      orderBy: { createdAt: 'desc' },
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
   }
 
   async getOrder(id: string, authenticatedCustomerId: string) {
     const order = await this.prisma.order.findFirst({
-      where: { id, customerId: authenticatedCustomerId },
+      where: {
+        id,
+        customerId: authenticatedCustomerId,
+      },
       include: orderDetails,
     });
-    if (!order) throw new NotFoundException('Pedido não encontrado');
+
+    if (!order) {
+      throw new NotFoundException('Pedido não encontrado');
+    }
+
     return order;
   }
 }

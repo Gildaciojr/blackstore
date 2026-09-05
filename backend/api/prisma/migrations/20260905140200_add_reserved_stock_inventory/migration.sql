@@ -1,0 +1,5 @@
+ALTER TABLE "Product"
+ADD COLUMN "reservedStock" INTEGER NOT NULL DEFAULT 0;
+
+ALTER TABLE "ProductVariant"
+ADD COLUMN "reservedStock" INTEGER NOT NULL DEFAULT 0;

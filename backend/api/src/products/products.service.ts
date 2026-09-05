@@ -6,19 +6,43 @@ import { CreateProductDto } from './dto/create-product.dto';
 export class ProductsService {
   constructor(private prisma: PrismaService) {}
 
+  private getAvailableStock(stock: number, reservedStock: number) {
+    return Math.max(0, stock - reservedStock);
+  }
+
+  private withAvailableStock<
+    T extends {
+      stock: number;
+      reservedStock: number;
+      variants: Array<{
+        stock: number;
+        reservedStock: number;
+      }>;
+    },
+  >(product: T) {
+    return {
+      ...product,
+      stock: this.getAvailableStock(product.stock, product.reservedStock),
+      variants: product.variants.map((variant) => ({
+        ...variant,
+        stock: this.getAvailableStock(variant.stock, variant.reservedStock),
+      })),
+    };
+  }
+
   async create(data: CreateProductDto) {
     const { variants, ...productData } = data;
 
     const hasVariants = variants && variants.length > 0;
 
     const totalStock = hasVariants
-      ? variants.reduce((acc, v) => acc + v.stock, 0)
+      ? variants.reduce((acc, variant) => acc + variant.stock, 0)
       : productData.stock;
 
     const product = await this.prisma.product.create({
       data: {
         ...productData,
-        stock: totalStock, // 🔥 CORREÇÃO
+        stock: totalStock,
         variants: hasVariants
           ? {
               create: variants.map((variant) => ({
@@ -56,7 +80,7 @@ export class ProductsService {
     console.log('📦 [GET PRODUCTS]');
     console.dir(products, { depth: 2 });
 
-    return products;
+    return products.map((product) => this.withAvailableStock(product));
   }
 
   async findBySlug(slug: string) {
@@ -73,7 +97,11 @@ export class ProductsService {
     console.log('SLUG:', slug);
     console.dir(product, { depth: 2 });
 
-    return product;
+    if (!product) {
+      return null;
+    }
+
+    return this.withAvailableStock(product);
   }
 
   async findByCategory(slug: string) {
@@ -94,7 +122,7 @@ export class ProductsService {
     console.log('CATEGORY SLUG:', slug);
     console.dir(products, { depth: 2 });
 
-    return products;
+    return products.map((product) => this.withAvailableStock(product));
   }
 
   async update(id: string, data: CreateProductDto) {
@@ -112,14 +140,14 @@ export class ProductsService {
     const hasVariants = variants && variants.length > 0;
 
     const totalStock = hasVariants
-      ? variants.reduce((acc, v) => acc + v.stock, 0)
+      ? variants.reduce((acc, variant) => acc + variant.stock, 0)
       : productData.stock;
 
     await this.prisma.product.update({
       where: { id },
       data: {
         ...productData,
-        stock: totalStock, // 🔥 CORREÇÃO
+        stock: totalStock,
       },
     });
 
