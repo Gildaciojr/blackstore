@@ -1,4 +1,6 @@
+import { describe, beforeEach, expect, it } from '@jest/globals';
 import { Test, TestingModule } from '@nestjs/testing';
+import { PrismaService } from '../prisma/prisma.service';
 import { OrdersService } from './orders.service';
 
 describe('OrdersService', () => {
@@ -6,7 +8,13 @@ describe('OrdersService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [OrdersService],
+      providers: [
+        OrdersService,
+        {
+          provide: PrismaService,
+          useValue: {},
+        },
+      ],
     }).compile();
 
     service = module.get<OrdersService>(OrdersService);

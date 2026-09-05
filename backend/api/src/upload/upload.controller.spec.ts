@@ -1,5 +1,7 @@
+import { describe, beforeEach, expect, it } from '@jest/globals';
 import { Test, TestingModule } from '@nestjs/testing';
 import { UploadController } from './upload.controller';
+import { UploadService } from './upload.service';
 
 describe('UploadController', () => {
   let controller: UploadController;
@@ -7,6 +9,12 @@ describe('UploadController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UploadController],
+      providers: [
+        {
+          provide: UploadService,
+          useValue: {},
+        },
+      ],
     }).compile();
 
     controller = module.get<UploadController>(UploadController);

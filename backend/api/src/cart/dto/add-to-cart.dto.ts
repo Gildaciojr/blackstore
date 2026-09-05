@@ -3,14 +3,14 @@ import { IsEnum, IsInt, IsOptional, IsUUID, Min } from 'class-validator';
 
 export class AddToCartDto {
   @IsUUID()
-  productId: string;
+  productId!: string;
 
   @IsInt()
   @Min(1)
-  quantity: number;
+  quantity!: number;
 
   @IsUUID()
-  customerId: string;
+  customerId!: string;
 
   @IsOptional()
   @IsEnum(ProductSize)

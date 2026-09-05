@@ -1,4 +1,5 @@
 export class CreateCategoryDto {
-  name: string;
-  slug: string;
+  name!: string;
+
+  slug!: string;
 }
