@@ -339,30 +339,50 @@ export default function CheckoutPage() {
 
   // 🔥 SALVAR NOVO ENDEREÇO
   async function handleSaveNewAddress() {
+    if (loading) {
+      return;
+    }
+
+    const normalizedZipCode = normalizeZipCode(newAddress.zipCode);
+
+    const normalizedState = newAddress.state.trim().toUpperCase();
+
     if (
-      !newAddress.zipCode ||
-      !newAddress.street ||
-      !newAddress.number ||
-      !newAddress.city ||
-      !newAddress.state
+      !normalizedZipCode ||
+      !newAddress.street.trim() ||
+      !newAddress.number.trim() ||
+      !newAddress.district.trim() ||
+      !newAddress.city.trim() ||
+      !normalizedState
     ) {
       alert("Preencha todos os campos obrigatórios do endereço.");
       return;
     }
 
+    if (normalizedZipCode.length !== 8) {
+      alert("Digite um CEP válido com 8 números.");
+      return;
+    }
+
+    if (normalizedState.length !== 2) {
+      alert("Selecione uma UF válida.");
+      return;
+    }
+
     try {
       setLoading(true);
+
       const customerId = getCustomerId();
 
       const payload = {
         name: "Principal",
-        street: newAddress.street,
-        number: newAddress.number,
-        complement: newAddress.complement,
-        district: newAddress.district,
-        city: newAddress.city,
-        state: newAddress.state.toUpperCase(),
-        zipCode: normalizeZipCode(newAddress.zipCode),
+        street: newAddress.street.trim(),
+        number: newAddress.number.trim(),
+        complement: newAddress.complement.trim() || undefined,
+        district: newAddress.district.trim(),
+        city: newAddress.city.trim(),
+        state: normalizedState,
+        zipCode: normalizedZipCode,
         customerId,
       };
 
@@ -372,6 +392,7 @@ export default function CheckoutPage() {
       });
 
       await loadAddresses();
+
       setIsAddingAddress(false);
       setSelectedAddress(saved.id);
 
@@ -384,8 +405,14 @@ export default function CheckoutPage() {
         city: "",
         state: "",
       });
-    } catch (e) {
-      alert("Erro ao salvar endereço. Verifique os dados.");
+    } catch (error) {
+      console.error("Erro ao salvar endereço:", error);
+
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Erro ao salvar endereço. Verifique os dados.",
+      );
     } finally {
       setLoading(false);
     }
@@ -696,16 +723,37 @@ export default function CheckoutPage() {
             </div>
           </div>
 
-          {/* ENDEREÇO (REFORMULADO) */}
+          {/* ENDEREÇO DE ENTREGA */}
           <div>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="uppercase tracking-widest text-xs">
+            <div
+              className="
+      mb-6
+      flex
+      flex-col
+      gap-3
+      sm:flex-row
+      sm:items-center
+      sm:justify-between
+    "
+            >
+              <h2 className="text-xs uppercase tracking-widest">
                 Endereço de entrega
               </h2>
+
               {addresses.length > 0 && !isAddingAddress && (
                 <button
+                  type="button"
                   onClick={() => setIsAddingAddress(true)}
-                  className="text-[10px] uppercase tracking-widest text-[var(--gold)]"
+                  className="
+          self-start
+          text-[10px]
+          uppercase
+          tracking-widest
+          text-[var(--gold)]
+          transition-colors
+          hover:text-[var(--gold)]/80
+          sm:self-auto
+        "
                 >
                   + Adicionar Novo
                 </button>
@@ -713,34 +761,153 @@ export default function CheckoutPage() {
             </div>
 
             {isAddingAddress ? (
-              <div className="rounded-xl border border-[var(--gold)]/30 p-4 sm:p-5 bg-[var(--gold)]/5 backdrop-blur-xl">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="sm:col-span-2 flex gap-4 items-end">
-                    <div className="flex-1">
-                      <label className="block text-[10px] uppercase tracking-widest text-[var(--gold)]/80 mb-2">
-                        CEP
-                      </label>
-                      <input
-                        value={newAddress.zipCode}
-                        onChange={(e) => handleCepSearch(e.target.value)}
-                        placeholder="00000-000"
-                        className="w-full bg-black border border-white/20 p-3 rounded-md text-sm focus:border-[var(--gold)] transition-colors"
-                        inputMode="numeric"
-                        maxLength={9}
-                      />
-                    </div>
-                    {searchingCep && (
-                      <div className="text-xs text-[var(--gold)] mb-3 animate-pulse">
-                        Buscando...
+              <div
+                className="
+        rounded-xl
+        border
+        border-[var(--gold)]/30
+        bg-[var(--gold)]/5
+        p-4
+        backdrop-blur-xl
+        sm:p-5
+      "
+              >
+                {/* ORIENTAÇÃO DOS CAMPOS */}
+                <div
+                  className="
+          mb-5
+          flex
+          flex-col
+          gap-2
+          sm:flex-row
+          sm:items-start
+          sm:justify-between
+          sm:gap-4
+        "
+                >
+                  <p className="text-xs leading-relaxed text-white/45">
+                    Informe o endereço que será utilizado para a entrega do
+                    pedido.
+                  </p>
+
+                  <p
+                    className="
+            shrink-0
+            text-[9px]
+            uppercase
+            tracking-[0.16em]
+            text-white/40
+            sm:text-[10px]
+          "
+                  >
+                    <span className="text-[var(--gold)]">*</span> Campos
+                    obrigatórios
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  {/* CEP */}
+                  <div className="min-w-0 sm:col-span-2">
+                    <div
+                      className="
+              flex
+              flex-col
+              gap-2
+              sm:flex-row
+              sm:items-end
+              sm:gap-4
+            "
+                    >
+                      <div className="min-w-0 flex-1">
+                        <label
+                          htmlFor="checkout-address-zip-code"
+                          className="
+                  mb-2
+                  block
+                  text-[10px]
+                  uppercase
+                  tracking-widest
+                  text-[var(--gold)]/80
+                "
+                        >
+                          CEP <span className="text-[var(--gold)]">*</span>
+                        </label>
+
+                        <input
+                          id="checkout-address-zip-code"
+                          type="text"
+                          required
+                          aria-required="true"
+                          autoComplete="postal-code"
+                          inputMode="numeric"
+                          maxLength={9}
+                          value={newAddress.zipCode}
+                          onChange={(e) => handleCepSearch(e.target.value)}
+                          placeholder="00000-000"
+                          className="
+                  w-full
+                  min-w-0
+                  rounded-md
+                  border
+                  border-white/20
+                  bg-black
+                  p-3
+                  text-sm
+                  text-white
+                  outline-none
+                  transition-colors
+                  placeholder:text-white/30
+                  focus:border-[var(--gold)]
+                "
+                        />
                       </div>
-                    )}
+
+                      {searchingCep && (
+                        <div
+                          className="
+                  flex
+                  min-h-5
+                  items-center
+                  text-xs
+                  text-[var(--gold)]
+                  sm:mb-3
+                "
+                          aria-live="polite"
+                        >
+                          <span className="animate-pulse">Buscando CEP...</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <p className="mt-1.5 text-[10px] leading-relaxed text-white/35">
+                      Digite os 8 números do CEP. Rua, bairro, cidade e UF serão
+                      preenchidos automaticamente quando disponíveis.
+                    </p>
                   </div>
 
-                  <div className="sm:col-span-2">
-                    <label className="block text-[10px] uppercase tracking-widest text-white/50 mb-2">
-                      Rua / Avenida
+                  {/* RUA / AVENIDA */}
+                  <div className="min-w-0 sm:col-span-2">
+                    <label
+                      htmlFor="checkout-address-street"
+                      className="
+              mb-2
+              block
+              text-[10px]
+              uppercase
+              tracking-widest
+              text-white/50
+            "
+                    >
+                      Rua / Avenida{" "}
+                      <span className="text-[var(--gold)]">*</span>
                     </label>
+
                     <input
+                      id="checkout-address-street"
+                      type="text"
+                      required
+                      aria-required="true"
+                      autoComplete="address-line1"
                       value={newAddress.street}
                       onChange={(e) =>
                         setNewAddress((prev) => ({
@@ -749,15 +916,45 @@ export default function CheckoutPage() {
                         }))
                       }
                       placeholder="Ex: Avenida Paulista"
-                      className="w-full bg-black border border-white/20 p-3 rounded-md text-sm"
+                      className="
+              w-full
+              min-w-0
+              rounded-md
+              border
+              border-white/20
+              bg-black
+              p-3
+              text-sm
+              text-white
+              outline-none
+              transition-colors
+              placeholder:text-white/30
+              focus:border-[var(--gold)]
+            "
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-[10px] uppercase tracking-widest text-white/50 mb-2">
-                      Número
+                  {/* NÚMERO */}
+                  <div className="min-w-0">
+                    <label
+                      htmlFor="checkout-address-number"
+                      className="
+              mb-2
+              block
+              text-[10px]
+              uppercase
+              tracking-widest
+              text-white/50
+            "
+                    >
+                      Número <span className="text-[var(--gold)]">*</span>
                     </label>
+
                     <input
+                      id="checkout-address-number"
+                      type="text"
+                      required
+                      aria-required="true"
                       value={newAddress.number}
                       onChange={(e) =>
                         setNewAddress((prev) => ({
@@ -766,15 +963,53 @@ export default function CheckoutPage() {
                         }))
                       }
                       placeholder="Ex: 1000"
-                      className="w-full bg-black border border-white/20 p-3 rounded-md text-sm"
+                      className="
+              w-full
+              min-w-0
+              rounded-md
+              border
+              border-white/20
+              bg-black
+              p-3
+              text-sm
+              text-white
+              outline-none
+              transition-colors
+              placeholder:text-white/30
+              focus:border-[var(--gold)]
+            "
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-[10px] uppercase tracking-widest text-white/50 mb-2">
-                      Complemento
+                  {/* COMPLEMENTO */}
+                  <div className="min-w-0">
+                    <label
+                      htmlFor="checkout-address-complement"
+                      className="
+              mb-2
+              block
+              text-[10px]
+              uppercase
+              tracking-widest
+              text-white/50
+            "
+                    >
+                      Complemento{" "}
+                      <span
+                        className="
+                normal-case
+                tracking-normal
+                text-white/30
+              "
+                      >
+                        (opcional)
+                      </span>
                     </label>
+
                     <input
+                      id="checkout-address-complement"
+                      type="text"
+                      autoComplete="address-line2"
                       value={newAddress.complement}
                       onChange={(e) =>
                         setNewAddress((prev) => ({
@@ -782,16 +1017,46 @@ export default function CheckoutPage() {
                           complement: e.target.value,
                         }))
                       }
-                      placeholder="Ex: Apto 42"
-                      className="w-full bg-black border border-white/20 p-3 rounded-md text-sm"
+                      placeholder="Ex: Apto 42, Bloco B"
+                      className="
+              w-full
+              min-w-0
+              rounded-md
+              border
+              border-white/20
+              bg-black
+              p-3
+              text-sm
+              text-white
+              outline-none
+              transition-colors
+              placeholder:text-white/30
+              focus:border-[var(--gold)]
+            "
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-[10px] uppercase tracking-widest text-white/50 mb-2">
-                      Bairro
+                  {/* BAIRRO */}
+                  <div className="min-w-0">
+                    <label
+                      htmlFor="checkout-address-district"
+                      className="
+              mb-2
+              block
+              text-[10px]
+              uppercase
+              tracking-widest
+              text-white/50
+            "
+                    >
+                      Bairro <span className="text-[var(--gold)]">*</span>
                     </label>
+
                     <input
+                      id="checkout-address-district"
+                      type="text"
+                      required
+                      aria-required="true"
                       value={newAddress.district}
                       onChange={(e) =>
                         setNewAddress((prev) => ({
@@ -799,16 +1064,58 @@ export default function CheckoutPage() {
                           district: e.target.value,
                         }))
                       }
-                      className="w-full bg-black border border-white/20 p-3 rounded-md text-sm"
+                      placeholder="Digite o bairro"
+                      className="
+              w-full
+              min-w-0
+              rounded-md
+              border
+              border-white/20
+              bg-black
+              p-3
+              text-sm
+              text-white
+              outline-none
+              transition-colors
+              placeholder:text-white/30
+              focus:border-[var(--gold)]
+            "
                     />
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2">
-                    <div className="col-span-2">
-                      <label className="block text-[10px] uppercase tracking-widest text-white/50 mb-2">
-                        Cidade
+                  {/* CIDADE + UF */}
+                  <div
+                    className="
+            grid
+            min-w-0
+            grid-cols-1
+            gap-4
+            min-[420px]:grid-cols-[minmax(0,1fr)_92px]
+            sm:gap-2
+          "
+                  >
+                    {/* CIDADE */}
+                    <div className="min-w-0">
+                      <label
+                        htmlFor="checkout-address-city"
+                        className="
+                mb-2
+                block
+                text-[10px]
+                uppercase
+                tracking-widest
+                text-white/50
+              "
+                      >
+                        Cidade <span className="text-[var(--gold)]">*</span>
                       </label>
+
                       <input
+                        id="checkout-address-city"
+                        type="text"
+                        required
+                        aria-required="true"
+                        autoComplete="address-level2"
                         value={newAddress.city}
                         onChange={(e) =>
                           setNewAddress((prev) => ({
@@ -816,14 +1123,46 @@ export default function CheckoutPage() {
                             city: e.target.value,
                           }))
                         }
-                        className="w-full bg-black border border-white/20 p-3 rounded-md text-sm"
+                        placeholder="Digite a cidade"
+                        className="
+                w-full
+                min-w-0
+                rounded-md
+                border
+                border-white/20
+                bg-black
+                p-3
+                text-sm
+                text-white
+                outline-none
+                transition-colors
+                placeholder:text-white/30
+                focus:border-[var(--gold)]
+              "
                       />
                     </div>
-                    <div>
-                      <label className="block text-[10px] uppercase tracking-widest text-white/50 mb-2">
-                        UF
+
+                    {/* UF */}
+                    <div className="min-w-0">
+                      <label
+                        htmlFor="checkout-address-state"
+                        className="
+                mb-2
+                block
+                text-[10px]
+                uppercase
+                tracking-widest
+                text-white/50
+              "
+                      >
+                        UF <span className="text-[var(--gold)]">*</span>
                       </label>
+
                       <select
+                        id="checkout-address-state"
+                        required
+                        aria-required="true"
+                        autoComplete="address-level1"
                         value={newAddress.state}
                         onChange={(e) =>
                           setNewAddress((prev) => ({
@@ -831,9 +1170,24 @@ export default function CheckoutPage() {
                             state: e.target.value,
                           }))
                         }
-                        className="w-full bg-black border border-white/20 p-3 rounded-md text-sm h-[46px]"
+                        className="
+                h-[46px]
+                w-full
+                min-w-0
+                rounded-md
+                border
+                border-white/20
+                bg-black
+                px-3
+                text-sm
+                text-white
+                outline-none
+                transition-colors
+                focus:border-[var(--gold)]
+              "
                       >
                         <option value="">UF</option>
+
                         {[
                           "AC",
                           "AL",
@@ -872,24 +1226,74 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
-                <div className="mt-6 flex flex-col sm:flex-row gap-3">
+                {/* AÇÕES */}
+                <div
+                  className="
+          mt-6
+          flex
+          flex-col
+          gap-3
+          sm:flex-row
+          sm:items-center
+        "
+                >
                   <button
+                    type="button"
                     onClick={handleSaveNewAddress}
-                    disabled={loading}
+                    disabled={loading || searchingCep}
                     className="
-                      px-6 py-3 bg-[var(--gold)] text-black text-xs uppercase tracking-widest rounded-md 
-                      hover:scale-105 active:scale-[0.98] transition-all
-                    "
+            w-full
+            rounded-md
+            bg-[var(--gold)]
+            px-6
+            py-3
+            text-[10px]
+            font-semibold
+            uppercase
+            tracking-[0.2em]
+            text-black
+            transition-all
+            hover:scale-[1.02]
+            active:scale-[0.98]
+            disabled:cursor-not-allowed
+            disabled:opacity-50
+            disabled:hover:scale-100
+            sm:w-auto
+            sm:text-xs
+            sm:tracking-widest
+          "
                   >
-                    {loading ? "Salvando..." : "Salvar Endereço"}
+                    {loading
+                      ? "Salvando..."
+                      : searchingCep
+                        ? "Buscando CEP..."
+                        : "Salvar Endereço"}
                   </button>
+
                   {addresses.length > 0 && (
                     <button
+                      type="button"
                       onClick={() => setIsAddingAddress(false)}
+                      disabled={loading}
                       className="
-                        px-6 py-3 border border-white/20 text-white text-xs uppercase tracking-widest rounded-md 
-                        hover:border-white/50 transition-colors
-                      "
+              w-full
+              rounded-md
+              border
+              border-white/20
+              px-6
+              py-3
+              text-[10px]
+              uppercase
+              tracking-[0.2em]
+              text-white
+              transition-colors
+              hover:border-white/50
+              disabled:cursor-not-allowed
+              disabled:opacity-50
+              sm:w-auto
+              sm:text-xs
+              sm:tracking-widest
+            "
                     >
                       Cancelar
                     </button>
@@ -898,38 +1302,96 @@ export default function CheckoutPage() {
               </div>
             ) : (
               <div className="space-y-4">
-                {addresses.map((address) => (
-                  <button
-                    key={address.id}
-                    onClick={() => setSelectedAddress(address.id)}
-                    className={`
-                      w-full text-left p-4 sm:p-5 rounded-xl border transition
-                      ${
-                        selectedAddress === address.id
-                          ? "border-[var(--gold)] bg-white/[0.02]"
-                          : "border-white/10 hover:border-white/30"
-                      }
-                    `}
-                  >
-                    <p className="text-sm">
-                      {address.street}, {address.number}
-                    </p>
+                {addresses.map((address) => {
+                  const isSelected = selectedAddress === address.id;
 
-                    {address.complement && (
-                      <p className="text-xs text-white/60 mt-1">
-                        {address.complement}
-                      </p>
-                    )}
+                  return (
+                    <button
+                      key={address.id}
+                      type="button"
+                      aria-pressed={isSelected}
+                      onClick={() => setSelectedAddress(address.id)}
+                      className={`
+              w-full
+              rounded-xl
+              border
+              p-4
+              text-left
+              transition
+              sm:p-5
+              ${
+                isSelected
+                  ? "border-[var(--gold)] bg-white/[0.03]"
+                  : "border-white/10 bg-white/[0.01] hover:border-white/30"
+              }
+            `}
+                    >
+                      <div
+                        className="
+                flex
+                items-start
+                justify-between
+                gap-4
+              "
+                      >
+                        <div className="min-w-0">
+                          <p className="break-words text-sm text-white/90">
+                            {address.street}, {address.number}
+                          </p>
 
-                    <p className="text-xs text-white/60 mt-1">
-                      {address.district} - {address.city} - {address.state}
-                    </p>
+                          {address.complement && (
+                            <p className="mt-1 break-words text-xs text-white/60">
+                              {address.complement}
+                            </p>
+                          )}
 
-                    <p className="text-xs text-white/60 mt-1">
-                      CEP {address.zipCode}
-                    </p>
-                  </button>
-                ))}
+                          <p className="mt-1 break-words text-xs text-white/60">
+                            {address.district} - {address.city} -{" "}
+                            {address.state}
+                          </p>
+
+                          <p className="mt-1 text-xs text-white/60">
+                            CEP {address.zipCode}
+                          </p>
+                        </div>
+
+                        <div
+                          className={`
+                  mt-0.5
+                  flex
+                  h-4
+                  w-4
+                  shrink-0
+                  items-center
+                  justify-center
+                  rounded-full
+                  border
+                  ${isSelected ? "border-[var(--gold)]" : "border-white/30"}
+                `}
+                          aria-hidden="true"
+                        >
+                          {isSelected && (
+                            <span className="h-2 w-2 rounded-full bg-[var(--gold)]" />
+                          )}
+                        </div>
+                      </div>
+
+                      {isSelected && (
+                        <p
+                          className="
+                  mt-3
+                  text-[9px]
+                  uppercase
+                  tracking-[0.2em]
+                  text-[var(--gold)]
+                "
+                        >
+                          Endereço selecionado
+                        </p>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
